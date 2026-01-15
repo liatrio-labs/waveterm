@@ -6,6 +6,8 @@ import { getApi, replaceBlock } from "@/app/store/global";
 import { modalsModel } from "@/app/store/modalmodel";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
+import { CWLayoutTemplate, DEFAULT_TEMPLATE } from "@/app/workspace/cwtemplates";
+import { LayoutTemplateSelector } from "@/app/workspace/layouttemplateselector";
 import { fireAndForget } from "@/util/util";
 import React, { useCallback, useState } from "react";
 import { Modal } from "./modal";
@@ -18,6 +20,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
     const [sessionCount, setSessionCount] = useState(3);
     const [projectPath, setProjectPath] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<CWLayoutTemplate>(DEFAULT_TEMPLATE);
 
     const handleSelectFolder = useCallback(async () => {
         try {
@@ -74,7 +77,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
             }
 
             // Store in recent workspaces
-            await saveRecentWorkspace(projectPath, sessionCount);
+            await saveRecentWorkspace(projectPath, sessionCount, selectedTemplate.id);
 
             // Close modal
             modalsModel.popModal();
@@ -85,6 +88,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
                     meta: {
                         view: "cwsessions",
                         "cw:projectpath": projectPath,
+                        "cw:layouttemplate": selectedTemplate.id,
                     },
                 },
             });
@@ -94,7 +98,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
         } finally {
             setIsCreating(false);
         }
-    }, [projectPath, sessionCount]);
+    }, [projectPath, sessionCount, selectedTemplate]);
 
     const handleClose = useCallback(() => {
         modalsModel.popModal();
@@ -138,6 +142,13 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
                         </select>
                     </div>
 
+                    <div className="form-group">
+                        <LayoutTemplateSelector
+                            selectedTemplateId={selectedTemplate.id}
+                            onSelectTemplate={setSelectedTemplate}
+                        />
+                    </div>
+
                     {error && <div className="error-message">{error}</div>}
                 </div>
 
@@ -169,7 +180,7 @@ async function validateGitRepository(path: string): Promise<boolean> {
     }
 }
 
-async function saveRecentWorkspace(projectPath: string, sessionCount: number): Promise<void> {
+async function saveRecentWorkspace(projectPath: string, sessionCount: number, templateId: string): Promise<void> {
     const projectName = projectPath.split("/").pop() || "Workspace";
 
     try {
@@ -183,6 +194,7 @@ async function saveRecentWorkspace(projectPath: string, sessionCount: number): P
             name: projectName,
             lastOpened: Date.now(),
             sessionCount: sessionCount,
+            layoutTemplate: templateId,
         });
 
         // Keep only last 10

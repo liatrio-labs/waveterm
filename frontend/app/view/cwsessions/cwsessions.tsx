@@ -30,6 +30,8 @@ import { atom, useAtom, useAtomValue, useSetAtom, PrimitiveAtom } from "jotai";
 import * as React from "react";
 import { useState, useEffect, useCallback } from "react";
 
+import { applyLayoutTemplate, getTemplateById, DEFAULT_TEMPLATE } from "@/app/workspace/cwtemplates";
+
 import "./cwsessions.scss";
 
 // ============================================================================
@@ -497,22 +499,34 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
     const handleOpenTerminal = useCallback(async (session: CWSession) => {
         try {
             console.log("[CwSessions] Opening terminal for:", session.worktreePath);
-            await RpcApi.CreateBlockCommand(TabRpcClient, {
-                tabid: model.tabModel.tabId,
-                blockdef: {
-                    meta: {
-                        view: "term",
-                        controller: "shell",
-                        "cmd:cwd": session.worktreePath,
+
+            // Get the layout template from block metadata
+            const blockMeta = globalStore.get(model.blockAtom)?.meta;
+            const templateId = blockMeta?.["cw:layouttemplate"] as string | undefined;
+            const template = templateId ? getTemplateById(templateId) : DEFAULT_TEMPLATE;
+
+            if (template) {
+                // Apply the full layout template
+                await applyLayoutTemplate(template, model.tabModel.tabId, session.worktreePath);
+            } else {
+                // Fallback to single terminal block
+                await RpcApi.CreateBlockCommand(TabRpcClient, {
+                    tabid: model.tabModel.tabId,
+                    blockdef: {
+                        meta: {
+                            view: "term",
+                            controller: "shell",
+                            "cmd:cwd": session.worktreePath,
+                        },
                     },
-                },
-                magnified: false,
-            });
+                    magnified: false,
+                });
+            }
         } catch (err) {
             console.error("[CwSessions] Failed to open terminal:", err);
             setError("Failed to open terminal");
         }
-    }, [model.tabModel]);
+    }, [model.tabModel, model.blockAtom]);
 
     const handleTeleportWebSession = useCallback((webSessionId: string) => {
         modalsModel.pushModal("TeleportModal", { webSessionId });
