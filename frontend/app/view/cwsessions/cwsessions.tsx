@@ -128,25 +128,35 @@ function SessionStatusBadge({ status }: { status: CWSessionStatus }) {
     };
 
     return (
-        <span className={clsx("session-status-badge", statusColors[status])}>
-            <i className={clsx("fa-solid", statusIcons[status])} />
+        <span className={clsx("session-status-badge", statusColors[status])} role="status" aria-label={`Session status: ${status}`}>
+            <i className={clsx("fa-solid", statusIcons[status])} aria-hidden="true" />
             <span>{status}</span>
         </span>
     );
 }
 
-function SessionItem({ session, isActive, onSelect, onDelete, onOpenTerminal }: SessionItemProps) {
-    const [showDetails, setShowDetails] = useState(false);
+const SessionItem = React.memo(function SessionItem({ session, isActive, onSelect, onDelete, onOpenTerminal }: SessionItemProps) {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelect();
+        }
+    };
 
     return (
         <div
             className={clsx("session-item", { active: isActive })}
             onClick={onSelect}
+            onKeyDown={handleKeyDown}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isActive}
+            aria-label={`Session ${session.name}, branch ${session.branchName}, status ${session.status}`}
         >
             <div className="session-item-header">
                 <div className="session-item-info">
                     <div className="session-item-name">
-                        <i className="fa-solid fa-code-branch" />
+                        <i className="fa-solid fa-code-branch" aria-hidden="true" />
                         <span>{session.name}</span>
                     </div>
                     <div className="session-item-branch">{session.branchName}</div>
@@ -159,15 +169,17 @@ function SessionItem({ session, isActive, onSelect, onDelete, onOpenTerminal }: 
                     <Button
                         className="ghost small"
                         onClick={(e) => { e.stopPropagation(); onOpenTerminal(); }}
+                        aria-label="Open terminal for this session"
                     >
-                        <i className="fa-solid fa-terminal" />
+                        <i className="fa-solid fa-terminal" aria-hidden="true" />
                         Open Terminal
                     </Button>
                     <Button
                         className="ghost small danger"
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                        aria-label="Delete this session"
                     >
-                        <i className="fa-solid fa-trash" />
+                        <i className="fa-solid fa-trash" aria-hidden="true" />
                         Delete
                     </Button>
                 </div>
@@ -175,15 +187,15 @@ function SessionItem({ session, isActive, onSelect, onDelete, onOpenTerminal }: 
 
             {isActive && (
                 <div className="session-item-path">
-                    <i className="fa-solid fa-folder" />
+                    <i className="fa-solid fa-folder" aria-hidden="true" />
                     <span>{session.worktreePath}</span>
                 </div>
             )}
         </div>
     );
-}
+});
 
-function WebSessionItem({ webSession, onTeleport, onDelete }: WebSessionItemProps) {
+const WebSessionItem = React.memo(function WebSessionItem({ webSession, onTeleport, onDelete }: WebSessionItemProps) {
     // Format relative time
     const formatAge = (timestamp: number) => {
         const diff = Date.now() - timestamp;
@@ -204,14 +216,18 @@ function WebSessionItem({ webSession, onTeleport, onDelete }: WebSessionItemProp
     };
 
     return (
-        <div className={clsx("web-session-item", webSession.status)}>
+        <div
+            className={clsx("web-session-item", webSession.status)}
+            role="article"
+            aria-label={`Web session: ${webSession.description}, status ${webSession.status || "unknown"}`}
+        >
             <div className="web-session-item-header">
                 <div className="web-session-item-info">
                     <div className="web-session-item-icon">
                         {webSession.source === "handoff" ? (
-                            <i className="fa-solid fa-arrow-up-right-from-square" />
+                            <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" />
                         ) : (
-                            <i className="fa-solid fa-cloud" />
+                            <i className="fa-solid fa-cloud" aria-hidden="true" />
                         )}
                     </div>
                     <div className="web-session-item-details">
@@ -221,7 +237,7 @@ function WebSessionItem({ webSession, onTeleport, onDelete }: WebSessionItemProp
                         <div className="web-session-item-meta">
                             {webSession.originBranch && (
                                 <span className="branch">
-                                    <i className="fa-solid fa-code-branch" />
+                                    <i className="fa-solid fa-code-branch" aria-hidden="true" />
                                     {webSession.originBranch}
                                 </span>
                             )}
@@ -239,21 +255,23 @@ function WebSessionItem({ webSession, onTeleport, onDelete }: WebSessionItemProp
                     <Button
                         className="ghost small"
                         onClick={(e) => { e.stopPropagation(); onTeleport(); }}
+                        aria-label="Teleport to this web session"
                     >
-                        <i className="fa-solid fa-bullseye" />
+                        <i className="fa-solid fa-bullseye" aria-hidden="true" />
                         Teleport
                     </Button>
                 )}
                 <Button
                     className="ghost small danger"
                     onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                    aria-label="Delete this web session"
                 >
-                    <i className="fa-solid fa-trash" />
+                    <i className="fa-solid fa-trash" aria-hidden="true" />
                 </Button>
             </div>
         </div>
     );
-}
+});
 
 function CreateSessionDialog({
     onClose,
@@ -275,34 +293,49 @@ function CreateSessionDialog({
     };
 
     return (
-        <div className="create-session-dialog-overlay" onClick={onClose}>
+        <div
+            className="create-session-dialog-overlay"
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-session-dialog-title"
+        >
             <div className="create-session-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="dialog-header">
-                    <h3>Create New Session</h3>
-                    <button className="close-btn" onClick={onClose}>
-                        <i className="fa-solid fa-times" />
+                    <h3 id="create-session-dialog-title">Create New Session</h3>
+                    <button
+                        className="close-btn"
+                        onClick={onClose}
+                        aria-label="Close dialog"
+                        type="button"
+                    >
+                        <i className="fa-solid fa-times" aria-hidden="true" />
                     </button>
                 </div>
                 <div className="dialog-body">
                     <div className="form-group">
-                        <label>Session Name</label>
+                        <label htmlFor="session-name-input">Session Name</label>
                         <input
+                            id="session-name-input"
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="e.g., feature-auth"
                             autoFocus
+                            aria-required="true"
                         />
                     </div>
                     <div className="form-group">
-                        <label>Branch Name (optional)</label>
+                        <label htmlFor="branch-name-input">Branch Name (optional)</label>
                         <input
+                            id="branch-name-input"
                             type="text"
                             value={branchName}
                             onChange={(e) => setBranchName(e.target.value)}
                             placeholder="e.g., parallel/feature-auth"
+                            aria-describedby="branch-name-hint"
                         />
-                        <span className="form-hint">
+                        <span id="branch-name-hint" className="form-hint">
                             Leave empty to use default prefix from config
                         </span>
                     </div>
@@ -372,18 +405,24 @@ function ProjectSelector({
     };
 
     return (
-        <form className="project-selector" onSubmit={handleSubmit}>
+        <form className="project-selector" onSubmit={handleSubmit} role="search" aria-label="Project selector">
             <div className="project-selector-input">
-                <i className="fa-solid fa-folder-open" />
+                <i className="fa-solid fa-folder-open" aria-hidden="true" />
                 <input
                     type="text"
                     value={inputPath}
                     onChange={(e) => setInputPath(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Enter git repository path..."
+                    aria-label="Git repository path"
                 />
-                <Button type="button" className="ghost small" onClick={handleBrowse} title="Browse for folder">
-                    <i className="fa-solid fa-folder-tree" />
+                <Button
+                    type="button"
+                    className="ghost small"
+                    onClick={handleBrowse}
+                    aria-label="Browse for folder"
+                >
+                    <i className="fa-solid fa-folder-tree" aria-hidden="true" />
                 </Button>
             </div>
             <Button type="submit" className="solid small" disabled={!inputPath.trim()}>
@@ -395,14 +434,14 @@ function ProjectSelector({
 
 function EmptyState({ onCreateFirst }: { onCreateFirst: () => void }) {
     return (
-        <div className="empty-state">
-            <div className="empty-state-icon">
+        <div className="empty-state" role="region" aria-label="No sessions">
+            <div className="empty-state-icon" aria-hidden="true">
                 <i className="fa-solid fa-code-branch" />
             </div>
             <h3>No Sessions Yet</h3>
             <p>Create your first parallel session to start working with isolated git worktrees.</p>
             <Button className="solid green" onClick={onCreateFirst}>
-                <i className="fa-solid fa-plus" />
+                <i className="fa-solid fa-plus" aria-hidden="true" />
                 Create First Session
             </Button>
         </div>
@@ -411,8 +450,8 @@ function EmptyState({ onCreateFirst }: { onCreateFirst: () => void }) {
 
 function NoProjectState() {
     return (
-        <div className="empty-state">
-            <div className="empty-state-icon">
+        <div className="empty-state" role="region" aria-label="No project selected">
+            <div className="empty-state-icon" aria-hidden="true">
                 <i className="fa-solid fa-folder-open" />
             </div>
             <h3>Select a Project</h3>
@@ -569,8 +608,8 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
             </div>
 
             {error && (
-                <div className="cwsessions-error">
-                    <i className="fa-solid fa-exclamation-circle" />
+                <div className="cwsessions-error" role="alert" aria-live="polite">
+                    <i className="fa-solid fa-exclamation-circle" aria-hidden="true" />
                     <span>{error}</span>
                 </div>
             )}
@@ -582,21 +621,22 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                     <EmptyState onCreateFirst={() => setShowCreateDialog(true)} />
                 ) : (
                     <>
-                        <div className="sessions-toolbar">
+                        <div className="sessions-toolbar" role="toolbar" aria-label="Session actions">
                             <span className="sessions-count">
                                 {sessions.length} session{sessions.length !== 1 ? "s" : ""}
                             </span>
                             <Button
                                 className="ghost small"
                                 onClick={() => loadSessions(projectPath)}
+                                aria-label="Refresh sessions"
                             >
-                                <i className="fa-solid fa-refresh" />
+                                <i className="fa-solid fa-refresh" aria-hidden="true" />
                             </Button>
                             <Button
                                 className="solid small green"
                                 onClick={() => setShowCreateDialog(true)}
                             >
-                                <i className="fa-solid fa-plus" />
+                                <i className="fa-solid fa-plus" aria-hidden="true" />
                                 New Session
                             </Button>
                         </div>
@@ -616,10 +656,10 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
 
                         {/* Web Sessions Panel */}
                         {webSessions.length > 0 && (
-                            <div className="web-sessions-panel">
+                            <div className="web-sessions-panel" role="region" aria-label="Web sessions">
                                 <div className="web-sessions-header">
                                     <h3>
-                                        <i className="fa-solid fa-cloud" />
+                                        <i className="fa-solid fa-cloud" aria-hidden="true" />
                                         Web Sessions
                                         {activeWebSessions.length > 0 && (
                                             <span className="active-badge">{activeWebSessions.length} active</span>
@@ -628,9 +668,9 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                                     <Button
                                         className="ghost small"
                                         onClick={() => webSessionActions.refreshWebSessions()}
-                                        title="Refresh web sessions"
+                                        aria-label="Refresh web sessions"
                                     >
-                                        <i className="fa-solid fa-refresh" />
+                                        <i className="fa-solid fa-refresh" aria-hidden="true" />
                                     </Button>
                                 </div>
 
@@ -672,8 +712,8 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
             </div>
 
             {isLoading && (
-                <div className="cwsessions-loading">
-                    <i className="fa-solid fa-spinner fa-spin" />
+                <div className="cwsessions-loading" role="status" aria-live="polite" aria-label="Loading">
+                    <i className="fa-solid fa-spinner fa-spin" aria-hidden="true" />
                     <span>Loading...</span>
                 </div>
             )}

@@ -32,44 +32,44 @@ func getWshCommandType(method reflect.Method) string {
 	return RpcType_Call
 }
 
-func getWshMethodResponseType(commandType string, method reflect.Method) reflect.Type {
+func getWshMethodResponseType(commandType string, method reflect.Method) (reflect.Type, error) {
 	switch commandType {
 	case RpcType_ResponseStream:
 		if method.Type.NumOut() != 1 {
-			panic(fmt.Sprintf("method %q has invalid number of return values for response stream", method.Name))
+			return nil, fmt.Errorf("method %q has invalid number of return values for response stream", method.Name)
 		}
 		outType := method.Type.Out(0)
 		if outType.Kind() != reflect.Chan {
-			panic(fmt.Sprintf("method %q has invalid return type %s for response stream", method.Name, outType))
+			return nil, fmt.Errorf("method %q has invalid return type %s for response stream", method.Name, outType)
 		}
 		elemType := outType.Elem()
 		if !strings.HasPrefix(elemType.Name(), "RespOrErrorUnion") {
-			panic(fmt.Sprintf("method %q has invalid return element type %s for response stream (should be RespOrErrorUnion)", method.Name, elemType))
+			return nil, fmt.Errorf("method %q has invalid return element type %s for response stream (should be RespOrErrorUnion)", method.Name, elemType)
 		}
 		respField, found := elemType.FieldByName("Response")
 		if !found {
-			panic(fmt.Sprintf("method %q has invalid return element type %s for response stream (missing Response field)", method.Name, elemType))
+			return nil, fmt.Errorf("method %q has invalid return element type %s for response stream (missing Response field)", method.Name, elemType)
 		}
-		return respField.Type
+		return respField.Type, nil
 	case RpcType_Call:
 		if method.Type.NumOut() > 1 {
-			return method.Type.Out(0)
+			return method.Type.Out(0), nil
 		}
-		return nil
+		return nil, nil
 	default:
-		panic(fmt.Sprintf("unsupported command type %q", commandType))
+		return nil, fmt.Errorf("unsupported command type %q", commandType)
 	}
 }
 
-func generateWshCommandDecl(method reflect.Method) *WshRpcMethodDecl {
+func generateWshCommandDecl(method reflect.Method) (*WshRpcMethodDecl, error) {
 	if method.Type.NumIn() == 0 || method.Type.In(0) != contextRType {
-		panic(fmt.Sprintf("method %q does not have context as first argument", method.Name))
+		return nil, fmt.Errorf("method %q does not have context as first argument", method.Name)
 	}
 	cmdStr := method.Name
 	decl := &WshRpcMethodDecl{}
 	// remove Command suffix
 	if !strings.HasSuffix(cmdStr, "Command") {
-		panic(fmt.Sprintf("method %q does not have Command suffix", cmdStr))
+		return nil, fmt.Errorf("method %q does not have Command suffix", cmdStr)
 	}
 	cmdStr = cmdStr[:len(cmdStr)-len("Command")]
 	decl.Command = strings.ToLower(cmdStr)
@@ -80,8 +80,12 @@ func generateWshCommandDecl(method reflect.Method) *WshRpcMethodDecl {
 		cdataType = method.Type.In(1)
 	}
 	decl.CommandDataType = cdataType
-	decl.DefaultResponseDataType = getWshMethodResponseType(decl.CommandType, method)
-	return decl
+	responseType, err := getWshMethodResponseType(decl.CommandType, method)
+	if err != nil {
+		return nil, err
+	}
+	decl.DefaultResponseDataType = responseType
+	return decl, nil
 }
 
 func MakeMethodMapForImpl(impl any, declMap map[string]*WshRpcMethodDecl) map[string]reflect.Method {
@@ -104,12 +108,19 @@ func MakeMethodMapForImpl(impl any, declMap map[string]*WshRpcMethodDecl) map[st
 
 }
 
+// GenerateWshCommandDeclMap generates a map of command declarations from the interface.
+// It logs errors for invalid methods but continues processing other methods.
 func GenerateWshCommandDeclMap() map[string]*WshRpcMethodDecl {
 	rtype := wshRpcInterfaceRType
 	rtnMap := make(map[string]*WshRpcMethodDecl)
 	for midx := 0; midx < rtype.NumMethod(); midx++ {
 		method := rtype.Method(midx)
-		decl := generateWshCommandDecl(method)
+		decl, err := generateWshCommandDecl(method)
+		if err != nil {
+			// Log the error instead of panicking
+			log.Printf("ERROR: Failed to generate command declaration for method %q: %v", method.Name, err)
+			continue
+		}
 		rtnMap[decl.Command] = decl
 	}
 	return rtnMap

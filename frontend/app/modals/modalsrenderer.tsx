@@ -1,6 +1,7 @@
 // Copyright 2025, Command Line Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { ErrorBoundary } from "@/app/element/errorboundary";
 import { NewInstallOnboardingModal } from "@/app/onboarding/onboarding";
 import { CurrentOnboardingVersion } from "@/app/onboarding/onboarding-common";
 import { UpgradeOnboardingModal } from "@/app/onboarding/onboarding-upgrade";
@@ -12,6 +13,21 @@ import { useEffect } from "react";
 import * as semver from "semver";
 import { getModalComponent } from "./modalregistry";
 
+// Fallback component for modal errors
+const ModalErrorFallback = ({ error }: { error?: Error }) => (
+    <div className="modal-error-fallback" style={{
+        padding: "20px",
+        background: "var(--error-color, #ff3b30)",
+        color: "white",
+        borderRadius: "8px",
+        margin: "20px"
+    }}>
+        <h3>Modal Error</h3>
+        <p>An error occurred while rendering this modal.</p>
+        <pre style={{ fontSize: "12px", overflow: "auto" }}>{error?.message}</pre>
+    </div>
+);
+
 const ModalsRenderer = () => {
     const clientData = jotai.useAtomValue(ClientModel.getInstance().clientAtom);
     const [newInstallOnboardingOpen, setNewInstallOnboardingOpen] = jotai.useAtom(modalsModel.newInstallOnboardingOpen);
@@ -21,7 +37,12 @@ const ModalsRenderer = () => {
     for (const modal of modals) {
         const ModalComponent = getModalComponent(modal.displayName);
         if (ModalComponent) {
-            rtn.push(<ModalComponent key={modal.displayName} {...modal.props} />);
+            // Security: Wrap each modal in ErrorBoundary to prevent crashes
+            rtn.push(
+                <ErrorBoundary key={modal.displayName} fallback={<ModalErrorFallback />}>
+                    <ModalComponent {...modal.props} />
+                </ErrorBoundary>
+            );
         }
     }
     if (newInstallOnboardingOpen) {

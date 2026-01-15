@@ -21,6 +21,48 @@ const (
 	archiveDirName   = ".archive"
 )
 
+// branchNameRegex validates git branch names (alphanumeric, /, -, _ only)
+var branchNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9/_-]*$`)
+
+// sessionNameRegex validates session names (alphanumeric, -, _ only, no path separators)
+var sessionNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
+
+// validateBranchName checks if a branch name is safe to use in git commands
+func validateBranchName(name string) error {
+	if name == "" {
+		return ErrInvalidBranchName
+	}
+	if len(name) > 255 {
+		return fmt.Errorf("branch name too long (max 255 characters)")
+	}
+	if !branchNameRegex.MatchString(name) {
+		return ErrInvalidBranchName
+	}
+	// Reject dangerous patterns
+	if strings.Contains(name, "..") || strings.HasPrefix(name, "-") {
+		return ErrInvalidBranchName
+	}
+	return nil
+}
+
+// validateSessionName checks if a session name is safe (no path traversal)
+func validateSessionName(name string) error {
+	if name == "" {
+		return ErrInvalidSessionName
+	}
+	if len(name) > 64 {
+		return fmt.Errorf("session name too long (max 64 characters)")
+	}
+	if !sessionNameRegex.MatchString(name) {
+		return ErrInvalidSessionName
+	}
+	// Reject path traversal attempts
+	if strings.Contains(name, "..") || strings.Contains(name, "/") || strings.Contains(name, "\\") {
+		return ErrInvalidSessionName
+	}
+	return nil
+}
+
 // ValidateGitRepo checks if the given path is a git repository
 func ValidateGitRepo(path string) error {
 	gitDir := filepath.Join(path, ".git")
@@ -48,7 +90,9 @@ func ExecuteGitCommand(dir string, args ...string) (string, error) {
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return string(output), fmt.Errorf("git %s failed: %v\nOutput: %s", strings.Join(args, " "), err, string(output))
+		// Security: Sanitize error message to avoid leaking sensitive info
+		// Don't include full output which may contain auth tokens, paths, etc.
+		return string(output), fmt.Errorf("git %s failed: %v", args[0], err)
 	}
 	return strings.TrimSpace(string(output)), nil
 }
@@ -60,11 +104,16 @@ func GetMainBranch(projectPath string) (string, error) {
 	if err == nil {
 		parts := strings.Split(output, "/")
 		if len(parts) > 0 {
-			return parts[len(parts)-1], nil
+			branchName := parts[len(parts)-1]
+			// Security: Validate branch name before returning
+			if err := validateBranchName(branchName); err == nil {
+				return branchName, nil
+			}
+			// If validation fails, fall back to known safe values
 		}
 	}
 
-	// Fall back to checking for main or master locally
+	// Fall back to checking for main or master locally (known safe values)
 	_, err = ExecuteGitCommand(projectPath, "rev-parse", "--verify", "main")
 	if err == nil {
 		return "main", nil
@@ -84,8 +133,9 @@ func WorktreeCreate(params WorktreeCreateParams) (*WorktreeInfo, error) {
 		return nil, err
 	}
 
-	if params.SessionName == "" {
-		return nil, ErrInvalidSessionName
+	// Security: Validate session name to prevent path traversal
+	if err := validateSessionName(params.SessionName); err != nil {
+		return nil, err
 	}
 
 	// Get config to find worktrees directory
@@ -105,6 +155,11 @@ func WorktreeCreate(params WorktreeCreateParams) (*WorktreeInfo, error) {
 	branchName := params.BranchName
 	if branchName == "" {
 		branchName = config.DefaultBranchPrefix + params.SessionName
+	}
+
+	// Security: Validate branch name before using in git commands
+	if err := validateBranchName(branchName); err != nil {
+		return nil, err
 	}
 
 	// Create the worktree with a new branch
@@ -703,17 +758,28 @@ func WorktreeArchiveDelete(params WorktreeArchiveDeleteParams) error {
 	return saveArchiveIndex(archiveDir, newSessions)
 }
 
-// copyDir copies a directory recursively
+// copyDir copies a directory recursively, skipping symlinks for security
 func copyDir(src, dst string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
+		// Security: Skip symlinks to prevent symlink attacks
+		// An attacker could create a symlink to /etc/passwd and have it copied
+		if info.Mode()&os.ModeSymlink != 0 {
+			return nil
+		}
+
 		// Get relative path
 		relPath, err := filepath.Rel(src, path)
 		if err != nil {
 			return err
+		}
+
+		// Security: Validate relative path doesn't escape destination
+		if strings.HasPrefix(relPath, "..") || strings.Contains(relPath, string(os.PathSeparator)+"..") {
+			return fmt.Errorf("invalid path: %s", relPath)
 		}
 
 		dstPath := filepath.Join(dst, relPath)
@@ -731,11 +797,16 @@ func copyDir(src, dst string) error {
 	})
 }
 
-// restoreDir copies archived contents back, skipping .git directory
+// restoreDir copies archived contents back, skipping .git directory and symlinks
 func restoreDir(src, dst string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+
+		// Security: Skip symlinks to prevent symlink attacks
+		if info.Mode()&os.ModeSymlink != 0 {
+			return nil
 		}
 
 		// Get relative path
@@ -749,18 +820,18 @@ func restoreDir(src, dst string) error {
 			return nil
 		}
 
+		// Security: Validate relative path doesn't escape destination
+		if strings.HasPrefix(relPath, "..") || strings.Contains(relPath, string(os.PathSeparator)+"..") {
+			return fmt.Errorf("invalid path: %s", relPath)
+		}
+
 		dstPath := filepath.Join(dst, relPath)
 
 		if info.IsDir() {
 			return os.MkdirAll(dstPath, info.Mode())
 		}
 
-		// Skip if destination already exists (e.g., files created by git worktree add)
-		if _, err := os.Stat(dstPath); err == nil {
-			// File exists, overwrite only if it's different
-		}
-
-		// Copy file
+		// Copy file (overwrite existing)
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return err

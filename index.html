@@ -4,7 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color scheme" content="light dark" />
-    <title>Wave</title>
+    <!-- Security: Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval';
+      style-src 'self' 'unsafe-inline';
+      font-src 'self' data:;
+      img-src 'self' data: blob: https:;
+      connect-src 'self' ws: wss: https:;
+      media-src 'self' blob:;
+      worker-src 'self' blob:;
+      frame-src 'self';
+    " />
+    <title>Liatrio Code</title>
     <link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" />
     <link rel="stylesheet" href="/fontawesome/css/brands.min.css" />
     <link rel="stylesheet" href="/fontawesome/css/solid.min.css" />

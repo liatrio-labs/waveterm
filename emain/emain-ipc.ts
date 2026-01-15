@@ -250,7 +250,30 @@ export function initIpcHandlers() {
         return `data:image/png;base64,${base64String}`;
     });
 
+    // Security: Whitelist safe environment variables to prevent exposing secrets
+    const ALLOWED_ENV_VARS = new Set([
+        "HOME",
+        "USER",
+        "SHELL",
+        "TERM",
+        "PATH",
+        "LANG",
+        "LC_ALL",
+        "TZ",
+        "TMPDIR",
+        "XDG_CONFIG_HOME",
+        "XDG_DATA_HOME",
+        "XDG_CACHE_HOME",
+        "EDITOR",
+        "VISUAL",
+    ]);
+
     electron.ipcMain.on("get-env", (event, varName) => {
+        // Security: Only allow whitelisted environment variables
+        if (typeof varName !== "string" || !ALLOWED_ENV_VARS.has(varName)) {
+            event.returnValue = null;
+            return;
+        }
         event.returnValue = process.env[varName] ?? null;
     });
 
@@ -374,11 +397,31 @@ export function initIpcHandlers() {
 
     electron.ipcMain.on("open-native-path", (event, filePath: string) => {
         console.log("open-native-path", filePath);
-        filePath = filePath.replace("~", electronApp.getPath("home"));
+
+        // Security: Validate and normalize the file path
+        if (typeof filePath !== "string" || filePath.length === 0) {
+            console.error("Invalid file path provided");
+            return;
+        }
+
+        // Expand home directory safely
+        if (filePath.startsWith("~")) {
+            filePath = path.join(electronApp.getPath("home"), filePath.slice(1));
+        }
+
+        // Security: Normalize path and check for traversal
+        const normalizedPath = path.normalize(filePath);
+
+        // Reject paths that try to escape via ..
+        if (normalizedPath.includes("..")) {
+            console.error("Path traversal attempt detected");
+            return;
+        }
+
         fireAndForget(() =>
             callWithOriginalXdgCurrentDesktopAsync(() =>
-                electron.shell.openPath(filePath).then((excuse) => {
-                    if (excuse) console.error(`Failed to open ${filePath} in native application: ${excuse}`);
+                electron.shell.openPath(normalizedPath).then((excuse) => {
+                    if (excuse) console.error(`Failed to open ${normalizedPath} in native application: ${excuse}`);
                 })
             )
         );
