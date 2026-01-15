@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -258,7 +259,17 @@ func (sp StrWithPos) Append(str string) StrWithPos {
 	return StrWithPos{Str: sp.Str + str, Pos: sp.Pos}
 }
 
-// returns base64 hash of data
+// Sha256Hash returns base64-encoded SHA256 hash of data
+// Note: This function was upgraded from SHA1 to SHA256 for security
+func Sha256Hash(data []byte) string {
+	hvalRaw := sha256.Sum256(data)
+	hval := base64.StdEncoding.EncodeToString(hvalRaw[:])
+	return hval
+}
+
+// Sha1Hash is deprecated - use Sha256Hash instead
+// Kept for backwards compatibility but should not be used for new code
+// Deprecated: SHA1 is cryptographically weak, use Sha256Hash
 func Sha1Hash(data []byte) string {
 	hvalRaw := sha1.Sum(data)
 	hval := base64.StdEncoding.EncodeToString(hvalRaw[:])

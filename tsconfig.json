@@ -24,6 +24,7 @@
             "@/element/*": ["frontend/app/element/*"],
             "@/shadcn/*": ["frontend/app/shadcn/*"]
         },
+        "types": ["vitest/globals"],
         "lib": ["dom", "dom.iterable", "es6"],
         "allowJs": true,
         "strict": false,

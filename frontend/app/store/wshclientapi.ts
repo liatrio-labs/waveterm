@@ -438,7 +438,7 @@ class RpcApiType {
     }
 
     // command "processmetricsbatch" [call]
-    ProcessMetricsBatchCommand(client: WshClient, data: CommandProcessMetricsBatchData, opts?: RpcOpts): Promise<Record<number, ProcessMetricsData>> {
+    ProcessMetricsBatchCommand(client: WshClient, data: CommandProcessMetricsBatchData, opts?: RpcOpts): Promise<{[key: string]: ProcessMetricsData}> {
         return client.wshRpcCall("processmetricsbatch", data, opts);
     }
 

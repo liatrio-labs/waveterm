@@ -125,7 +125,7 @@ export async function extractClipboardData(item: ClipboardItem): Promise<GenClip
         return text ? { text } : null;
     }
 
-    // Mode #3: Try text/html - extract text via DOM
+    // Mode #3: Try text/html - extract text via DOM (using DOMParser for safety)
     const htmlType = item.types.find((t) => t === "text/html" || t.startsWith("text/html;"));
     if (htmlType) {
         const blob = await item.getType(htmlType);
@@ -133,9 +133,9 @@ export async function extractClipboardData(item: ClipboardItem): Promise<GenClip
         if (!html) {
             return null;
         }
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-        const text = tempDiv.textContent || "";
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const text = doc.body.textContent || "";
         return text ? { text } : null;
     }
 
@@ -248,7 +248,7 @@ export async function extractDataTransferItems(items: DataTransferItemList): Pro
         });
     }
 
-    // Mode #3: If text/html is present, extract text from first HTML
+    // Mode #3: If text/html is present, extract text from first HTML (using DOMParser for safety)
     const htmlItem = findFirstDataTransferItem(
         items,
         "string",
@@ -261,9 +261,9 @@ export async function extractDataTransferItems(items: DataTransferItemList): Pro
                     resolve([]);
                     return;
                 }
-                const tempDiv = document.createElement("div");
-                tempDiv.innerHTML = html;
-                const text = tempDiv.textContent || "";
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                const text = doc.body.textContent || "";
                 resolve(text ? [{ text }] : []);
             });
         });

@@ -118,7 +118,7 @@ func worktreeCreateRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	if err != nil {
 		return fmt.Errorf("marshaling result: %w", err)
 	}
-	WriteStdout(string(jsonBytes) + "\n")
+	WriteStdout("%s\n", string(jsonBytes))
 	return nil
 }
 
@@ -159,7 +159,7 @@ func worktreeListRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	if err != nil {
 		return fmt.Errorf("marshaling result: %w", err)
 	}
-	WriteStdout(string(jsonBytes) + "\n")
+	WriteStdout("%s\n", string(jsonBytes))
 	return nil
 }
 
@@ -238,6 +238,6 @@ func worktreeStatusRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	if err != nil {
 		return fmt.Errorf("marshaling result: %w", err)
 	}
-	WriteStdout(string(jsonBytes) + "\n")
+	WriteStdout("%s\n", string(jsonBytes))
 	return nil
 }

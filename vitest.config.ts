@@ -5,6 +5,7 @@ export default mergeConfig(
     electronViteConfig.renderer as UserConfig,
     defineConfig({
         test: {
+            globals: true,
             reporters: ["verbose", "junit"],
             outputFile: {
                 junit: "test-results.xml",

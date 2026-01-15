@@ -144,7 +144,14 @@ func TypeToTSType(t reflect.Type, tsTypesMap map[reflect.Type]string) (string, [
 		}
 		return fmt.Sprintf("%s[]", elemType), subTypes
 	case reflect.Map:
-		if t.Key().Kind() != reflect.String {
+		// Accept string keys and numeric keys (numeric keys become string keys in JSON)
+		keyKind := t.Key().Kind()
+		isValidKey := keyKind == reflect.String ||
+			keyKind == reflect.Int || keyKind == reflect.Int8 || keyKind == reflect.Int16 ||
+			keyKind == reflect.Int32 || keyKind == reflect.Int64 ||
+			keyKind == reflect.Uint || keyKind == reflect.Uint8 || keyKind == reflect.Uint16 ||
+			keyKind == reflect.Uint32 || keyKind == reflect.Uint64
+		if !isValidKey {
 			return "", nil
 		}
 		if t == metaRType {
@@ -154,6 +161,7 @@ func TypeToTSType(t reflect.Type, tsTypesMap map[reflect.Type]string) (string, [
 		if elemType == "" {
 			return "", nil
 		}
+		// In JSON, map keys are always strings regardless of Go type
 		return fmt.Sprintf("{[key: string]: %s}", elemType), subTypes
 	case reflect.Struct:
 		name := t.Name()

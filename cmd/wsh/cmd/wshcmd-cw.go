@@ -69,7 +69,7 @@ func cwConfigGetRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	if err != nil {
 		return fmt.Errorf("marshaling config: %w", err)
 	}
-	WriteStdout(string(jsonBytes) + "\n")
+	WriteStdout("%s\n", string(jsonBytes))
 	return nil
 }
 
@@ -117,6 +117,6 @@ func cwConfigGetProjectRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	if err != nil {
 		return fmt.Errorf("marshaling config: %w", err)
 	}
-	WriteStdout(string(jsonBytes) + "\n")
+	WriteStdout("%s\n", string(jsonBytes))
 	return nil
 }
