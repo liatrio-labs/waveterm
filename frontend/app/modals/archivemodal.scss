@@ -1,0 +1,221 @@
+// Copyright 2025, Liatrio
+// SPDX-License-Identifier: Apache-2.0
+
+.archive-modal {
+    width: 560px;
+    max-width: 95vw;
+    max-height: 85vh;
+}
+
+.archive-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 8px;
+}
+
+.archive-header {
+    h2 {
+        margin: 0 0 8px 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--main-text-color);
+    }
+
+    .archive-description {
+        margin: 0;
+        font-size: 14px;
+        color: var(--secondary-text-color);
+    }
+}
+
+.archive-body {
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.archive-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px;
+    color: var(--secondary-text-color);
+}
+
+.archive-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    text-align: center;
+
+    i {
+        font-size: 48px;
+        color: var(--border-color);
+    }
+
+    p {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--main-text-color);
+    }
+
+    span {
+        font-size: 14px;
+        color: var(--secondary-text-color);
+    }
+}
+
+.archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.archive-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px;
+    background: var(--block-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: border-color 0.15s ease;
+
+    &:hover {
+        border-color: var(--accent-color);
+    }
+}
+
+.archive-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.archive-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+        font-size: 14px;
+        color: var(--accent-color);
+    }
+
+    .branch-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--main-text-color);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .uncommitted-badge {
+        padding: 2px 8px;
+        background: rgba(255, 170, 0, 0.2);
+        color: #ffaa00;
+        font-size: 11px;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+}
+
+.archive-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+
+    i {
+        margin-right: 4px;
+        font-size: 11px;
+    }
+
+    .archive-time,
+    .commit-hash {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.archive-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+
+    button.primary {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        font-size: 13px;
+
+        &:hover:not(:disabled) {
+            filter: brightness(1.1);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        i {
+            margin-right: 6px;
+        }
+    }
+
+    button.danger {
+        background: transparent;
+        border: 1px solid rgba(255, 59, 48, 0.5);
+        color: #ff3b30;
+        padding: 6px 10px;
+        font-size: 13px;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 59, 48, 0.1);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.error-message {
+    padding: 10px 12px;
+    background: rgba(255, 59, 48, 0.1);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    border-radius: 6px;
+    color: #ff3b30;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+.archive-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+
+    button.secondary {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--main-text-color);
+
+        &:hover {
+            background: var(--hover-bg-color);
+        }
+    }
+}

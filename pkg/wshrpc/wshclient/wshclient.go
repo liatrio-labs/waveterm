@@ -524,6 +524,18 @@ func PathCommand(w *wshutil.WshRpc, data wshrpc.PathCommandData, opts *wshrpc.Rp
 	return resp, err
 }
 
+// command "processmetrics", wshserver.ProcessMetricsCommand
+func ProcessMetricsCommand(w *wshutil.WshRpc, data wshrpc.CommandProcessMetricsData, opts *wshrpc.RpcOpts) (*wshrpc.ProcessMetricsData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.ProcessMetricsData](w, "processmetrics", data, opts)
+	return resp, err
+}
+
+// command "processmetricsbatch", wshserver.ProcessMetricsBatchCommand
+func ProcessMetricsBatchCommand(w *wshutil.WshRpc, data wshrpc.CommandProcessMetricsBatchData, opts *wshrpc.RpcOpts) (map[int32]*wshrpc.ProcessMetricsData, error) {
+	resp, err := sendRpcRequestCallHelper[map[int32]*wshrpc.ProcessMetricsData](w, "processmetricsbatch", data, opts)
+	return resp, err
+}
+
 // command "publishapp", wshserver.PublishAppCommand
 func PublishAppCommand(w *wshutil.WshRpc, data wshrpc.CommandPublishAppData, opts *wshrpc.RpcOpts) (*wshrpc.CommandPublishAppRtnData, error) {
 	resp, err := sendRpcRequestCallHelper[*wshrpc.CommandPublishAppRtnData](w, "publishapp", data, opts)
@@ -845,6 +857,24 @@ func WorkspaceListCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.Wor
 	return resp, err
 }
 
+// command "worktreearchive", wshserver.WorktreeArchiveCommand
+func WorktreeArchiveCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeArchiveData, opts *wshrpc.RpcOpts) (*wshrpc.ArchivedSessionData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.ArchivedSessionData](w, "worktreearchive", data, opts)
+	return resp, err
+}
+
+// command "worktreearchivedelete", wshserver.WorktreeArchiveDeleteCommand
+func WorktreeArchiveDeleteCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeArchiveDeleteData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "worktreearchivedelete", data, opts)
+	return err
+}
+
+// command "worktreearchivelist", wshserver.WorktreeArchiveListCommand
+func WorktreeArchiveListCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeArchiveListData, opts *wshrpc.RpcOpts) ([]wshrpc.ArchivedSessionData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.ArchivedSessionData](w, "worktreearchivelist", data, opts)
+	return resp, err
+}
+
 // command "worktreecreate", wshserver.WorktreeCreateCommand
 func WorktreeCreateCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeCreateData, opts *wshrpc.RpcOpts) (*wshrpc.WorktreeInfoData, error) {
 	resp, err := sendRpcRequestCallHelper[*wshrpc.WorktreeInfoData](w, "worktreecreate", data, opts)
@@ -873,6 +903,12 @@ func WorktreeMergeCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeMergeDat
 func WorktreeRenameCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeRenameData, opts *wshrpc.RpcOpts) error {
 	_, err := sendRpcRequestCallHelper[any](w, "worktreerename", data, opts)
 	return err
+}
+
+// command "worktreerestore", wshserver.WorktreeRestoreCommand
+func WorktreeRestoreCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeRestoreData, opts *wshrpc.RpcOpts) (*wshrpc.WorktreeInfoData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.WorktreeInfoData](w, "worktreerestore", data, opts)
+	return resp, err
 }
 
 // command "worktreestatus", wshserver.WorktreeStatusCommand

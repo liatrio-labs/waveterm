@@ -301,6 +301,9 @@
         },
         "cw:sandboxenabled": {
           "type": "boolean"
+        },
+        "cw:autostartclaude": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

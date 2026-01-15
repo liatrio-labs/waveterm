@@ -4,14 +4,21 @@
 package cwworktree
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/greggcoppen/claudewave/app/pkg/wconfig"
+)
+
+const (
+	archiveIndexFile = "index.json"
+	archiveDirName   = ".archive"
 )
 
 // ValidateGitRepo checks if the given path is a git repository
@@ -429,4 +436,335 @@ func GetWorktreeStatus(params WorktreeStatusParams) (*WorktreeStatus, error) {
 	}
 
 	return status, nil
+}
+
+// getArchiveDir returns the path to the archive directory
+func getArchiveDir(projectPath, worktreesDir string) string {
+	if filepath.IsAbs(worktreesDir) {
+		return filepath.Join(worktreesDir, archiveDirName)
+	}
+	return filepath.Join(projectPath, worktreesDir, archiveDirName)
+}
+
+// loadArchiveIndex loads the archive index from disk
+func loadArchiveIndex(archiveDir string) ([]ArchivedSession, error) {
+	indexPath := filepath.Join(archiveDir, archiveIndexFile)
+	data, err := os.ReadFile(indexPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []ArchivedSession{}, nil
+		}
+		return nil, err
+	}
+
+	var sessions []ArchivedSession
+	if err := json.Unmarshal(data, &sessions); err != nil {
+		return nil, err
+	}
+	return sessions, nil
+}
+
+// saveArchiveIndex saves the archive index to disk
+func saveArchiveIndex(archiveDir string, sessions []ArchivedSession) error {
+	indexPath := filepath.Join(archiveDir, archiveIndexFile)
+	data, err := json.MarshalIndent(sessions, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(indexPath, data, 0644)
+}
+
+// WorktreeArchive archives a worktree for later restoration
+func WorktreeArchive(params WorktreeArchiveParams) (*ArchivedSession, error) {
+	if err := ValidateGitRepo(params.ProjectPath); err != nil {
+		return nil, err
+	}
+
+	config, err := wconfig.GetCWConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config: %w", err)
+	}
+
+	worktreePath := GetWorktreeDir(params.ProjectPath, config.WorktreesDir, params.SessionName)
+
+	// Check if worktree exists
+	if _, err := os.Stat(worktreePath); os.IsNotExist(err) {
+		return nil, ErrWorktreeNotFound
+	}
+
+	// Check for uncommitted changes if not forcing
+	status, err := GetWorktreeStatus(WorktreeStatusParams{
+		ProjectPath: params.ProjectPath,
+		SessionName: params.SessionName,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !params.Force && !status.IsClean {
+		return nil, ErrUncommittedChanges
+	}
+
+	// Get branch name and commit hash before archiving
+	branchName, _ := ExecuteGitCommand(worktreePath, "rev-parse", "--abbrev-ref", "HEAD")
+	commitHash, _ := ExecuteGitCommand(worktreePath, "rev-parse", "HEAD")
+
+	// Create archive directory if it doesn't exist
+	archiveDir := getArchiveDir(params.ProjectPath, config.WorktreesDir)
+	if err := os.MkdirAll(archiveDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create archive directory: %w", err)
+	}
+
+	// Generate unique archive ID
+	sessionID := fmt.Sprintf("%s-%d", params.SessionName, time.Now().Unix())
+	archivePath := filepath.Join(archiveDir, sessionID)
+
+	// Move the worktree contents to archive (without git worktree management)
+	// First, remove the worktree from git's management but keep the branch
+	args := []string{"worktree", "remove", worktreePath}
+	if params.Force || !status.IsClean {
+		args = append(args, "--force")
+	}
+
+	// Before removing, copy the directory to archive
+	if err := copyDir(worktreePath, archivePath); err != nil {
+		return nil, fmt.Errorf("failed to copy worktree to archive: %w", err)
+	}
+
+	// Now remove the worktree from git
+	_, err = ExecuteGitCommand(params.ProjectPath, args...)
+	if err != nil {
+		// If removal fails, try to clean up the archive copy
+		os.RemoveAll(archivePath)
+		return nil, fmt.Errorf("failed to remove worktree: %w", err)
+	}
+
+	// Create archive metadata
+	archived := &ArchivedSession{
+		SessionID:        sessionID,
+		BranchName:       branchName,
+		ArchivedAt:       time.Now().Unix(),
+		OriginalPath:     worktreePath,
+		ArchivePath:      archivePath,
+		UncommittedCount: len(status.UncommittedFiles),
+		CommitHash:       commitHash,
+	}
+
+	// Load existing index and add new entry
+	sessions, err := loadArchiveIndex(archiveDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load archive index: %w", err)
+	}
+	sessions = append(sessions, *archived)
+
+	// Save updated index
+	if err := saveArchiveIndex(archiveDir, sessions); err != nil {
+		return nil, fmt.Errorf("failed to save archive index: %w", err)
+	}
+
+	return archived, nil
+}
+
+// WorktreeRestore restores an archived worktree
+func WorktreeRestore(params WorktreeRestoreParams) (*WorktreeInfo, error) {
+	if err := ValidateGitRepo(params.ProjectPath); err != nil {
+		return nil, err
+	}
+
+	config, err := wconfig.GetCWConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config: %w", err)
+	}
+
+	archiveDir := getArchiveDir(params.ProjectPath, config.WorktreesDir)
+
+	// Load archive index
+	sessions, err := loadArchiveIndex(archiveDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load archive index: %w", err)
+	}
+
+	// Find the archived session
+	var archived *ArchivedSession
+	var archivedIndex int
+	for i, s := range sessions {
+		if s.SessionID == params.SessionID {
+			archived = &s
+			archivedIndex = i
+			break
+		}
+	}
+
+	if archived == nil {
+		return nil, ErrArchiveNotFound
+	}
+
+	// Check if original path is available
+	if _, err := os.Stat(archived.OriginalPath); err == nil {
+		return nil, fmt.Errorf("cannot restore: original path already exists")
+	}
+
+	// Re-create the worktree with the same branch
+	_, err = ExecuteGitCommand(params.ProjectPath, "worktree", "add", archived.OriginalPath, archived.BranchName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to recreate worktree: %w", err)
+	}
+
+	// Copy archived contents back (excluding .git)
+	if err := restoreDir(archived.ArchivePath, archived.OriginalPath); err != nil {
+		return nil, fmt.Errorf("failed to restore archived contents: %w", err)
+	}
+
+	// Remove from archive index
+	sessions = append(sessions[:archivedIndex], sessions[archivedIndex+1:]...)
+	if err := saveArchiveIndex(archiveDir, sessions); err != nil {
+		return nil, fmt.Errorf("failed to update archive index: %w", err)
+	}
+
+	// Remove archived directory
+	os.RemoveAll(archived.ArchivePath)
+
+	// Get updated status
+	commitHash, _ := ExecuteGitCommand(archived.OriginalPath, "rev-parse", "HEAD")
+	statusOutput, _ := ExecuteGitCommand(archived.OriginalPath, "status", "--porcelain")
+
+	// Extract session name from original path
+	sessionName := filepath.Base(archived.OriginalPath)
+
+	return &WorktreeInfo{
+		Path:       archived.OriginalPath,
+		BranchName: archived.BranchName,
+		IsClean:    statusOutput == "",
+		CommitHash: commitHash,
+		SessionID:  sessionName,
+	}, nil
+}
+
+// WorktreeArchiveList returns a list of all archived sessions
+func WorktreeArchiveList(params WorktreeArchiveListParams) ([]ArchivedSession, error) {
+	if err := ValidateGitRepo(params.ProjectPath); err != nil {
+		return nil, err
+	}
+
+	config, err := wconfig.GetCWConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config: %w", err)
+	}
+
+	archiveDir := getArchiveDir(params.ProjectPath, config.WorktreesDir)
+
+	return loadArchiveIndex(archiveDir)
+}
+
+// WorktreeArchiveDelete permanently deletes an archived session
+func WorktreeArchiveDelete(params WorktreeArchiveDeleteParams) error {
+	if err := ValidateGitRepo(params.ProjectPath); err != nil {
+		return err
+	}
+
+	config, err := wconfig.GetCWConfig()
+	if err != nil {
+		return fmt.Errorf("failed to get config: %w", err)
+	}
+
+	archiveDir := getArchiveDir(params.ProjectPath, config.WorktreesDir)
+
+	// Load archive index
+	sessions, err := loadArchiveIndex(archiveDir)
+	if err != nil {
+		return fmt.Errorf("failed to load archive index: %w", err)
+	}
+
+	// Find and remove the archived session
+	found := false
+	var archivePath string
+	newSessions := make([]ArchivedSession, 0, len(sessions))
+	for _, s := range sessions {
+		if s.SessionID == params.SessionID {
+			found = true
+			archivePath = s.ArchivePath
+		} else {
+			newSessions = append(newSessions, s)
+		}
+	}
+
+	if !found {
+		return ErrArchiveNotFound
+	}
+
+	// Delete the archived directory
+	if archivePath != "" {
+		if err := os.RemoveAll(archivePath); err != nil {
+			return fmt.Errorf("failed to delete archive directory: %w", err)
+		}
+	}
+
+	// Save updated index
+	return saveArchiveIndex(archiveDir, newSessions)
+}
+
+// copyDir copies a directory recursively
+func copyDir(src, dst string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Get relative path
+		relPath, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+
+		dstPath := filepath.Join(dst, relPath)
+
+		if info.IsDir() {
+			return os.MkdirAll(dstPath, info.Mode())
+		}
+
+		// Copy file
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(dstPath, data, info.Mode())
+	})
+}
+
+// restoreDir copies archived contents back, skipping .git directory
+func restoreDir(src, dst string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Get relative path
+		relPath, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+
+		// Skip .git directory - it's managed by the worktree
+		if relPath == ".git" || strings.HasPrefix(relPath, ".git/") || strings.HasPrefix(relPath, ".git\\") {
+			return nil
+		}
+
+		dstPath := filepath.Join(dst, relPath)
+
+		if info.IsDir() {
+			return os.MkdirAll(dstPath, info.Mode())
+		}
+
+		// Skip if destination already exists (e.g., files created by git worktree add)
+		if _, err := os.Stat(dstPath); err == nil {
+			// File exists, overwrite only if it's different
+		}
+
+		// Copy file
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(dstPath, data, info.Mode())
+	})
 }

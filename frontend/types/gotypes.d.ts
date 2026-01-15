@@ -106,6 +106,17 @@ declare global {
         iconcolor: string;
     };
 
+    // wshrpc.ArchivedSessionData
+    type ArchivedSessionData = {
+        sessionid: string;
+        branchname: string;
+        archivedat: number;
+        originalpath: string;
+        archivepath: string;
+        uncommittedcount: number;
+        commithash: string;
+    };
+
     // waveobj.Block
     type Block = WaveObj & {
         parentoref?: string;
@@ -394,6 +405,16 @@ declare global {
         message: string;
     };
 
+    // wshrpc.CommandProcessMetricsBatchData
+    type CommandProcessMetricsBatchData = {
+        pids: number[];
+    };
+
+    // wshrpc.CommandProcessMetricsData
+    type CommandProcessMetricsData = {
+        pid: number;
+    };
+
     // wshrpc.CommandPublishAppData
     type CommandPublishAppData = {
         appid: string;
@@ -602,6 +623,24 @@ declare global {
         description?: string;
     };
 
+    // wshrpc.CommandWorktreeArchiveData
+    type CommandWorktreeArchiveData = {
+        projectpath: string;
+        sessionname: string;
+        force?: boolean;
+    };
+
+    // wshrpc.CommandWorktreeArchiveDeleteData
+    type CommandWorktreeArchiveDeleteData = {
+        projectpath: string;
+        sessionid: string;
+    };
+
+    // wshrpc.CommandWorktreeArchiveListData
+    type CommandWorktreeArchiveListData = {
+        projectpath: string;
+    };
+
     // wshrpc.CommandWorktreeCreateData
     type CommandWorktreeCreateData = {
         projectpath: string;
@@ -633,6 +672,12 @@ declare global {
         projectpath: string;
         sessionname: string;
         newbranchname: string;
+    };
+
+    // wshrpc.CommandWorktreeRestoreData
+    type CommandWorktreeRestoreData = {
+        projectpath: string;
+        sessionid: string;
     };
 
     // wshrpc.CommandWorktreeStatusData
@@ -1088,6 +1133,16 @@ declare global {
         y: number;
     };
 
+    // wshrpc.ProcessMetricsData
+    type ProcessMetricsData = {
+        pid: number;
+        cpupercent: number;
+        memorymb: number;
+        memoryrss: number;
+        running: boolean;
+        name?: string;
+    };
+
     // uctypes.RateLimitInfo
     type RateLimitInfo = {
         req: number;
@@ -1263,6 +1318,7 @@ declare global {
         "cw:pollinterval"?: number;
         "cw:notificationsenabled"?: boolean;
         "cw:sandboxenabled"?: boolean;
+        "cw:autostartclaude"?: boolean;
     };
 
     // waveobj.StickerClickOptsType
@@ -1953,26 +2009,6 @@ declare global {
         originbranch?: string;
         originworkingdir?: string;
         status: string;
-    };
-
-    // wshrpc.CommandProcessMetricsData
-    type CommandProcessMetricsData = {
-        pid: number;
-    };
-
-    // wshrpc.CommandProcessMetricsBatchData
-    type CommandProcessMetricsBatchData = {
-        pids: number[];
-    };
-
-    // wshrpc.ProcessMetricsData
-    type ProcessMetricsData = {
-        pid: number;
-        cpupercent: number;
-        memorymb: number;
-        memoryrss: number;
-        running: boolean;
-        name?: string;
     };
 
     // wconfig.WidgetConfigType

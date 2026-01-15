@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AddSessionWizard } from "@/app/modals/addsessionwizard";
+import { ArchiveModal } from "@/app/modals/archivemodal";
 import { MessageModal } from "@/app/modals/messagemodal";
 import { HandoffModal } from "@/app/modals/handoffmodal";
 import { TeleportModal } from "@/app/modals/teleportmodal";
@@ -23,6 +24,7 @@ const modalRegistry: { [key: string]: React.ComponentType<any> } = {
     [TeleportModal.displayName || "TeleportModal"]: TeleportModal,
     [NewWorkstationModal.displayName || "NewWorkstationModal"]: NewWorkstationModal,
     [AddSessionWizard.displayName || "AddSessionWizard"]: AddSessionWizard,
+    [ArchiveModal.displayName || "ArchiveModal"]: ArchiveModal,
     [PublishAppModal.displayName || "PublishAppModal"]: PublishAppModal,
     [RenameFileModal.displayName || "RenameFileModal"]: RenameFileModal,
     [DeleteFileModal.displayName || "DeleteFileModal"]: DeleteFileModal,

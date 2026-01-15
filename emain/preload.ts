@@ -41,6 +41,7 @@ contextBridge.exposeInMainWorld("api", {
     installAppUpdate: () => ipcRenderer.send("install-app-update"),
     onMenuItemAbout: (callback) => ipcRenderer.on("menu-item-about", callback),
     onMenuItemNewWorkstation: (callback) => ipcRenderer.on("menu-item-new-workstation", callback),
+    onMenuItemRestoreArchive: (callback) => ipcRenderer.on("menu-item-restore-archive", callback),
     showMessageBox: (options: Electron.MessageBoxOptions) => ipcRenderer.invoke("show-message-box", options),
     updateWindowControlsOverlay: (rect) => ipcRenderer.send("update-window-controls-overlay", rect),
     onReinjectKey: (callback) => ipcRenderer.on("reinject-key", (_event, waveEvent) => callback(waveEvent)),

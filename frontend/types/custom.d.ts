@@ -108,6 +108,7 @@ declare global {
         installAppUpdate: () => void; // install-app-update
         onMenuItemAbout: (callback: () => void) => void; // menu-item-about
         onMenuItemNewWorkstation: (callback: () => void) => void; // menu-item-new-workstation
+        onMenuItemRestoreArchive: (callback: () => void) => void; // menu-item-restore-archive
         showMessageBox: (options: Electron.MessageBoxOptions) => Promise<Electron.MessageBoxReturnValue>; // show-message-box
         updateWindowControlsOverlay: (rect: Dimensions) => void; // update-window-controls-overlay
         onReinjectKey: (callback: (waveEvent: WaveKeyboardEvent) => void) => void; // reinject-key

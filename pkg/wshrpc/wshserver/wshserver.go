@@ -683,6 +683,73 @@ func (ws *WshServer) WorktreeStatusCommand(ctx context.Context, data wshrpc.Comm
 	}, nil
 }
 
+func (ws *WshServer) WorktreeArchiveCommand(ctx context.Context, data wshrpc.CommandWorktreeArchiveData) (*wshrpc.ArchivedSessionData, error) {
+	archived, err := cwworktree.WorktreeArchive(cwworktree.WorktreeArchiveParams{
+		ProjectPath: data.ProjectPath,
+		SessionName: data.SessionName,
+		Force:       data.Force,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.ArchivedSessionData{
+		SessionID:        archived.SessionID,
+		BranchName:       archived.BranchName,
+		ArchivedAt:       archived.ArchivedAt,
+		OriginalPath:     archived.OriginalPath,
+		ArchivePath:      archived.ArchivePath,
+		UncommittedCount: archived.UncommittedCount,
+		CommitHash:       archived.CommitHash,
+	}, nil
+}
+
+func (ws *WshServer) WorktreeRestoreCommand(ctx context.Context, data wshrpc.CommandWorktreeRestoreData) (*wshrpc.WorktreeInfoData, error) {
+	info, err := cwworktree.WorktreeRestore(cwworktree.WorktreeRestoreParams{
+		ProjectPath: data.ProjectPath,
+		SessionID:   data.SessionID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.WorktreeInfoData{
+		Path:       info.Path,
+		BranchName: info.BranchName,
+		IsClean:    info.IsClean,
+		CommitHash: info.CommitHash,
+		SessionID:  info.SessionID,
+	}, nil
+}
+
+func (ws *WshServer) WorktreeArchiveListCommand(ctx context.Context, data wshrpc.CommandWorktreeArchiveListData) ([]wshrpc.ArchivedSessionData, error) {
+	sessions, err := cwworktree.WorktreeArchiveList(cwworktree.WorktreeArchiveListParams{
+		ProjectPath: data.ProjectPath,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.ArchivedSessionData
+	for _, s := range sessions {
+		result = append(result, wshrpc.ArchivedSessionData{
+			SessionID:        s.SessionID,
+			BranchName:       s.BranchName,
+			ArchivedAt:       s.ArchivedAt,
+			OriginalPath:     s.OriginalPath,
+			ArchivePath:      s.ArchivePath,
+			UncommittedCount: s.UncommittedCount,
+			CommitHash:       s.CommitHash,
+		})
+	}
+	return result, nil
+}
+
+func (ws *WshServer) WorktreeArchiveDeleteCommand(ctx context.Context, data wshrpc.CommandWorktreeArchiveDeleteData) error {
+	return cwworktree.WorktreeArchiveDelete(cwworktree.WorktreeArchiveDeleteParams{
+		ProjectPath: data.ProjectPath,
+		SessionID:   data.SessionID,
+	})
+}
+
 func (ws *WshServer) WebSessionListCommand(ctx context.Context, data wshrpc.CommandWebSessionListData) ([]wshrpc.WebSessionData, error) {
 	sessions, err := cwworktree.WebSessionList(cwworktree.WebSessionListParams{
 		ProjectPath: data.ProjectPath,

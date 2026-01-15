@@ -77,6 +77,10 @@ type WshRpcInterface interface {
 	WorktreeMergeCommand(ctx context.Context, data CommandWorktreeMergeData) error
 	WorktreeRenameCommand(ctx context.Context, data CommandWorktreeRenameData) error
 	WorktreeStatusCommand(ctx context.Context, data CommandWorktreeStatusData) (*WorktreeStatusData, error)
+	WorktreeArchiveCommand(ctx context.Context, data CommandWorktreeArchiveData) (*ArchivedSessionData, error)
+	WorktreeRestoreCommand(ctx context.Context, data CommandWorktreeRestoreData) (*WorktreeInfoData, error)
+	WorktreeArchiveListCommand(ctx context.Context, data CommandWorktreeArchiveListData) ([]ArchivedSessionData, error)
+	WorktreeArchiveDeleteCommand(ctx context.Context, data CommandWorktreeArchiveDeleteData) error
 
 	// Liatrio Code web session commands
 	WebSessionListCommand(ctx context.Context, data CommandWebSessionListData) ([]WebSessionData, error)
@@ -746,6 +750,37 @@ type WorktreeStatusData struct {
 	Ahead            int      `json:"ahead"`
 	Behind           int      `json:"behind"`
 	IsClean          bool     `json:"isclean"`
+}
+
+// Liatrio Code worktree archive command types
+type CommandWorktreeArchiveData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionName string `json:"sessionname"`
+	Force       bool   `json:"force,omitempty"`
+}
+
+type CommandWorktreeRestoreData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionID   string `json:"sessionid"`
+}
+
+type CommandWorktreeArchiveListData struct {
+	ProjectPath string `json:"projectpath"`
+}
+
+type CommandWorktreeArchiveDeleteData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionID   string `json:"sessionid"`
+}
+
+type ArchivedSessionData struct {
+	SessionID        string `json:"sessionid"`
+	BranchName       string `json:"branchname"`
+	ArchivedAt       int64  `json:"archivedat"`
+	OriginalPath     string `json:"originalpath"`
+	ArchivePath      string `json:"archivepath"`
+	UncommittedCount int    `json:"uncommittedcount"`
+	CommitHash       string `json:"commithash"`
 }
 
 // Liatrio Code web session command types

@@ -143,6 +143,13 @@ function makeFileMenu(
                 (getWindowWebContents(window) ?? webContents)?.send("menu-item-new-workstation");
             },
         },
+        {
+            label: "Restore Archived Session...",
+            accelerator: unamePlatform === "darwin" ? "Command+Shift+A" : "Alt+Shift+A",
+            click: (_, window) => {
+                (getWindowWebContents(window) ?? webContents)?.send("menu-item-restore-archive");
+            },
+        },
         { type: "separator" },
         {
             role: "close",

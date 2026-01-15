@@ -432,6 +432,16 @@ class RpcApiType {
         return client.wshRpcCall("path", data, opts);
     }
 
+    // command "processmetrics" [call]
+    ProcessMetricsCommand(client: WshClient, data: CommandProcessMetricsData, opts?: RpcOpts): Promise<ProcessMetricsData> {
+        return client.wshRpcCall("processmetrics", data, opts);
+    }
+
+    // command "processmetricsbatch" [call]
+    ProcessMetricsBatchCommand(client: WshClient, data: CommandProcessMetricsBatchData, opts?: RpcOpts): Promise<Record<number, ProcessMetricsData>> {
+        return client.wshRpcCall("processmetricsbatch", data, opts);
+    }
+
     // command "publishapp" [call]
     PublishAppCommand(client: WshClient, data: CommandPublishAppData, opts?: RpcOpts): Promise<CommandPublishAppRtnData> {
         return client.wshRpcCall("publishapp", data, opts);
@@ -702,19 +712,24 @@ class RpcApiType {
         return client.wshRpcCall("websessionupdate", data, opts);
     }
 
-    // command "processmetrics" [call]
-    ProcessMetricsCommand(client: WshClient, data: CommandProcessMetricsData, opts?: RpcOpts): Promise<ProcessMetricsData> {
-        return client.wshRpcCall("processmetrics", data, opts);
-    }
-
-    // command "processmetricsbatch" [call]
-    ProcessMetricsBatchCommand(client: WshClient, data: CommandProcessMetricsBatchData, opts?: RpcOpts): Promise<Record<number, ProcessMetricsData>> {
-        return client.wshRpcCall("processmetricsbatch", data, opts);
-    }
-
     // command "workspacelist" [call]
     WorkspaceListCommand(client: WshClient, opts?: RpcOpts): Promise<WorkspaceInfoData[]> {
         return client.wshRpcCall("workspacelist", null, opts);
+    }
+
+    // command "worktreearchive" [call]
+    WorktreeArchiveCommand(client: WshClient, data: CommandWorktreeArchiveData, opts?: RpcOpts): Promise<ArchivedSessionData> {
+        return client.wshRpcCall("worktreearchive", data, opts);
+    }
+
+    // command "worktreearchivedelete" [call]
+    WorktreeArchiveDeleteCommand(client: WshClient, data: CommandWorktreeArchiveDeleteData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("worktreearchivedelete", data, opts);
+    }
+
+    // command "worktreearchivelist" [call]
+    WorktreeArchiveListCommand(client: WshClient, data: CommandWorktreeArchiveListData, opts?: RpcOpts): Promise<ArchivedSessionData[]> {
+        return client.wshRpcCall("worktreearchivelist", data, opts);
     }
 
     // command "worktreecreate" [call]
@@ -740,6 +755,11 @@ class RpcApiType {
     // command "worktreerename" [call]
     WorktreeRenameCommand(client: WshClient, data: CommandWorktreeRenameData, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("worktreerename", data, opts);
+    }
+
+    // command "worktreerestore" [call]
+    WorktreeRestoreCommand(client: WshClient, data: CommandWorktreeRestoreData, opts?: RpcOpts): Promise<WorktreeInfoData> {
+        return client.wshRpcCall("worktreerestore", data, opts);
     }
 
     // command "worktreestatus" [call]
