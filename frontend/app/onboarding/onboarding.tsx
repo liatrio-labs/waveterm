@@ -1,7 +1,7 @@
 // Copyright 2025, Command Line Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import Logo from "@/app/asset/logo.svg";
+import LiatrioLogo from "@/app/asset/liatrio-logo.svg";
 import { Button } from "@/app/element/button";
 import { FlexiModal } from "@/app/modals/modal";
 import { OnboardingFeatures } from "@/app/onboarding/onboarding-features";
@@ -60,9 +60,9 @@ const InitPage = ({ isCompact }: { isCompact: boolean }) => {
                 className={`flex flex-col gap-2 border-b-0 p-0 ${isCompact ? "mt-1 mb-4" : "mb-9"} w-full unselectable flex-shrink-0`}
             >
                 <div className={`${isCompact ? "" : "mb-2.5"} flex justify-center`}>
-                    <Logo />
+                    <LiatrioLogo className="h-12" />
                 </div>
-                <div className="text-center text-[25px] font-normal text-foreground">Welcome to Wave Terminal</div>
+                <div className="text-center text-[25px] font-normal text-foreground">Welcome to Liatrio Code</div>
             </header>
             <OverlayScrollbarsComponent
                 className="flex-1 overflow-y-auto min-h-0"
@@ -179,7 +179,7 @@ const NoTelemetryStarPage = ({ isCompact }: { isCompact: boolean }) => {
         <div className="flex flex-col h-full">
             <header className={`flex flex-col gap-2 border-b-0 p-0 mt-1 mb-4 w-full unselectable flex-shrink-0`}>
                 <div className={`flex justify-center`}>
-                    <Logo />
+                    <LiatrioLogo className="h-12" />
                 </div>
                 <div className="text-center text-[25px] font-normal text-foreground">Telemetry Disabled ✓</div>
             </header>
@@ -191,7 +191,7 @@ const NoTelemetryStarPage = ({ isCompact }: { isCompact: boolean }) => {
                     <div className="text-center text-secondary leading-relaxed max-w-md">
                         <p className="mb-4">No problem, we respect your privacy.</p>
                         <p className="mb-4">
-                            But, without usage data, we're flying blind. A GitHub star helps us know Wave is useful and
+                            But, without usage data, we're flying blind. A GitHub star helps us know Liatrio Code is useful and
                             worth maintaining.
                         </p>
                     </div>

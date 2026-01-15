@@ -9,16 +9,16 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/wavetermdev/waveterm/pkg/service/blockservice"
-	"github.com/wavetermdev/waveterm/pkg/service/clientservice"
-	"github.com/wavetermdev/waveterm/pkg/service/objectservice"
-	"github.com/wavetermdev/waveterm/pkg/service/userinputservice"
-	"github.com/wavetermdev/waveterm/pkg/service/windowservice"
-	"github.com/wavetermdev/waveterm/pkg/service/workspaceservice"
-	"github.com/wavetermdev/waveterm/pkg/tsgen/tsgenmeta"
-	"github.com/wavetermdev/waveterm/pkg/util/utilfn"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
-	"github.com/wavetermdev/waveterm/pkg/web/webcmd"
+	"github.com/greggcoppen/claudewave/app/pkg/service/blockservice"
+	"github.com/greggcoppen/claudewave/app/pkg/service/clientservice"
+	"github.com/greggcoppen/claudewave/app/pkg/service/objectservice"
+	"github.com/greggcoppen/claudewave/app/pkg/service/userinputservice"
+	"github.com/greggcoppen/claudewave/app/pkg/service/windowservice"
+	"github.com/greggcoppen/claudewave/app/pkg/service/workspaceservice"
+	"github.com/greggcoppen/claudewave/app/pkg/tsgen/tsgenmeta"
+	"github.com/greggcoppen/claudewave/app/pkg/util/utilfn"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/web/webcmd"
 )
 
 var ServiceMap = map[string]any{

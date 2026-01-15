@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
 )
 
 type fakeTransport struct {

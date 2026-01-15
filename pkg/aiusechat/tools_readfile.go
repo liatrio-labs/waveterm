@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/uctypes"
-	"github.com/wavetermdev/waveterm/pkg/util/readutil"
-	"github.com/wavetermdev/waveterm/pkg/util/utilfn"
-	"github.com/wavetermdev/waveterm/pkg/wavebase"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
+	"github.com/greggcoppen/claudewave/app/pkg/util/readutil"
+	"github.com/greggcoppen/claudewave/app/pkg/util/utilfn"
+	"github.com/greggcoppen/claudewave/app/pkg/wavebase"
 )
 
 const ReadFileDefaultLineCount = 100

@@ -127,7 +127,8 @@ function makeEditMenu(fullConfig?: FullConfigType): Electron.MenuItemConstructor
 function makeFileMenu(
     numWaveWindows: number,
     callbacks: AppMenuCallbacks,
-    fullConfig: FullConfigType
+    fullConfig: FullConfigType,
+    webContents: electron.WebContents
 ): Electron.MenuItemConstructorOptions[] {
     const fileMenu: Electron.MenuItemConstructorOptions[] = [
         {
@@ -135,6 +136,14 @@ function makeFileMenu(
             accelerator: "CommandOrControl+Shift+N",
             click: () => fireAndForget(callbacks.createNewWaveWindow),
         },
+        {
+            label: "New Liatrio Code Workstation...",
+            accelerator: unamePlatform === "darwin" ? "Command+Shift+W" : "Alt+Shift+W",
+            click: (_, window) => {
+                (getWindowWebContents(window) ?? webContents)?.send("menu-item-new-workstation");
+            },
+        },
+        { type: "separator" },
         {
             role: "close",
             accelerator: "",
@@ -173,7 +182,7 @@ function makeFileMenu(
 function makeAppMenuItems(webContents: electron.WebContents): Electron.MenuItemConstructorOptions[] {
     const appMenuItems: Electron.MenuItemConstructorOptions[] = [
         {
-            label: "About Wave Terminal",
+            label: "About Liatrio Code",
             click: (_, window) => {
                 (getWindowWebContents(window) ?? webContents)?.send("menu-item-about");
             },
@@ -329,7 +338,7 @@ async function makeFullAppMenu(callbacks: AppMenuCallbacks, workspaceOrBuilderId
         console.error("Error fetching config:", e);
     }
     const editMenu = makeEditMenu(fullConfig);
-    const fileMenu = makeFileMenu(numWaveWindows, callbacks, fullConfig);
+    const fileMenu = makeFileMenu(numWaveWindows, callbacks, fullConfig, webContents);
     const viewMenu = makeViewMenu(webContents, callbacks, isBuilderWindowFocused, fullscreenOnLaunch);
     let workspaceMenu: Electron.MenuItemConstructorOptions[] = null;
     try {

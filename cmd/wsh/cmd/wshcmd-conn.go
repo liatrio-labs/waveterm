@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wavetermdev/waveterm/pkg/remote"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc/wshclient"
+	"github.com/greggcoppen/claudewave/app/pkg/remote"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc/wshclient"
 )
 
 var connCmd = &cobra.Command{

@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wavetermdev/waveterm/pkg/util/utilfn"
+	"github.com/greggcoppen/claudewave/app/pkg/util/utilfn"
 )
 
 // set by main-server.go

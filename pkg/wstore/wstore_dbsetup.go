@@ -12,11 +12,11 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/sawka/txwrap"
-	"github.com/wavetermdev/waveterm/pkg/util/migrateutil"
-	"github.com/wavetermdev/waveterm/pkg/wavebase"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/util/migrateutil"
+	"github.com/greggcoppen/claudewave/app/pkg/wavebase"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
 
-	dbfs "github.com/wavetermdev/waveterm/db"
+	dbfs "github.com/greggcoppen/claudewave/app/db"
 )
 
 const WStoreDBName = "waveterm.db"

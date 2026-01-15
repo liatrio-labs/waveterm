@@ -115,5 +115,12 @@ const (
 	ConfigKey_TsunamiSdkReplacePath          = "tsunami:sdkreplacepath"
 	ConfigKey_TsunamiSdkVersion              = "tsunami:sdkversion"
 	ConfigKey_TsunamiGoPath                  = "tsunami:gopath"
+
+	ConfigKey_CWClear                        = "cw:*"
+	ConfigKey_CWWorktreesDir                 = "cw:worktreesdir"
+	ConfigKey_CWDefaultBranchPrefix          = "cw:defaultbranchprefix"
+	ConfigKey_CWPollInterval                 = "cw:pollinterval"
+	ConfigKey_CWNotificationsEnabled         = "cw:notificationsenabled"
+	ConfigKey_CWSandboxEnabled               = "cw:sandboxenabled"
 )
 

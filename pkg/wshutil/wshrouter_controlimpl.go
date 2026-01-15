@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/wavetermdev/waveterm/pkg/baseds"
-	"github.com/wavetermdev/waveterm/pkg/util/shellutil"
-	"github.com/wavetermdev/waveterm/pkg/util/utilfn"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/baseds"
+	"github.com/greggcoppen/claudewave/app/pkg/util/shellutil"
+	"github.com/greggcoppen/claudewave/app/pkg/util/utilfn"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
 )
 
 type WshRouterControlImpl struct {

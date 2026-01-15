@@ -1,0 +1,141 @@
+// Handoff Modal Styles
+
+.handoff-modal {
+    min-width: 400px;
+    max-width: 500px;
+}
+
+.handoff-modal-content {
+    padding: 8px 4px;
+}
+
+.handoff-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    i {
+        font-size: 24px;
+        color: var(--accent-color);
+    }
+
+    h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--main-text-color);
+    }
+}
+
+.handoff-session-info {
+    background-color: var(--panel-bg-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            width: 100px;
+            font-size: 12px;
+            color: var(--secondary-text-color);
+            font-weight: 500;
+        }
+
+        .value {
+            flex: 1;
+            font-size: 13px;
+            color: var(--main-text-color);
+            font-family: var(--termfontfamily);
+
+            &.ellipsis {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+}
+
+.handoff-description {
+    margin-bottom: 16px;
+
+    label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--secondary-text-color);
+        margin-bottom: 6px;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background-color: var(--panel-bg-color);
+        color: var(--main-text-color);
+        font-size: 14px;
+
+        &:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+        }
+
+        &::placeholder {
+            color: var(--secondary-text-color);
+            opacity: 0.7;
+        }
+    }
+}
+
+.handoff-info-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    border-radius: 6px;
+    border: 1px solid rgba(var(--accent-color-rgb), 0.2);
+
+    i {
+        color: var(--accent-color);
+        font-size: 14px;
+        margin-top: 2px;
+    }
+
+    span {
+        font-size: 12px;
+        color: var(--main-text-color);
+        line-height: 1.5;
+    }
+}
+
+.handoff-no-session {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+    background-color: rgba(var(--warning-color-rgb), 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(var(--warning-color-rgb), 0.3);
+
+    i {
+        color: var(--warning-color);
+        font-size: 24px;
+    }
+
+    span {
+        font-size: 14px;
+        color: var(--main-text-color);
+    }
+}

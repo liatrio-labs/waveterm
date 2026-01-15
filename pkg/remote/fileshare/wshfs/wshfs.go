@@ -7,13 +7,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wavetermdev/waveterm/pkg/remote/connparse"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare/fstype"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare/fsutil"
-	"github.com/wavetermdev/waveterm/pkg/util/iochan/iochantypes"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc/wshclient"
-	"github.com/wavetermdev/waveterm/pkg/wshutil"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/connparse"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare/fstype"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare/fsutil"
+	"github.com/greggcoppen/claudewave/app/pkg/util/iochan/iochantypes"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc/wshclient"
+	"github.com/greggcoppen/claudewave/app/pkg/wshutil"
 )
 
 // This needs to be set by whoever initializes the client, either main-server or wshcmd-connserver

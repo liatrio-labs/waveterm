@@ -4,7 +4,7 @@
 package openaichat
 
 import (
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/uctypes"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
 )
 
 // OpenAI Chat Completions API types (simplified)

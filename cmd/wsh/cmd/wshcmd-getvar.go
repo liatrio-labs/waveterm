@@ -10,10 +10,10 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
-	"github.com/wavetermdev/waveterm/pkg/util/envutil"
-	"github.com/wavetermdev/waveterm/pkg/util/wavefileutil"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc/wshclient"
+	"github.com/greggcoppen/claudewave/app/pkg/util/envutil"
+	"github.com/greggcoppen/claudewave/app/pkg/util/wavefileutil"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc/wshclient"
 )
 
 var getVarCmd = &cobra.Command{

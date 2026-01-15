@@ -20,46 +20,48 @@ import (
 	"time"
 
 	"github.com/skratchdot/open-golang/open"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/chatstore"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/uctypes"
-	"github.com/wavetermdev/waveterm/pkg/blockcontroller"
-	"github.com/wavetermdev/waveterm/pkg/blocklogger"
-	"github.com/wavetermdev/waveterm/pkg/buildercontroller"
-	"github.com/wavetermdev/waveterm/pkg/filebackup"
-	"github.com/wavetermdev/waveterm/pkg/filestore"
-	"github.com/wavetermdev/waveterm/pkg/genconn"
-	"github.com/wavetermdev/waveterm/pkg/panichandler"
-	"github.com/wavetermdev/waveterm/pkg/remote"
-	"github.com/wavetermdev/waveterm/pkg/remote/awsconn"
-	"github.com/wavetermdev/waveterm/pkg/remote/conncontroller"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare"
-	"github.com/wavetermdev/waveterm/pkg/secretstore"
-	"github.com/wavetermdev/waveterm/pkg/suggestion"
-	"github.com/wavetermdev/waveterm/pkg/telemetry"
-	"github.com/wavetermdev/waveterm/pkg/telemetry/telemetrydata"
-	"github.com/wavetermdev/waveterm/pkg/util/envutil"
-	"github.com/wavetermdev/waveterm/pkg/util/iochan/iochantypes"
-	"github.com/wavetermdev/waveterm/pkg/util/iterfn"
-	"github.com/wavetermdev/waveterm/pkg/util/shellutil"
-	"github.com/wavetermdev/waveterm/pkg/util/utilfn"
-	"github.com/wavetermdev/waveterm/pkg/util/wavefileutil"
-	"github.com/wavetermdev/waveterm/pkg/waveai"
-	"github.com/wavetermdev/waveterm/pkg/waveappstore"
-	"github.com/wavetermdev/waveterm/pkg/waveapputil"
-	"github.com/wavetermdev/waveterm/pkg/wavebase"
-	"github.com/wavetermdev/waveterm/pkg/wavejwt"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
-	"github.com/wavetermdev/waveterm/pkg/wcloud"
-	"github.com/wavetermdev/waveterm/pkg/wconfig"
-	"github.com/wavetermdev/waveterm/pkg/wcore"
-	"github.com/wavetermdev/waveterm/pkg/wps"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
-	"github.com/wavetermdev/waveterm/pkg/wshutil"
-	"github.com/wavetermdev/waveterm/pkg/wsl"
-	"github.com/wavetermdev/waveterm/pkg/wslconn"
-	"github.com/wavetermdev/waveterm/pkg/wstore"
-	"github.com/wavetermdev/waveterm/tsunami/build"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/chatstore"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
+	"github.com/greggcoppen/claudewave/app/pkg/blockcontroller"
+	"github.com/greggcoppen/claudewave/app/pkg/blocklogger"
+	"github.com/greggcoppen/claudewave/app/pkg/cwmonitor"
+	"github.com/greggcoppen/claudewave/app/pkg/cwworktree"
+	"github.com/greggcoppen/claudewave/app/pkg/buildercontroller"
+	"github.com/greggcoppen/claudewave/app/pkg/filebackup"
+	"github.com/greggcoppen/claudewave/app/pkg/filestore"
+	"github.com/greggcoppen/claudewave/app/pkg/genconn"
+	"github.com/greggcoppen/claudewave/app/pkg/panichandler"
+	"github.com/greggcoppen/claudewave/app/pkg/remote"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/awsconn"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/conncontroller"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare"
+	"github.com/greggcoppen/claudewave/app/pkg/secretstore"
+	"github.com/greggcoppen/claudewave/app/pkg/suggestion"
+	"github.com/greggcoppen/claudewave/app/pkg/telemetry"
+	"github.com/greggcoppen/claudewave/app/pkg/telemetry/telemetrydata"
+	"github.com/greggcoppen/claudewave/app/pkg/util/envutil"
+	"github.com/greggcoppen/claudewave/app/pkg/util/iochan/iochantypes"
+	"github.com/greggcoppen/claudewave/app/pkg/util/iterfn"
+	"github.com/greggcoppen/claudewave/app/pkg/util/shellutil"
+	"github.com/greggcoppen/claudewave/app/pkg/util/utilfn"
+	"github.com/greggcoppen/claudewave/app/pkg/util/wavefileutil"
+	"github.com/greggcoppen/claudewave/app/pkg/waveai"
+	"github.com/greggcoppen/claudewave/app/pkg/waveappstore"
+	"github.com/greggcoppen/claudewave/app/pkg/waveapputil"
+	"github.com/greggcoppen/claudewave/app/pkg/wavebase"
+	"github.com/greggcoppen/claudewave/app/pkg/wavejwt"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/wcloud"
+	"github.com/greggcoppen/claudewave/app/pkg/wconfig"
+	"github.com/greggcoppen/claudewave/app/pkg/wcore"
+	"github.com/greggcoppen/claudewave/app/pkg/wps"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wshutil"
+	"github.com/greggcoppen/claudewave/app/pkg/wsl"
+	"github.com/greggcoppen/claudewave/app/pkg/wslconn"
+	"github.com/greggcoppen/claudewave/app/pkg/wstore"
+	"github.com/greggcoppen/claudewave/app/tsunami/build"
 )
 
 var InvalidWslDistroNames = []string{"docker-desktop", "docker-desktop-data"}
@@ -577,6 +579,206 @@ func (ws *WshServer) GetWaveAIModeConfigCommand(ctx context.Context) (wconfig.AI
 	fullConfig := wconfig.GetWatcher().GetFullConfig()
 	resolvedConfigs := aiusechat.ComputeResolvedAIModeConfigs(fullConfig)
 	return wconfig.AIModeConfigUpdate{Configs: resolvedConfigs}, nil
+}
+
+// Liatrio Code config handlers
+func (ws *WshServer) CWConfigGetCommand(ctx context.Context) (*wconfig.CWConfigType, error) {
+	return wconfig.GetCWConfig()
+}
+
+func (ws *WshServer) CWConfigSetCommand(ctx context.Context, data wshrpc.CommandCWConfigSetData) error {
+	return wconfig.SetCWConfigValue(data.Key, data.Value)
+}
+
+func (ws *WshServer) CWConfigGetProjectCommand(ctx context.Context, data wshrpc.CommandCWConfigGetProjectData) (*wconfig.CWConfigType, error) {
+	return wconfig.GetProjectCWConfig(data.ProjectPath)
+}
+
+// Liatrio Code worktree handlers
+func (ws *WshServer) WorktreeCreateCommand(ctx context.Context, data wshrpc.CommandWorktreeCreateData) (*wshrpc.WorktreeInfoData, error) {
+	info, err := cwworktree.WorktreeCreate(cwworktree.WorktreeCreateParams{
+		ProjectPath: data.ProjectPath,
+		SessionName: data.SessionName,
+		BranchName:  data.BranchName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.WorktreeInfoData{
+		Path:       info.Path,
+		BranchName: info.BranchName,
+		IsClean:    info.IsClean,
+		CommitHash: info.CommitHash,
+		SessionID:  info.SessionID,
+	}, nil
+}
+
+func (ws *WshServer) WorktreeDeleteCommand(ctx context.Context, data wshrpc.CommandWorktreeDeleteData) error {
+	return cwworktree.WorktreeDelete(cwworktree.WorktreeDeleteParams{
+		ProjectPath: data.ProjectPath,
+		SessionName: data.SessionName,
+		Force:       data.Force,
+	})
+}
+
+func (ws *WshServer) WorktreeListCommand(ctx context.Context, data wshrpc.CommandWorktreeListData) ([]wshrpc.WorktreeInfoData, error) {
+	worktrees, err := cwworktree.WorktreeList(cwworktree.WorktreeListParams{
+		ProjectPath: data.ProjectPath,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.WorktreeInfoData
+	for _, wt := range worktrees {
+		result = append(result, wshrpc.WorktreeInfoData{
+			Path:       wt.Path,
+			BranchName: wt.BranchName,
+			IsClean:    wt.IsClean,
+			CommitHash: wt.CommitHash,
+			SessionID:  wt.SessionID,
+		})
+	}
+	return result, nil
+}
+
+func (ws *WshServer) WorktreeSyncCommand(ctx context.Context, data wshrpc.CommandWorktreeSyncData) error {
+	return cwworktree.WorktreeSync(cwworktree.WorktreeSyncParams{
+		ProjectPath: data.ProjectPath,
+		SessionName: data.SessionName,
+	})
+}
+
+func (ws *WshServer) WorktreeMergeCommand(ctx context.Context, data wshrpc.CommandWorktreeMergeData) error {
+	return cwworktree.WorktreeMerge(cwworktree.WorktreeMergeParams{
+		ProjectPath: data.ProjectPath,
+		SessionName: data.SessionName,
+		Squash:      data.Squash,
+	})
+}
+
+func (ws *WshServer) WorktreeRenameCommand(ctx context.Context, data wshrpc.CommandWorktreeRenameData) error {
+	return cwworktree.WorktreeRename(cwworktree.WorktreeRenameParams{
+		ProjectPath:   data.ProjectPath,
+		SessionName:   data.SessionName,
+		NewBranchName: data.NewBranchName,
+	})
+}
+
+func (ws *WshServer) WorktreeStatusCommand(ctx context.Context, data wshrpc.CommandWorktreeStatusData) (*wshrpc.WorktreeStatusData, error) {
+	status, err := cwworktree.GetWorktreeStatus(cwworktree.WorktreeStatusParams{
+		ProjectPath: data.ProjectPath,
+		SessionName: data.SessionName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.WorktreeStatusData{
+		BranchName:       status.BranchName,
+		UncommittedFiles: status.UncommittedFiles,
+		StagedFiles:      status.StagedFiles,
+		Ahead:            status.Ahead,
+		Behind:           status.Behind,
+		IsClean:          status.IsClean,
+	}, nil
+}
+
+func (ws *WshServer) WebSessionListCommand(ctx context.Context, data wshrpc.CommandWebSessionListData) ([]wshrpc.WebSessionData, error) {
+	sessions, err := cwworktree.WebSessionList(cwworktree.WebSessionListParams{
+		ProjectPath: data.ProjectPath,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]wshrpc.WebSessionData, len(sessions))
+	for i, session := range sessions {
+		result[i] = wshrpc.WebSessionData{
+			ID:               session.ID,
+			Description:      session.Description,
+			Timestamp:        session.Timestamp,
+			Source:           session.Source,
+			OriginSession:    session.OriginSession,
+			OriginBranch:     session.OriginBranch,
+			OriginWorkingDir: session.OriginWorkingDir,
+			Status:           session.Status,
+		}
+	}
+	return result, nil
+}
+
+func (ws *WshServer) WebSessionCreateCommand(ctx context.Context, data wshrpc.CommandWebSessionCreateData) (*wshrpc.WebSessionData, error) {
+	session, err := cwworktree.WebSessionCreate(cwworktree.WebSessionCreateParams{
+		ProjectPath:      data.ProjectPath,
+		Description:      data.Description,
+		Source:           data.Source,
+		OriginSession:    data.OriginSession,
+		OriginBranch:     data.OriginBranch,
+		OriginWorkingDir: data.OriginWorkingDir,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.WebSessionData{
+		ID:               session.ID,
+		Description:      session.Description,
+		Timestamp:        session.Timestamp,
+		Source:           session.Source,
+		OriginSession:    session.OriginSession,
+		OriginBranch:     session.OriginBranch,
+		OriginWorkingDir: session.OriginWorkingDir,
+		Status:           session.Status,
+	}, nil
+}
+
+func (ws *WshServer) WebSessionUpdateCommand(ctx context.Context, data wshrpc.CommandWebSessionUpdateData) error {
+	return cwworktree.WebSessionUpdate(cwworktree.WebSessionUpdateParams{
+		ProjectPath: data.ProjectPath,
+		SessionID:   data.SessionID,
+		Status:      data.Status,
+		Description: data.Description,
+	})
+}
+
+func (ws *WshServer) WebSessionDeleteCommand(ctx context.Context, data wshrpc.CommandWebSessionDeleteData) error {
+	return cwworktree.WebSessionDelete(cwworktree.WebSessionDeleteParams{
+		ProjectPath: data.ProjectPath,
+		SessionID:   data.SessionID,
+	})
+}
+
+func (ws *WshServer) ProcessMetricsCommand(ctx context.Context, data wshrpc.CommandProcessMetricsData) (*wshrpc.ProcessMetricsData, error) {
+	metrics, err := cwmonitor.GetProcessMetrics(data.PID)
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.ProcessMetricsData{
+		PID:        metrics.PID,
+		CPUPercent: metrics.CPUPercent,
+		MemoryMB:   metrics.MemoryMB,
+		MemoryRSS:  metrics.MemoryRSS,
+		Running:    metrics.Running,
+		Name:       metrics.Name,
+	}, nil
+}
+
+func (ws *WshServer) ProcessMetricsBatchCommand(ctx context.Context, data wshrpc.CommandProcessMetricsBatchData) (map[int32]*wshrpc.ProcessMetricsData, error) {
+	metricsMap, err := cwmonitor.GetProcessMetricsBatch(data.PIDs)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[int32]*wshrpc.ProcessMetricsData)
+	for pid, metrics := range metricsMap {
+		result[pid] = &wshrpc.ProcessMetricsData{
+			PID:        metrics.PID,
+			CPUPercent: metrics.CPUPercent,
+			MemoryMB:   metrics.MemoryMB,
+			MemoryRSS:  metrics.MemoryRSS,
+			Running:    metrics.Running,
+			Name:       metrics.Name,
+		}
+	}
+	return result, nil
 }
 
 func (ws *WshServer) ConnStatusCommand(ctx context.Context) ([]wshrpc.ConnStatus, error) {

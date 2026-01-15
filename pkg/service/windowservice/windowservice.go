@@ -9,13 +9,13 @@ import (
 	"log"
 	"time"
 
-	"github.com/wavetermdev/waveterm/pkg/eventbus"
-	"github.com/wavetermdev/waveterm/pkg/panichandler"
-	"github.com/wavetermdev/waveterm/pkg/tsgen/tsgenmeta"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
-	"github.com/wavetermdev/waveterm/pkg/wcore"
-	"github.com/wavetermdev/waveterm/pkg/wps"
-	"github.com/wavetermdev/waveterm/pkg/wstore"
+	"github.com/greggcoppen/claudewave/app/pkg/eventbus"
+	"github.com/greggcoppen/claudewave/app/pkg/panichandler"
+	"github.com/greggcoppen/claudewave/app/pkg/tsgen/tsgenmeta"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/wcore"
+	"github.com/greggcoppen/claudewave/app/pkg/wps"
+	"github.com/greggcoppen/claudewave/app/pkg/wstore"
 )
 
 const DefaultTimeout = 2 * time.Second

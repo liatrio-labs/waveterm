@@ -6,15 +6,15 @@
 package wshclient
 
 import (
-	"github.com/wavetermdev/waveterm/pkg/telemetry/telemetrydata"
-	"github.com/wavetermdev/waveterm/pkg/wshutil"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
-	"github.com/wavetermdev/waveterm/pkg/wconfig"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
-	"github.com/wavetermdev/waveterm/pkg/wps"
-	"github.com/wavetermdev/waveterm/pkg/vdom"
-	"github.com/wavetermdev/waveterm/pkg/util/iochan/iochantypes"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/uctypes"
+	"github.com/greggcoppen/claudewave/app/pkg/telemetry/telemetrydata"
+	"github.com/greggcoppen/claudewave/app/pkg/wshutil"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wconfig"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/wps"
+	"github.com/greggcoppen/claudewave/app/pkg/vdom"
+	"github.com/greggcoppen/claudewave/app/pkg/util/iochan/iochantypes"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
 )
 
 // command "activity", wshserver.ActivityCommand
@@ -153,6 +153,24 @@ func CreateBlockCommand(w *wshutil.WshRpc, data wshrpc.CommandCreateBlockData, o
 func CreateSubBlockCommand(w *wshutil.WshRpc, data wshrpc.CommandCreateSubBlockData, opts *wshrpc.RpcOpts) (waveobj.ORef, error) {
 	resp, err := sendRpcRequestCallHelper[waveobj.ORef](w, "createsubblock", data, opts)
 	return resp, err
+}
+
+// command "cwconfigget", wshserver.CWConfigGetCommand
+func CWConfigGetCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) (*wconfig.CWConfigType, error) {
+	resp, err := sendRpcRequestCallHelper[*wconfig.CWConfigType](w, "cwconfigget", nil, opts)
+	return resp, err
+}
+
+// command "cwconfiggetproject", wshserver.CWConfigGetProjectCommand
+func CWConfigGetProjectCommand(w *wshutil.WshRpc, data wshrpc.CommandCWConfigGetProjectData, opts *wshrpc.RpcOpts) (*wconfig.CWConfigType, error) {
+	resp, err := sendRpcRequestCallHelper[*wconfig.CWConfigType](w, "cwconfiggetproject", data, opts)
+	return resp, err
+}
+
+// command "cwconfigset", wshserver.CWConfigSetCommand
+func CWConfigSetCommand(w *wshutil.WshRpc, data wshrpc.CommandCWConfigSetData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "cwconfigset", data, opts)
+	return err
 }
 
 // command "deleteappfile", wshserver.DeleteAppFileCommand
@@ -797,10 +815,76 @@ func WebSelectorCommand(w *wshutil.WshRpc, data wshrpc.CommandWebSelectorData, o
 	return resp, err
 }
 
+// command "websessioncreate", wshserver.WebSessionCreateCommand
+func WebSessionCreateCommand(w *wshutil.WshRpc, data wshrpc.CommandWebSessionCreateData, opts *wshrpc.RpcOpts) (*wshrpc.WebSessionData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.WebSessionData](w, "websessioncreate", data, opts)
+	return resp, err
+}
+
+// command "websessiondelete", wshserver.WebSessionDeleteCommand
+func WebSessionDeleteCommand(w *wshutil.WshRpc, data wshrpc.CommandWebSessionDeleteData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "websessiondelete", data, opts)
+	return err
+}
+
+// command "websessionlist", wshserver.WebSessionListCommand
+func WebSessionListCommand(w *wshutil.WshRpc, data wshrpc.CommandWebSessionListData, opts *wshrpc.RpcOpts) ([]wshrpc.WebSessionData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.WebSessionData](w, "websessionlist", data, opts)
+	return resp, err
+}
+
+// command "websessionupdate", wshserver.WebSessionUpdateCommand
+func WebSessionUpdateCommand(w *wshutil.WshRpc, data wshrpc.CommandWebSessionUpdateData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "websessionupdate", data, opts)
+	return err
+}
+
 // command "workspacelist", wshserver.WorkspaceListCommand
 func WorkspaceListCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.WorkspaceInfoData, error) {
 	resp, err := sendRpcRequestCallHelper[[]wshrpc.WorkspaceInfoData](w, "workspacelist", nil, opts)
 	return resp, err
+}
+
+// command "worktreecreate", wshserver.WorktreeCreateCommand
+func WorktreeCreateCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeCreateData, opts *wshrpc.RpcOpts) (*wshrpc.WorktreeInfoData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.WorktreeInfoData](w, "worktreecreate", data, opts)
+	return resp, err
+}
+
+// command "worktreedelete", wshserver.WorktreeDeleteCommand
+func WorktreeDeleteCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeDeleteData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "worktreedelete", data, opts)
+	return err
+}
+
+// command "worktreelist", wshserver.WorktreeListCommand
+func WorktreeListCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeListData, opts *wshrpc.RpcOpts) ([]wshrpc.WorktreeInfoData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.WorktreeInfoData](w, "worktreelist", data, opts)
+	return resp, err
+}
+
+// command "worktreemerge", wshserver.WorktreeMergeCommand
+func WorktreeMergeCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeMergeData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "worktreemerge", data, opts)
+	return err
+}
+
+// command "worktreerename", wshserver.WorktreeRenameCommand
+func WorktreeRenameCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeRenameData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "worktreerename", data, opts)
+	return err
+}
+
+// command "worktreestatus", wshserver.WorktreeStatusCommand
+func WorktreeStatusCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeStatusData, opts *wshrpc.RpcOpts) (*wshrpc.WorktreeStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.WorktreeStatusData](w, "worktreestatus", data, opts)
+	return resp, err
+}
+
+// command "worktreesync", wshserver.WorktreeSyncCommand
+func WorktreeSyncCommand(w *wshutil.WshRpc, data wshrpc.CommandWorktreeSyncData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "worktreesync", data, opts)
+	return err
 }
 
 // command "writeappfile", wshserver.WriteAppFileCommand

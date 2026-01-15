@@ -15,8 +15,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/wavetermdev/waveterm/pkg/aiusechat"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/openai"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/openai"
 )
 
 func makeOpenAIRequest(ctx context.Context, apiKey, model, message string, tools bool) error {

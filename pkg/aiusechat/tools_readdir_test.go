@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/uctypes"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
 )
 
 func TestReadDirCallback(t *testing.T) {

@@ -4,6 +4,8 @@
 import { WaveAIModel } from "@/app/aipanel/waveai-model";
 import { BlockNodeModel } from "@/app/block/blocktypes";
 import { appHandleKeyDown } from "@/app/store/keymodel";
+import { modalsModel } from "@/store/modalmodel";
+import { cwWebSessionsAtom } from "@/store/cwstate";
 import type { TabModel } from "@/app/store/tab-model";
 import { waveEventSubscribe } from "@/app/store/wps";
 import { RpcApi } from "@/app/store/wshclientapi";
@@ -202,6 +204,38 @@ export class TermViewModel implements ViewModel {
                     },
                 });
             }
+
+            // Add web session menu (handoff/teleport) for basic terminals
+            if (this.isBasicTerm(get)) {
+                const webSessions = get(cwWebSessionsAtom);
+                const activeWebSessionCount = webSessions.filter(s => s.status === "active").length;
+
+                const webSessionMenuItems: MenuItem[] = [
+                    {
+                        label: "↗ Hand off to Web...",
+                        onClick: () => {
+                            modalsModel.pushModal("HandoffModal", { blockId: this.blockId });
+                        },
+                    },
+                    {
+                        label: activeWebSessionCount > 0
+                            ? `🎯 Teleport from Web (${activeWebSessionCount})`
+                            : "🎯 Teleport from Web",
+                        onClick: () => {
+                            modalsModel.pushModal("TeleportModal", { blockId: this.blockId });
+                        },
+                    },
+                ];
+
+                rtn.push({
+                    elemtype: "menubutton",
+                    text: "Web",
+                    title: "Web Session Actions",
+                    items: webSessionMenuItems,
+                    className: activeWebSessionCount > 0 ? "has-web-sessions" : "",
+                } as MenuButton);
+            }
+
             return rtn;
         });
         this.manageConnection = jotai.atom((get) => {
@@ -1058,6 +1092,29 @@ export class TermViewModel implements ViewModel {
             label: "Advanced",
             submenu: advancedSubmenu,
         });
+
+        // Web session actions (handoff/teleport)
+        if (this.isBasicTerm((atom) => globalStore.get(atom))) {
+            fullMenu.push({ type: "separator" });
+            const webSessions = globalStore.get(cwWebSessionsAtom);
+            const activeWebSessionCount = webSessions.filter(s => s.status === "active").length;
+
+            fullMenu.push({
+                label: "Hand off to Web...",
+                click: () => {
+                    modalsModel.pushModal("HandoffModal", { blockId: this.blockId });
+                },
+            });
+            fullMenu.push({
+                label: activeWebSessionCount > 0
+                    ? `Teleport from Web (${activeWebSessionCount})`
+                    : "Teleport from Web",
+                click: () => {
+                    modalsModel.pushModal("TeleportModal", { blockId: this.blockId });
+                },
+            });
+        }
+
         if (blockData?.meta?.["term:vdomtoolbarblockid"]) {
             fullMenu.push({ type: "separator" });
             fullMenu.push({

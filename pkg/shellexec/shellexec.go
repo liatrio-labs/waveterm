@@ -20,17 +20,17 @@ import (
 	"maps"
 
 	"github.com/creack/pty"
-	"github.com/wavetermdev/waveterm/pkg/blocklogger"
-	"github.com/wavetermdev/waveterm/pkg/panichandler"
-	"github.com/wavetermdev/waveterm/pkg/remote/conncontroller"
-	"github.com/wavetermdev/waveterm/pkg/util/pamparse"
-	"github.com/wavetermdev/waveterm/pkg/util/shellutil"
-	"github.com/wavetermdev/waveterm/pkg/wavebase"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc/wshclient"
-	"github.com/wavetermdev/waveterm/pkg/wshutil"
-	"github.com/wavetermdev/waveterm/pkg/wslconn"
+	"github.com/greggcoppen/claudewave/app/pkg/blocklogger"
+	"github.com/greggcoppen/claudewave/app/pkg/panichandler"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/conncontroller"
+	"github.com/greggcoppen/claudewave/app/pkg/util/pamparse"
+	"github.com/greggcoppen/claudewave/app/pkg/util/shellutil"
+	"github.com/greggcoppen/claudewave/app/pkg/wavebase"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc/wshclient"
+	"github.com/greggcoppen/claudewave/app/pkg/wshutil"
+	"github.com/greggcoppen/claudewave/app/pkg/wslconn"
 )
 
 const DefaultGracefulKillWait = 400 * time.Millisecond

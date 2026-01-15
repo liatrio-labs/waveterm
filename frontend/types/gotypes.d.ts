@@ -173,6 +173,15 @@ declare global {
         secretbindingscomplete: boolean;
     };
 
+    // wconfig.CWConfigType
+    type CWConfigType = {
+        worktreesdir: string;
+        defaultbranchprefix: string;
+        pollinterval: number;
+        notificationsenabled: boolean;
+        sandboxenabled: boolean;
+    };
+
     // waveobj.Client
     type Client = WaveObj & {
         windowids: string[];
@@ -212,6 +221,17 @@ declare global {
         inputdata64?: string;
         signame?: string;
         termsize?: TermSize;
+    };
+
+    // wshrpc.CommandCWConfigGetProjectData
+    type CommandCWConfigGetProjectData = {
+        projectpath: string;
+    };
+
+    // wshrpc.CommandCWConfigSetData
+    type CommandCWConfigSetData = {
+        key: string;
+        value: any;
     };
 
     // wshrpc.CommandCaptureBlockScreenshotData
@@ -551,6 +571,80 @@ declare global {
         tabid: string;
         selector: string;
         opts?: WebSelectorOpts;
+    };
+
+    // wshrpc.CommandWebSessionCreateData
+    type CommandWebSessionCreateData = {
+        projectpath: string;
+        description: string;
+        source: string;
+        originsession?: number;
+        originbranch?: string;
+        originworkingdir?: string;
+    };
+
+    // wshrpc.CommandWebSessionDeleteData
+    type CommandWebSessionDeleteData = {
+        projectpath: string;
+        sessionid: string;
+    };
+
+    // wshrpc.CommandWebSessionListData
+    type CommandWebSessionListData = {
+        projectpath: string;
+    };
+
+    // wshrpc.CommandWebSessionUpdateData
+    type CommandWebSessionUpdateData = {
+        projectpath: string;
+        sessionid: string;
+        status?: string;
+        description?: string;
+    };
+
+    // wshrpc.CommandWorktreeCreateData
+    type CommandWorktreeCreateData = {
+        projectpath: string;
+        sessionname: string;
+        branchname?: string;
+    };
+
+    // wshrpc.CommandWorktreeDeleteData
+    type CommandWorktreeDeleteData = {
+        projectpath: string;
+        sessionname: string;
+        force?: boolean;
+    };
+
+    // wshrpc.CommandWorktreeListData
+    type CommandWorktreeListData = {
+        projectpath: string;
+    };
+
+    // wshrpc.CommandWorktreeMergeData
+    type CommandWorktreeMergeData = {
+        projectpath: string;
+        sessionname: string;
+        squash?: boolean;
+    };
+
+    // wshrpc.CommandWorktreeRenameData
+    type CommandWorktreeRenameData = {
+        projectpath: string;
+        sessionname: string;
+        newbranchname: string;
+    };
+
+    // wshrpc.CommandWorktreeStatusData
+    type CommandWorktreeStatusData = {
+        projectpath: string;
+        sessionname: string;
+    };
+
+    // wshrpc.CommandWorktreeSyncData
+    type CommandWorktreeSyncData = {
+        projectpath: string;
+        sessionname: string;
     };
 
     // wshrpc.CommandWriteAppFileData
@@ -1163,6 +1257,12 @@ declare global {
         "tsunami:sdkreplacepath"?: string;
         "tsunami:sdkversion"?: string;
         "tsunami:gopath"?: string;
+        "cw:*"?: boolean;
+        "cw:worktreesdir"?: string;
+        "cw:defaultbranchprefix"?: string;
+        "cw:pollinterval"?: number;
+        "cw:notificationsenabled"?: boolean;
+        "cw:sandboxenabled"?: boolean;
     };
 
     // waveobj.StickerClickOptsType
@@ -1843,6 +1943,38 @@ declare global {
         inner?: boolean;
     };
 
+    // wshrpc.WebSessionData
+    type WebSessionData = {
+        id: string;
+        description: string;
+        timestamp: string;
+        source: string;
+        originsession?: number;
+        originbranch?: string;
+        originworkingdir?: string;
+        status: string;
+    };
+
+    // wshrpc.CommandProcessMetricsData
+    type CommandProcessMetricsData = {
+        pid: number;
+    };
+
+    // wshrpc.CommandProcessMetricsBatchData
+    type CommandProcessMetricsBatchData = {
+        pids: number[];
+    };
+
+    // wshrpc.ProcessMetricsData
+    type ProcessMetricsData = {
+        pid: number;
+        cpupercent: number;
+        memorymb: number;
+        memoryrss: number;
+        running: boolean;
+        name?: string;
+    };
+
     // wconfig.WidgetConfigType
     type WidgetConfigType = {
         "display:order"?: number;
@@ -1880,6 +2012,25 @@ declare global {
     type WorkspaceListEntry = {
         workspaceid: string;
         windowid: string;
+    };
+
+    // wshrpc.WorktreeInfoData
+    type WorktreeInfoData = {
+        path: string;
+        branchname: string;
+        isclean: boolean;
+        commithash: string;
+        sessionid?: string;
+    };
+
+    // wshrpc.WorktreeStatusData
+    type WorktreeStatusData = {
+        branchname: string;
+        uncommittedfiles: string[];
+        stagedfiles: string[];
+        ahead: number;
+        behind: number;
+        isclean: boolean;
     };
 
     // wshrpc.WshServerCommandMeta

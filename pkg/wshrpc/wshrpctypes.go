@@ -9,12 +9,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/uctypes"
-	"github.com/wavetermdev/waveterm/pkg/telemetry/telemetrydata"
-	"github.com/wavetermdev/waveterm/pkg/vdom"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
-	"github.com/wavetermdev/waveterm/pkg/wconfig"
-	"github.com/wavetermdev/waveterm/pkg/wps"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
+	"github.com/greggcoppen/claudewave/app/pkg/telemetry/telemetrydata"
+	"github.com/greggcoppen/claudewave/app/pkg/vdom"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/wconfig"
+	"github.com/greggcoppen/claudewave/app/pkg/wps"
 )
 
 type RespOrErrorUnion[T any] struct {
@@ -63,6 +63,31 @@ type WshRpcInterface interface {
 	SetConnectionsConfigCommand(ctx context.Context, data ConnConfigRequest) error
 	GetFullConfigCommand(ctx context.Context) (wconfig.FullConfigType, error)
 	GetWaveAIModeConfigCommand(ctx context.Context) (wconfig.AIModeConfigUpdate, error)
+
+	// Liatrio Code config commands
+	CWConfigGetCommand(ctx context.Context) (*wconfig.CWConfigType, error)
+	CWConfigSetCommand(ctx context.Context, data CommandCWConfigSetData) error
+	CWConfigGetProjectCommand(ctx context.Context, data CommandCWConfigGetProjectData) (*wconfig.CWConfigType, error)
+
+	// Liatrio Code worktree commands
+	WorktreeCreateCommand(ctx context.Context, data CommandWorktreeCreateData) (*WorktreeInfoData, error)
+	WorktreeDeleteCommand(ctx context.Context, data CommandWorktreeDeleteData) error
+	WorktreeListCommand(ctx context.Context, data CommandWorktreeListData) ([]WorktreeInfoData, error)
+	WorktreeSyncCommand(ctx context.Context, data CommandWorktreeSyncData) error
+	WorktreeMergeCommand(ctx context.Context, data CommandWorktreeMergeData) error
+	WorktreeRenameCommand(ctx context.Context, data CommandWorktreeRenameData) error
+	WorktreeStatusCommand(ctx context.Context, data CommandWorktreeStatusData) (*WorktreeStatusData, error)
+
+	// Liatrio Code web session commands
+	WebSessionListCommand(ctx context.Context, data CommandWebSessionListData) ([]WebSessionData, error)
+	WebSessionCreateCommand(ctx context.Context, data CommandWebSessionCreateData) (*WebSessionData, error)
+	WebSessionUpdateCommand(ctx context.Context, data CommandWebSessionUpdateData) error
+	WebSessionDeleteCommand(ctx context.Context, data CommandWebSessionDeleteData) error
+
+	// Liatrio Code process monitoring commands
+	ProcessMetricsCommand(ctx context.Context, data CommandProcessMetricsData) (*ProcessMetricsData, error)
+	ProcessMetricsBatchCommand(ctx context.Context, data CommandProcessMetricsBatchData) (map[int32]*ProcessMetricsData, error)
+
 	BlockInfoCommand(ctx context.Context, blockId string) (*BlockInfoData, error)
 	BlocksListCommand(ctx context.Context, data BlocksListRequest) ([]BlocksListEntry, error)
 	WaveInfoCommand(ctx context.Context) (*WaveInfoData, error)
@@ -655,4 +680,125 @@ type StreamMeta struct {
 	RWnd          int64  `json:"rwnd"` // initial receive window size
 	ReaderRouteId string `json:"readerrouteid"`
 	WriterRouteId string `json:"writerrouteid"`
+}
+
+// Liatrio Code config command types
+type CommandCWConfigSetData struct {
+	Key   string      `json:"key"`
+	Value interface{} `json:"value"`
+}
+
+type CommandCWConfigGetProjectData struct {
+	ProjectPath string `json:"projectpath"`
+}
+
+// Liatrio Code worktree command types
+type CommandWorktreeCreateData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionName string `json:"sessionname"`
+	BranchName  string `json:"branchname,omitempty"`
+}
+
+type CommandWorktreeDeleteData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionName string `json:"sessionname"`
+	Force       bool   `json:"force,omitempty"`
+}
+
+type CommandWorktreeListData struct {
+	ProjectPath string `json:"projectpath"`
+}
+
+type CommandWorktreeSyncData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionName string `json:"sessionname"`
+}
+
+type CommandWorktreeMergeData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionName string `json:"sessionname"`
+	Squash      bool   `json:"squash,omitempty"`
+}
+
+type CommandWorktreeRenameData struct {
+	ProjectPath   string `json:"projectpath"`
+	SessionName   string `json:"sessionname"`
+	NewBranchName string `json:"newbranchname"`
+}
+
+type CommandWorktreeStatusData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionName string `json:"sessionname"`
+}
+
+type WorktreeInfoData struct {
+	Path       string `json:"path"`
+	BranchName string `json:"branchname"`
+	IsClean    bool   `json:"isclean"`
+	CommitHash string `json:"commithash"`
+	SessionID  string `json:"sessionid,omitempty"`
+}
+
+type WorktreeStatusData struct {
+	BranchName       string   `json:"branchname"`
+	UncommittedFiles []string `json:"uncommittedfiles"`
+	StagedFiles      []string `json:"stagedfiles"`
+	Ahead            int      `json:"ahead"`
+	Behind           int      `json:"behind"`
+	IsClean          bool     `json:"isclean"`
+}
+
+// Liatrio Code web session command types
+type CommandWebSessionListData struct {
+	ProjectPath string `json:"projectpath"`
+}
+
+type CommandWebSessionCreateData struct {
+	ProjectPath       string `json:"projectpath"`
+	Description       string `json:"description"`
+	Source            string `json:"source"` // "handoff" or "manual"
+	OriginSession     int    `json:"originsession,omitempty"`
+	OriginBranch      string `json:"originbranch,omitempty"`
+	OriginWorkingDir  string `json:"originworkingdir,omitempty"`
+}
+
+type CommandWebSessionUpdateData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionID   string `json:"sessionid"`
+	Status      string `json:"status,omitempty"` // "active", "completed", "unknown"
+	Description string `json:"description,omitempty"`
+}
+
+type CommandWebSessionDeleteData struct {
+	ProjectPath string `json:"projectpath"`
+	SessionID   string `json:"sessionid"`
+}
+
+type WebSessionData struct {
+	ID               string `json:"id"`
+	Description      string `json:"description"`
+	Timestamp        string `json:"timestamp"`
+	Source           string `json:"source"` // "handoff" or "manual"
+	OriginSession    int    `json:"originsession,omitempty"`
+	OriginBranch     string `json:"originbranch,omitempty"`
+	OriginWorkingDir string `json:"originworkingdir,omitempty"`
+	Status           string `json:"status"` // "active", "completed", "unknown"
+}
+
+// Liatrio Code process monitoring types
+type CommandProcessMetricsData struct {
+	PID int32 `json:"pid"`
+}
+
+type CommandProcessMetricsBatchData struct {
+	PIDs []int32 `json:"pids"`
+}
+
+type ProcessMetricsData struct {
+	PID        int32   `json:"pid"`
+	CPUPercent float64 `json:"cpupercent"`
+	MemoryMB   float64 `json:"memorymb"`
+	MemoryRSS  uint64  `json:"memoryrss"`
+	Running    bool    `json:"running"`
+	Name       string  `json:"name,omitempty"`
 }

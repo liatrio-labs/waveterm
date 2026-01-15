@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/wavetermdev/waveterm/pkg/remote/awsconn"
-	"github.com/wavetermdev/waveterm/pkg/remote/connparse"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare/fstype"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare/s3fs"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare/wavefs"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare/wshfs"
-	"github.com/wavetermdev/waveterm/pkg/util/iochan/iochantypes"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
-	"github.com/wavetermdev/waveterm/pkg/wshutil"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/awsconn"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/connparse"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare/fstype"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare/s3fs"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare/wavefs"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare/wshfs"
+	"github.com/greggcoppen/claudewave/app/pkg/util/iochan/iochantypes"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/wshutil"
 )
 
 const (

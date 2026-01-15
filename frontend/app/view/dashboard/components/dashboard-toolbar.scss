@@ -1,0 +1,308 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+// ============================================================================
+// Dashboard Toolbar
+// ============================================================================
+
+.dashboard-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+// ============================================================================
+// Filter Section
+// ============================================================================
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: var(--highlight-bg-color);
+        border-color: var(--accent-color);
+    }
+
+    &.active {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+
+        .count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+    }
+
+    &.working.active {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+
+    &.idle.active {
+        background: #22c55e;
+        border-color: #22c55e;
+    }
+
+    &.waiting.active {
+        background: #f59e0b;
+        border-color: #f59e0b;
+    }
+
+    &.error.active {
+        background: #ef4444;
+        border-color: #ef4444;
+    }
+
+    .count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        background: var(--highlight-bg-color);
+        border-radius: 9px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+}
+
+// ============================================================================
+// Toolbar Right Section
+// ============================================================================
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--form-element-bg-color);
+    border: 1px solid var(--form-element-border-color);
+    border-radius: 6px;
+    min-width: 200px;
+
+    &:focus-within {
+        border-color: var(--accent-color);
+    }
+
+    i.fa-search {
+        color: var(--secondary-text-color);
+        font-size: 12px;
+    }
+
+    input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--main-text-color);
+        font-size: 13px;
+
+        &:focus {
+            outline: none;
+        }
+
+        &::placeholder {
+            color: var(--secondary-text-color);
+        }
+    }
+
+    .clear-search {
+        background: none;
+        border: none;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        padding: 2px;
+
+        &:hover {
+            color: var(--main-text-color);
+        }
+    }
+}
+
+// ============================================================================
+// Column Visibility Dropdown
+// ============================================================================
+
+.column-dropdown {
+    position: relative;
+
+    .dropdown-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover, &.active {
+            background: var(--highlight-bg-color);
+            border-color: var(--accent-color);
+            color: var(--main-text-color);
+        }
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 4px;
+        min-width: 180px;
+        background: var(--block-bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+        overflow: hidden;
+
+        .dropdown-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--highlight-bg-color);
+            border-bottom: 1px solid var(--border-color);
+
+            span {
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--main-text-color);
+            }
+
+            .reset-btn {
+                background: transparent;
+                border: none;
+                color: var(--accent-color);
+                font-size: 11px;
+                cursor: pointer;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        .dropdown-items {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+
+            &:hover {
+                background: var(--highlight-bg-color);
+            }
+
+            input[type="checkbox"] {
+                width: 14px;
+                height: 14px;
+                cursor: pointer;
+            }
+
+            span {
+                font-size: 13px;
+                color: var(--main-text-color);
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Sortable Headers
+// ============================================================================
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        background: var(--highlight-bg-color);
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .sort-icon {
+        font-size: 10px;
+        color: var(--accent-color);
+    }
+
+    &.sort-active {
+        color: var(--accent-color);
+    }
+}
+
+// ============================================================================
+// Responsive
+// ============================================================================
+
+@media (max-width: 800px) {
+    .dashboard-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .filter-buttons {
+        overflow-x: auto;
+        padding-bottom: 4px;
+
+        &::-webkit-scrollbar {
+            height: 4px;
+        }
+    }
+
+    .toolbar-right {
+        flex-direction: row;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: unset;
+    }
+}

@@ -1,16 +1,16 @@
 {
-    "name": "waveterm",
+    "name": "liatrio-code",
     "author": {
-        "name": "Command Line Inc",
-        "email": "info@commandline.dev"
+        "name": "Liatrio",
+        "email": "code@liatrio.com"
     },
-    "productName": "Wave",
-    "description": "Open-Source AI-Native Terminal Built for Seamless Workflows",
+    "productName": "Liatrio Code",
+    "description": "AI-Native Development Environment for Parallel Claude Code Sessions",
     "license": "Apache-2.0",
-    "version": "0.13.2-alpha.0",
-    "homepage": "https://waveterm.dev",
+    "version": "0.1.0-alpha.0",
+    "homepage": "https://github.com/liatrio/liatrio-code",
     "build": {
-        "appId": "dev.commandline.waveterm"
+        "appId": "com.liatrio.code"
     },
     "private": true,
     "main": "./dist/main/index.js",

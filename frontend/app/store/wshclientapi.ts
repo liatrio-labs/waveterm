@@ -122,6 +122,21 @@ class RpcApiType {
         return client.wshRpcCall("createsubblock", data, opts);
     }
 
+    // command "cwconfigget" [call]
+    CWConfigGetCommand(client: WshClient, opts?: RpcOpts): Promise<CWConfigType> {
+        return client.wshRpcCall("cwconfigget", null, opts);
+    }
+
+    // command "cwconfiggetproject" [call]
+    CWConfigGetProjectCommand(client: WshClient, data: CommandCWConfigGetProjectData, opts?: RpcOpts): Promise<CWConfigType> {
+        return client.wshRpcCall("cwconfiggetproject", data, opts);
+    }
+
+    // command "cwconfigset" [call]
+    CWConfigSetCommand(client: WshClient, data: CommandCWConfigSetData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("cwconfigset", data, opts);
+    }
+
     // command "deleteappfile" [call]
     DeleteAppFileCommand(client: WshClient, data: CommandDeleteAppFileData, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("deleteappfile", data, opts);
@@ -667,9 +682,74 @@ class RpcApiType {
         return client.wshRpcCall("webselector", data, opts);
     }
 
+    // command "websessioncreate" [call]
+    WebSessionCreateCommand(client: WshClient, data: CommandWebSessionCreateData, opts?: RpcOpts): Promise<WebSessionData> {
+        return client.wshRpcCall("websessioncreate", data, opts);
+    }
+
+    // command "websessiondelete" [call]
+    WebSessionDeleteCommand(client: WshClient, data: CommandWebSessionDeleteData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("websessiondelete", data, opts);
+    }
+
+    // command "websessionlist" [call]
+    WebSessionListCommand(client: WshClient, data: CommandWebSessionListData, opts?: RpcOpts): Promise<WebSessionData[]> {
+        return client.wshRpcCall("websessionlist", data, opts);
+    }
+
+    // command "websessionupdate" [call]
+    WebSessionUpdateCommand(client: WshClient, data: CommandWebSessionUpdateData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("websessionupdate", data, opts);
+    }
+
+    // command "processmetrics" [call]
+    ProcessMetricsCommand(client: WshClient, data: CommandProcessMetricsData, opts?: RpcOpts): Promise<ProcessMetricsData> {
+        return client.wshRpcCall("processmetrics", data, opts);
+    }
+
+    // command "processmetricsbatch" [call]
+    ProcessMetricsBatchCommand(client: WshClient, data: CommandProcessMetricsBatchData, opts?: RpcOpts): Promise<Record<number, ProcessMetricsData>> {
+        return client.wshRpcCall("processmetricsbatch", data, opts);
+    }
+
     // command "workspacelist" [call]
     WorkspaceListCommand(client: WshClient, opts?: RpcOpts): Promise<WorkspaceInfoData[]> {
         return client.wshRpcCall("workspacelist", null, opts);
+    }
+
+    // command "worktreecreate" [call]
+    WorktreeCreateCommand(client: WshClient, data: CommandWorktreeCreateData, opts?: RpcOpts): Promise<WorktreeInfoData> {
+        return client.wshRpcCall("worktreecreate", data, opts);
+    }
+
+    // command "worktreedelete" [call]
+    WorktreeDeleteCommand(client: WshClient, data: CommandWorktreeDeleteData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("worktreedelete", data, opts);
+    }
+
+    // command "worktreelist" [call]
+    WorktreeListCommand(client: WshClient, data: CommandWorktreeListData, opts?: RpcOpts): Promise<WorktreeInfoData[]> {
+        return client.wshRpcCall("worktreelist", data, opts);
+    }
+
+    // command "worktreemerge" [call]
+    WorktreeMergeCommand(client: WshClient, data: CommandWorktreeMergeData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("worktreemerge", data, opts);
+    }
+
+    // command "worktreerename" [call]
+    WorktreeRenameCommand(client: WshClient, data: CommandWorktreeRenameData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("worktreerename", data, opts);
+    }
+
+    // command "worktreestatus" [call]
+    WorktreeStatusCommand(client: WshClient, data: CommandWorktreeStatusData, opts?: RpcOpts): Promise<WorktreeStatusData> {
+        return client.wshRpcCall("worktreestatus", data, opts);
+    }
+
+    // command "worktreesync" [call]
+    WorktreeSyncCommand(client: WshClient, data: CommandWorktreeSyncData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("worktreesync", data, opts);
     }
 
     // command "writeappfile" [call]

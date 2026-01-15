@@ -15,10 +15,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/wavetermdev/waveterm/pkg/util/utilfn"
-	"github.com/wavetermdev/waveterm/pkg/wavebase"
-	"github.com/wavetermdev/waveterm/pkg/waveobj"
-	"github.com/wavetermdev/waveterm/pkg/wconfig/defaultconfig"
+	"github.com/greggcoppen/claudewave/app/pkg/util/utilfn"
+	"github.com/greggcoppen/claudewave/app/pkg/wavebase"
+	"github.com/greggcoppen/claudewave/app/pkg/waveobj"
+	"github.com/greggcoppen/claudewave/app/pkg/wconfig/defaultconfig"
 )
 
 const SettingsFile = "settings.json"
@@ -162,6 +162,14 @@ type SettingsType struct {
 	TsunamiSdkReplacePath string `json:"tsunami:sdkreplacepath,omitempty"`
 	TsunamiSdkVersion     string `json:"tsunami:sdkversion,omitempty"`
 	TsunamiGoPath         string `json:"tsunami:gopath,omitempty"`
+
+	// Liatrio Code settings
+	CWClear               bool    `json:"cw:*,omitempty"`
+	CWWorktreesDir        string  `json:"cw:worktreesdir,omitempty"`
+	CWDefaultBranchPrefix string  `json:"cw:defaultbranchprefix,omitempty"`
+	CWPollInterval        float64 `json:"cw:pollinterval,omitempty"`
+	CWNotificationsEnabled *bool  `json:"cw:notificationsenabled,omitempty"`
+	CWSandboxEnabled      *bool   `json:"cw:sandboxenabled,omitempty"`
 }
 
 func (s *SettingsType) GetAiSettings() *AiSettingsType {

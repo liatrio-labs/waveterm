@@ -50,5 +50,43 @@
                 "view": "sysinfo"
             }
         }
+    },
+    "defwidget@cwsessions": {
+        "display:order": 0,
+        "icon": "code-branch",
+        "label": "sessions",
+        "description": "Liatrio Code parallel sessions",
+        "color": "#22c55e",
+        "blockdef": {
+            "meta": {
+                "view": "cwsessions"
+            }
+        }
+    },
+    "defwidget@dashboard": {
+        "display:order": 0.5,
+        "icon": "chart-line",
+        "label": "dashboard",
+        "description": "Session monitoring dashboard with activity log and git graph",
+        "color": "#3b82f6",
+        "blockdef": {
+            "meta": {
+                "view": "dashboard"
+            }
+        }
+    },
+    "defwidget@liatrio-dashboard": {
+        "display:order": 1,
+        "icon": "layer-group",
+        "label": "agentic",
+        "description": "Liatrio Agentic Team Dashboard",
+        "color": "#24AE1D",
+        "blockdef": {
+            "meta": {
+                "view": "web",
+                "url": "https://agenticteam.dev/dashboard",
+                "pinnedurl": "https://agenticteam.dev/dashboard"
+            }
+        }
     }
 }

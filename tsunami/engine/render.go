@@ -9,9 +9,9 @@ import (
 	"unicode"
 
 	"github.com/google/uuid"
-	"github.com/wavetermdev/waveterm/tsunami/rpctypes"
-	"github.com/wavetermdev/waveterm/tsunami/util"
-	"github.com/wavetermdev/waveterm/tsunami/vdom"
+	"github.com/greggcoppen/claudewave/app/tsunami/rpctypes"
+	"github.com/greggcoppen/claudewave/app/tsunami/util"
+	"github.com/greggcoppen/claudewave/app/tsunami/vdom"
 )
 
 // see render.md for a complete guide to how tsunami rendering, lifecycle, and reconciliation works

@@ -649,6 +649,24 @@ function registerGlobalKeys() {
         WorkspaceLayoutModel.getInstance().setAIPanelVisible(!currentVisible);
         return true;
     });
+    globalKeyMap.set("Cmd:Shift:h", () => {
+        // Open handoff modal for web session handoff
+        const blockId = getFocusedBlockInStaticTab();
+        modalsModel.pushModal("HandoffModal", { blockId });
+        return true;
+    });
+    globalKeyMap.set("Cmd:Shift:t", () => {
+        // Open teleport modal for web session teleport
+        const blockId = getFocusedBlockInStaticTab();
+        modalsModel.pushModal("TeleportModal", { blockId });
+        return true;
+    });
+    globalKeyMap.set("Cmd:Shift:d", () => {
+        // Toggle dashboard panel visibility
+        const { toggleDashboardPanel } = require("@/app/store/dashboardstate");
+        toggleDashboardPanel();
+        return true;
+    });
     const allKeys = Array.from(globalKeyMap.keys());
     // special case keys, handled by web view
     allKeys.push("Cmd:l", "Cmd:r", "Cmd:ArrowRight", "Cmd:ArrowLeft", "Cmd:o");

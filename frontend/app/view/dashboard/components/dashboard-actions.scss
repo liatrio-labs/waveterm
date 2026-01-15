@@ -1,0 +1,255 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+// ============================================================================
+// Session Row Actions
+// ============================================================================
+
+.session-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+
+    .session-row:hover & {
+        opacity: 1;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+            background: var(--highlight-bg-color);
+            color: var(--main-text-color);
+        }
+
+        &.menu-btn {
+            width: auto;
+            padding: 0 8px;
+            gap: 4px;
+
+            .fa-chevron-down {
+                font-size: 8px;
+            }
+
+            &.active {
+                background: var(--accent-color);
+                color: white;
+            }
+        }
+
+        i {
+            font-size: 12px;
+        }
+    }
+}
+
+// ============================================================================
+// Action Menu
+// ============================================================================
+
+.action-menu-container {
+    position: relative;
+}
+
+.action-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    min-width: 160px;
+    background: var(--block-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    overflow: hidden;
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 14px;
+        background: transparent;
+        border: none;
+        color: var(--main-text-color);
+        font-size: 13px;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: var(--highlight-bg-color);
+        }
+
+        &.danger {
+            color: #ef4444;
+
+            &:hover {
+                background: rgba(239, 68, 68, 0.1);
+            }
+        }
+
+        i {
+            width: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--secondary-text-color);
+        }
+
+        &.danger i {
+            color: #ef4444;
+        }
+    }
+
+    .menu-divider {
+        height: 1px;
+        background: var(--border-color);
+        margin: 4px 0;
+    }
+}
+
+// ============================================================================
+// Bulk Action Bar
+// ============================================================================
+
+.bulk-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--highlight-bg-color);
+    border-radius: 8px;
+    margin-top: auto;
+    flex-shrink: 0;
+
+    .selection-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .selected-count {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--accent-color);
+    }
+
+    .progress-info {
+        font-size: 12px;
+        color: var(--secondary-text-color);
+    }
+
+    .bulk-actions {
+        display: flex;
+        gap: 8px;
+
+        .button.danger {
+            color: #ef4444;
+
+            &:hover {
+                background: rgba(239, 68, 68, 0.1);
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Action Progress
+// ============================================================================
+
+.action-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--highlight-bg-color);
+    border-radius: 8px;
+
+    .progress-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        i {
+            color: var(--accent-color);
+        }
+
+        .progress-message {
+            flex: 1;
+            font-size: 13px;
+            color: var(--main-text-color);
+        }
+
+        .progress-percent {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent-color);
+        }
+    }
+
+    .cancel-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        align-self: flex-start;
+
+        &:hover {
+            background: var(--hover-bg-color);
+            color: var(--main-text-color);
+        }
+    }
+
+    .progress-bar {
+        height: 4px;
+        background: var(--border-color);
+        border-radius: 2px;
+        overflow: hidden;
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-color);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+    }
+}
+
+// ============================================================================
+// Responsive
+// ============================================================================
+
+@media (max-width: 600px) {
+    .bulk-action-bar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+
+        .bulk-actions {
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+    }
+}

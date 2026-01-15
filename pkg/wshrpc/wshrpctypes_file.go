@@ -8,8 +8,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/wavetermdev/waveterm/pkg/ijson"
-	"github.com/wavetermdev/waveterm/pkg/util/iochan/iochantypes"
+	"github.com/greggcoppen/claudewave/app/pkg/ijson"
+	"github.com/greggcoppen/claudewave/app/pkg/util/iochan/iochantypes"
 )
 
 type WshRpcFileInterface interface {

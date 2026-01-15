@@ -362,6 +362,11 @@ export function initIpcHandlers() {
         }
     });
 
+    electron.ipcMain.handle("show-open-dialog", async (event, options: Electron.OpenDialogOptions) => {
+        const result = await electron.dialog.showOpenDialog(options);
+        return result;
+    });
+
     electron.ipcMain.on("open-native-path", (event, filePath: string) => {
         console.log("open-native-path", filePath);
         filePath = filePath.replace("~", electronApp.getPath("home"));

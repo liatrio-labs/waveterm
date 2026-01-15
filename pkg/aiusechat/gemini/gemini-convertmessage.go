@@ -12,10 +12,10 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/aiutil"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/chatstore"
-	"github.com/wavetermdev/waveterm/pkg/aiusechat/uctypes"
-	"github.com/wavetermdev/waveterm/pkg/util/utilfn"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/aiutil"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/chatstore"
+	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
+	"github.com/greggcoppen/claudewave/app/pkg/util/utilfn"
 )
 
 // cleanSchemaForGemini removes fields from JSON Schema that Gemini doesn't accept

@@ -3,10 +3,10 @@ package wavefileutil
 import (
 	"fmt"
 
-	"github.com/wavetermdev/waveterm/pkg/filestore"
-	"github.com/wavetermdev/waveterm/pkg/remote/fileshare/fsutil"
-	"github.com/wavetermdev/waveterm/pkg/util/fileutil"
-	"github.com/wavetermdev/waveterm/pkg/wshrpc"
+	"github.com/greggcoppen/claudewave/app/pkg/filestore"
+	"github.com/greggcoppen/claudewave/app/pkg/remote/fileshare/fsutil"
+	"github.com/greggcoppen/claudewave/app/pkg/util/fileutil"
+	"github.com/greggcoppen/claudewave/app/pkg/wshrpc"
 )
 
 const (
