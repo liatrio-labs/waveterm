@@ -1,6 +1,7 @@
 // Copyright 2025, Command Line Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { AddSessionWizard } from "@/app/modals/addsessionwizard";
 import { MessageModal } from "@/app/modals/messagemodal";
 import { HandoffModal } from "@/app/modals/handoffmodal";
 import { TeleportModal } from "@/app/modals/teleportmodal";
@@ -21,6 +22,7 @@ const modalRegistry: { [key: string]: React.ComponentType<any> } = {
     [HandoffModal.displayName || "HandoffModal"]: HandoffModal,
     [TeleportModal.displayName || "TeleportModal"]: TeleportModal,
     [NewWorkstationModal.displayName || "NewWorkstationModal"]: NewWorkstationModal,
+    [AddSessionWizard.displayName || "AddSessionWizard"]: AddSessionWizard,
     [PublishAppModal.displayName || "PublishAppModal"]: PublishAppModal,
     [RenameFileModal.displayName || "RenameFileModal"]: RenameFileModal,
     [DeleteFileModal.displayName || "DeleteFileModal"]: DeleteFileModal,
