@@ -21,6 +21,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
     const [projectPath, setProjectPath] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [selectedTemplate, setSelectedTemplate] = useState<CWLayoutTemplate>(DEFAULT_TEMPLATE);
+    const [autoStartClaude, setAutoStartClaude] = useState(true);
 
     const handleSelectFolder = useCallback(async () => {
         try {
@@ -89,6 +90,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
                         view: "cwsessions",
                         "cw:projectpath": projectPath,
                         "cw:layouttemplate": selectedTemplate.id,
+                        "cw:autostartclaude": autoStartClaude,
                     },
                 },
             });
@@ -98,7 +100,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
         } finally {
             setIsCreating(false);
         }
-    }, [projectPath, sessionCount, selectedTemplate]);
+    }, [projectPath, sessionCount, selectedTemplate, autoStartClaude]);
 
     const handleClose = useCallback(() => {
         modalsModel.popModal();
@@ -147,6 +149,23 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
                             selectedTemplateId={selectedTemplate.id}
                             onSelectTemplate={setSelectedTemplate}
                         />
+                    </div>
+
+                    <div className="form-group checkbox-group">
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={autoStartClaude}
+                                onChange={(e) => setAutoStartClaude(e.target.checked)}
+                            />
+                            <span className="checkbox-text">
+                                <i className="fa fa-robot" />
+                                Auto-start Claude Code in new sessions
+                            </span>
+                        </label>
+                        <p className="checkbox-description">
+                            Automatically run Claude Code when opening a session terminal
+                        </p>
                     </div>
 
                     {error && <div className="error-message">{error}</div>}

@@ -122,5 +122,6 @@ const (
 	ConfigKey_CWPollInterval                 = "cw:pollinterval"
 	ConfigKey_CWNotificationsEnabled         = "cw:notificationsenabled"
 	ConfigKey_CWSandboxEnabled               = "cw:sandboxenabled"
+	ConfigKey_CWAutoStartClaude              = "cw:autostartclaude"
 )
 

@@ -290,22 +290,32 @@ function flattenLayoutNode(
 }
 
 /**
+ * Options for applying a layout template
+ */
+export interface ApplyLayoutTemplateOptions {
+    template: CWLayoutTemplate;
+    tabId: string;
+    worktreePath?: string;
+    autoStartClaude?: boolean;
+    createBlockFn?: (data: CommandCreateBlockData) => Promise<ORef>;
+}
+
+/**
  * Apply a layout template to create blocks in a tab
  *
- * @param template - The layout template to apply
- * @param tabId - The tab ID to create blocks in
- * @param worktreePath - Optional worktree path for terminal cwd and file browser
- * @param createBlockFn - Function to create a block (abstracted for testing)
+ * @param options - Configuration options for applying the template
  * @returns Promise resolving to array of created block IDs
  */
 export async function applyLayoutTemplate(
     template: CWLayoutTemplate,
     tabId: string,
     worktreePath?: string,
-    createBlockFn?: (data: CommandCreateBlockData) => Promise<ORef>
+    createBlockFn?: (data: CommandCreateBlockData) => Promise<ORef>,
+    autoStartClaude?: boolean
 ): Promise<string[]> {
     const instructions = flattenLayoutNode(template.layout, worktreePath);
     const createdBlockIds: string[] = [];
+    let firstTermBlockId: string | null = null;
 
     for (let i = 0; i < instructions.length; i++) {
         const instruction = instructions[i];
@@ -324,19 +334,47 @@ export async function applyLayoutTemplate(
         }
 
         try {
+            let blockId: string;
             if (createBlockFn) {
                 const oref = await createBlockFn(createData);
-                createdBlockIds.push(oref.oid);
+                blockId = oref.oid;
             } else {
                 // Dynamic import to avoid circular dependencies
                 const { RpcApi } = await import("@/app/store/wshclientapi");
                 const { TabRpcClient } = await import("@/app/store/wshrpcutil");
                 const oref = await RpcApi.CreateBlockCommand(TabRpcClient, createData);
-                createdBlockIds.push(oref.oid);
+                blockId = oref.oid;
+            }
+            createdBlockIds.push(blockId);
+
+            // Track the first terminal block for auto-start
+            if (!firstTermBlockId && instruction.blockDef.meta?.view === "term") {
+                firstTermBlockId = blockId;
             }
         } catch (err) {
             console.error(`[applyLayoutTemplate] Failed to create block ${i}:`, err);
             throw err;
+        }
+    }
+
+    // Auto-start Claude Code if enabled and we have a terminal block
+    if (autoStartClaude && firstTermBlockId) {
+        try {
+            const { RpcApi } = await import("@/app/store/wshclientapi");
+            const { TabRpcClient } = await import("@/app/store/wshrpcutil");
+
+            // Small delay to ensure terminal is initialized
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Send "claude" command to the terminal
+            await RpcApi.ControllerInputCommand(TabRpcClient, {
+                blockid: firstTermBlockId,
+                inputdata64: btoa("claude\n"),
+            });
+            console.log("[applyLayoutTemplate] Auto-started Claude Code in block:", firstTermBlockId);
+        } catch (err) {
+            console.error("[applyLayoutTemplate] Failed to auto-start Claude Code:", err);
+            // Don't throw - auto-start failure shouldn't prevent the layout from being applied
         }
     }
 

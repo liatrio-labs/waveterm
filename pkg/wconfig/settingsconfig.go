@@ -170,6 +170,7 @@ type SettingsType struct {
 	CWPollInterval        float64 `json:"cw:pollinterval,omitempty"`
 	CWNotificationsEnabled *bool  `json:"cw:notificationsenabled,omitempty"`
 	CWSandboxEnabled      *bool   `json:"cw:sandboxenabled,omitempty"`
+	CWAutoStartClaude     *bool   `json:"cw:autostartclaude,omitempty"`
 }
 
 func (s *SettingsType) GetAiSettings() *AiSettingsType {

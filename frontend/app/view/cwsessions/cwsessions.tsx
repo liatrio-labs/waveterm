@@ -500,17 +500,24 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
         try {
             console.log("[CwSessions] Opening terminal for:", session.worktreePath);
 
-            // Get the layout template from block metadata
+            // Get the layout template and auto-start setting from block metadata
             const blockMeta = globalStore.get(model.blockAtom)?.meta;
             const templateId = blockMeta?.["cw:layouttemplate"] as string | undefined;
+            const autoStartClaude = blockMeta?.["cw:autostartclaude"] as boolean | undefined;
             const template = templateId ? getTemplateById(templateId) : DEFAULT_TEMPLATE;
 
             if (template) {
-                // Apply the full layout template
-                await applyLayoutTemplate(template, model.tabModel.tabId, session.worktreePath);
+                // Apply the full layout template with auto-start
+                await applyLayoutTemplate(
+                    template,
+                    model.tabModel.tabId,
+                    session.worktreePath,
+                    undefined,
+                    autoStartClaude ?? true // Default to true if not set
+                );
             } else {
                 // Fallback to single terminal block
-                await RpcApi.CreateBlockCommand(TabRpcClient, {
+                const oref = await RpcApi.CreateBlockCommand(TabRpcClient, {
                     tabid: model.tabModel.tabId,
                     blockdef: {
                         meta: {
@@ -521,6 +528,15 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                     },
                     magnified: false,
                 });
+
+                // Auto-start Claude Code if enabled
+                if (autoStartClaude ?? true) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await RpcApi.ControllerInputCommand(TabRpcClient, {
+                        blockid: oref.oid,
+                        inputdata64: btoa("claude\n"),
+                    });
+                }
             }
         } catch (err) {
             console.error("[CwSessions] Failed to open terminal:", err);
