@@ -14,6 +14,7 @@ import { createRef, memo, useCallback, useEffect, useRef, useState } from "react
 import { debounce } from "throttle-debounce";
 import { IconButton } from "../element/iconbutton";
 import { WorkspaceService } from "../store/services";
+import { SessionTab } from "./sessiontab";
 import { Tab } from "./tab";
 import "./tabbar.scss";
 import { UpdateStatusBanner } from "./updatebanner";
@@ -662,7 +663,7 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
                 <div className="tabs-wrapper" ref={tabsWrapperRef} style={{ width: `${tabsWrapperWidth}px` }}>
                     {tabIds.map((tabId, index) => {
                         return (
-                            <Tab
+                            <SessionTab
                                 key={tabId}
                                 ref={tabRefs.current[index]}
                                 id={tabId}
