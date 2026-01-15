@@ -1,0 +1,117 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+// Quick Settings Panel Styles
+
+.quick-settings-container {
+    position: relative;
+}
+
+.quick-settings-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    width: 280px;
+    background: var(--panel-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.quick-settings-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+
+    h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+}
+
+.quick-settings-close {
+    padding: 4px 8px;
+    border: none;
+    background: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--highlight-bg-color);
+        color: var(--main-text-color);
+    }
+}
+
+.quick-settings-list {
+    padding: 8px;
+}
+
+.quick-setting-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--main-text-color);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    i {
+        width: 18px;
+        text-align: center;
+        opacity: 0.7;
+    }
+
+    span:first-of-type {
+        flex: 1;
+    }
+
+    &:hover {
+        background: var(--highlight-bg-color);
+    }
+
+    &.active {
+        i {
+            color: var(--accent-color, #E57B3A);
+            opacity: 1;
+        }
+    }
+}
+
+.quick-setting-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--secondary-text-color);
+    color: var(--panel-bg-color);
+    font-weight: 500;
+
+    &.on {
+        background: var(--accent-color, #E57B3A);
+        color: white;
+    }
+}
+
+.quick-settings-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+}

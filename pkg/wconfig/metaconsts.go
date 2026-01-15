@@ -123,5 +123,17 @@ const (
 	ConfigKey_CWNotificationsEnabled         = "cw:notificationsenabled"
 	ConfigKey_CWSandboxEnabled               = "cw:sandboxenabled"
 	ConfigKey_CWAutoStartClaude              = "cw:autostartclaude"
+	ConfigKey_CWDefaultSessionCount          = "cw:defaultsessioncount"
+	ConfigKey_CWSandboxShowIndicator         = "cw:sandboxshowindicator"
+	ConfigKey_CWNotificationStyle            = "cw:notificationstyle"
+	ConfigKey_CWNotificationSound            = "cw:notificationsound"
+	ConfigKey_CWDoNotDisturb                 = "cw:donotdisturb"
+	ConfigKey_CWDashboardDensity             = "cw:dashboarddensity"
+	ConfigKey_CWTabStyle                     = "cw:tabstyle"
+	ConfigKey_CWAccentColor                  = "cw:accentcolor"
+	ConfigKey_CWOnboardingCompleted          = "cw:onboardingcompleted"
+	ConfigKey_CWTourCompleted                = "cw:tourcompleted"
+	ConfigKey_CWShortcutProfile              = "cw:shortcutprofile"
+	ConfigKey_CWCustomShortcuts              = "cw:customshortcuts"
 )
 

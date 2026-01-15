@@ -1,0 +1,324 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+// Welcome Wizard Styles
+
+.welcome-wizard-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(8px);
+}
+
+.welcome-wizard {
+    width: 90%;
+    max-width: 520px;
+    background: var(--panel-bg-color);
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+// Progress Dots
+.wizard-progress {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    background: var(--block-bg-color);
+}
+
+.wizard-progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--secondary-text-color);
+    opacity: 0.3;
+    transition: all 0.3s ease;
+
+    &.active {
+        background: var(--accent-color, #E57B3A);
+        opacity: 1;
+        transform: scale(1.25);
+    }
+
+    &.completed {
+        background: var(--accent-color, #E57B3A);
+        opacity: 0.6;
+    }
+}
+
+// Content
+.wizard-content {
+    padding: 32px;
+}
+
+.wizard-step {
+    text-align: center;
+}
+
+.wizard-step-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-color, #E57B3A);
+    border-radius: 16px;
+    font-size: 28px;
+    color: white;
+
+    &.success {
+        background: #22c55e;
+    }
+}
+
+.wizard-step h2 {
+    margin: 0 0 12px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.wizard-step-description {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: var(--secondary-text-color);
+    line-height: 1.6;
+}
+
+// Features List
+.wizard-step-features {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.wizard-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    i {
+        font-size: 24px;
+        color: var(--accent-color, #E57B3A);
+    }
+
+    span {
+        font-size: 12px;
+        color: var(--secondary-text-color);
+    }
+}
+
+// Form Elements
+.wizard-form {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.wizard-form-group {
+    margin-bottom: 20px;
+
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+}
+
+.wizard-form-hint {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+    margin-bottom: 12px;
+}
+
+.wizard-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent-color, #E57B3A);
+    }
+}
+
+// Session Picker
+.wizard-session-picker {
+    display: flex;
+    gap: 8px;
+}
+
+.wizard-session-option {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--block-bg-color);
+    color: var(--main-text-color);
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        border-color: var(--accent-color, #E57B3A);
+    }
+
+    &.active {
+        background: var(--accent-color, #E57B3A);
+        border-color: var(--accent-color, #E57B3A);
+        color: white;
+    }
+}
+
+// Style Picker
+.wizard-style-picker {
+    display: flex;
+    gap: 12px;
+}
+
+.wizard-style-option {
+    flex: 1;
+    padding: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--block-bg-color);
+    color: var(--main-text-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    i {
+        font-size: 24px;
+        opacity: 0.7;
+    }
+
+    span {
+        font-size: 12px;
+    }
+
+    &:hover {
+        border-color: var(--accent-color, #E57B3A);
+    }
+
+    &.active {
+        border-color: var(--accent-color, #E57B3A);
+        background: rgba(229, 123, 58, 0.1);
+
+        i {
+            color: var(--accent-color, #E57B3A);
+            opacity: 1;
+        }
+    }
+}
+
+// Profile Picker
+.wizard-profile-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wizard-profile-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--block-bg-color);
+    color: var(--main-text-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+
+    &:hover {
+        border-color: var(--accent-color, #E57B3A);
+    }
+
+    &.active {
+        border-color: var(--accent-color, #E57B3A);
+        background: rgba(229, 123, 58, 0.1);
+    }
+}
+
+.wizard-profile-label {
+    font-weight: 500;
+}
+
+.wizard-profile-desc {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+}
+
+// Hint
+.wizard-step-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+
+    i {
+        color: var(--accent-color, #E57B3A);
+    }
+
+    kbd {
+        display: inline-block;
+        padding: 2px 6px;
+        background: var(--highlight-bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 3px;
+        font-family: inherit;
+        font-size: 11px;
+        margin: 0 2px;
+    }
+}
+
+// Next Steps
+.wizard-next-steps {
+    text-align: left;
+    background: var(--block-bg-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+
+    h4 {
+        margin: 0 0 12px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    ol {
+        margin: 0;
+        padding-left: 20px;
+
+        li {
+            font-size: 13px;
+            color: var(--secondary-text-color);
+            padding: 4px 0;
+        }
+    }
+}
+
+// Actions
+.wizard-step-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}

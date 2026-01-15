@@ -304,6 +304,42 @@
         },
         "cw:autostartclaude": {
           "type": "boolean"
+        },
+        "cw:defaultsessioncount": {
+          "type": "integer"
+        },
+        "cw:sandboxshowindicator": {
+          "type": "boolean"
+        },
+        "cw:notificationstyle": {
+          "type": "string"
+        },
+        "cw:notificationsound": {
+          "type": "boolean"
+        },
+        "cw:donotdisturb": {
+          "type": "boolean"
+        },
+        "cw:dashboarddensity": {
+          "type": "string"
+        },
+        "cw:tabstyle": {
+          "type": "string"
+        },
+        "cw:accentcolor": {
+          "type": "string"
+        },
+        "cw:onboardingcompleted": {
+          "type": "boolean"
+        },
+        "cw:tourcompleted": {
+          "type": "boolean"
+        },
+        "cw:shortcutprofile": {
+          "type": "string"
+        },
+        "cw:customshortcuts": {
+          "type": "string"
         }
       },
       "additionalProperties": false,

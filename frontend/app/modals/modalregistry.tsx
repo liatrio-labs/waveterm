@@ -9,6 +9,7 @@ import { TeleportModal } from "@/app/modals/teleportmodal";
 import { NewWorkstationModal } from "@/app/modals/newworkstationmodal";
 import { NewInstallOnboardingModal } from "@/app/onboarding/onboarding";
 import { UpgradeOnboardingModal } from "@/app/onboarding/onboarding-upgrade";
+import { WelcomeWizard } from "@/app/view/cw/onboarding/welcomewizard";
 import { DeleteFileModal, PublishAppModal, RenameFileModal } from "@/builder/builder-apppanel";
 import { SetSecretDialog } from "@/builder/tabs/builder-secrettab";
 import { AboutModal } from "./about";
@@ -29,6 +30,7 @@ const modalRegistry: { [key: string]: React.ComponentType<any> } = {
     [RenameFileModal.displayName || "RenameFileModal"]: RenameFileModal,
     [DeleteFileModal.displayName || "DeleteFileModal"]: DeleteFileModal,
     [SetSecretDialog.displayName || "SetSecretDialog"]: SetSecretDialog,
+    ["WelcomeWizard"]: WelcomeWizard,
 };
 
 export const getModalComponent = (key: string): React.ComponentType<any> | undefined => {

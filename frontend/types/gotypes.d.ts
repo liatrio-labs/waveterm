@@ -1319,6 +1319,18 @@ declare global {
         "cw:notificationsenabled"?: boolean;
         "cw:sandboxenabled"?: boolean;
         "cw:autostartclaude"?: boolean;
+        "cw:defaultsessioncount"?: number;
+        "cw:sandboxshowindicator"?: boolean;
+        "cw:notificationstyle"?: string;
+        "cw:notificationsound"?: boolean;
+        "cw:donotdisturb"?: boolean;
+        "cw:dashboarddensity"?: string;
+        "cw:tabstyle"?: string;
+        "cw:accentcolor"?: string;
+        "cw:onboardingcompleted"?: boolean;
+        "cw:tourcompleted"?: boolean;
+        "cw:shortcutprofile"?: string;
+        "cw:customshortcuts"?: string;
     };
 
     // waveobj.StickerClickOptsType

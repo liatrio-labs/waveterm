@@ -164,13 +164,25 @@ type SettingsType struct {
 	TsunamiGoPath         string `json:"tsunami:gopath,omitempty"`
 
 	// Liatrio Code settings
-	CWClear               bool    `json:"cw:*,omitempty"`
-	CWWorktreesDir        string  `json:"cw:worktreesdir,omitempty"`
-	CWDefaultBranchPrefix string  `json:"cw:defaultbranchprefix,omitempty"`
-	CWPollInterval        float64 `json:"cw:pollinterval,omitempty"`
-	CWNotificationsEnabled *bool  `json:"cw:notificationsenabled,omitempty"`
-	CWSandboxEnabled      *bool   `json:"cw:sandboxenabled,omitempty"`
-	CWAutoStartClaude     *bool   `json:"cw:autostartclaude,omitempty"`
+	CWClear                  bool    `json:"cw:*,omitempty"`
+	CWWorktreesDir           string  `json:"cw:worktreesdir,omitempty"`
+	CWDefaultBranchPrefix    string  `json:"cw:defaultbranchprefix,omitempty"`
+	CWPollInterval           float64 `json:"cw:pollinterval,omitempty"`
+	CWNotificationsEnabled   *bool   `json:"cw:notificationsenabled,omitempty"`
+	CWSandboxEnabled         *bool   `json:"cw:sandboxenabled,omitempty"`
+	CWAutoStartClaude        *bool   `json:"cw:autostartclaude,omitempty"`
+	CWDefaultSessionCount    int     `json:"cw:defaultsessioncount,omitempty"`
+	CWSandboxShowIndicator   *bool   `json:"cw:sandboxshowindicator,omitempty"`
+	CWNotificationStyle      string  `json:"cw:notificationstyle,omitempty"`
+	CWNotificationSound      *bool   `json:"cw:notificationsound,omitempty"`
+	CWDoNotDisturb           *bool   `json:"cw:donotdisturb,omitempty"`
+	CWDashboardDensity       string  `json:"cw:dashboarddensity,omitempty"`
+	CWTabStyle               string  `json:"cw:tabstyle,omitempty"`
+	CWAccentColor            string  `json:"cw:accentcolor,omitempty"`
+	CWOnboardingCompleted    *bool   `json:"cw:onboardingcompleted,omitempty"`
+	CWTourCompleted          *bool   `json:"cw:tourcompleted,omitempty"`
+	CWShortcutProfile        string  `json:"cw:shortcutprofile,omitempty"`
+	CWCustomShortcuts        string  `json:"cw:customshortcuts,omitempty"`
 }
 
 func (s *SettingsType) GetAiSettings() *AiSettingsType {

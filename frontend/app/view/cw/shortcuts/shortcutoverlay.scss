@@ -1,0 +1,151 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+// Keyboard Shortcut Overlay Styles
+
+.shortcut-overlay-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+.shortcut-overlay {
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    background: var(--panel-bg-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.shortcut-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+
+    h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+}
+
+.shortcut-overlay-close {
+    padding: 8px;
+    border: none;
+    background: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    border-radius: 6px;
+
+    &:hover {
+        background: var(--highlight-bg-color);
+        color: var(--main-text-color);
+    }
+}
+
+.shortcut-overlay-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.shortcut-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.shortcut-category {
+    &-title {
+        margin: 0 0 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--accent-color, #E57B3A);
+    }
+
+    &-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+.shortcut-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--block-bg-color);
+    border-radius: 6px;
+
+    &.custom {
+        border-left: 2px solid var(--accent-color, #E57B3A);
+    }
+}
+
+.shortcut-action {
+    font-size: 13px;
+    color: var(--main-text-color);
+}
+
+.shortcut-keys {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.shortcut-key {
+    display: inline-block;
+    padding: 4px 8px;
+    background: var(--highlight-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--main-text-color);
+    min-width: 24px;
+    text-align: center;
+}
+
+.shortcut-key-separator {
+    font-size: 11px;
+    color: var(--secondary-text-color);
+}
+
+.shortcut-overlay-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.shortcut-hint {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+
+    kbd {
+        display: inline-block;
+        padding: 2px 6px;
+        background: var(--highlight-bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 3px;
+        font-family: inherit;
+        font-size: 11px;
+        margin: 0 2px;
+    }
+}
