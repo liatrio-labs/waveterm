@@ -367,6 +367,11 @@ export function initIpcHandlers() {
         return result;
     });
 
+    electron.ipcMain.handle("show-message-box", async (event, options: Electron.MessageBoxOptions) => {
+        const result = await electron.dialog.showMessageBox(options);
+        return result;
+    });
+
     electron.ipcMain.on("open-native-path", (event, filePath: string) => {
         console.log("open-native-path", filePath);
         filePath = filePath.replace("~", electronApp.getPath("home"));

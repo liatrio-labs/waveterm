@@ -90,6 +90,14 @@ function initGlobalAtoms(initOpts: GlobalInitOptions) {
         console.log("failed to initialize onMenuItemAbout handler", e);
     }
 
+    try {
+        getApi().onMenuItemNewWorkstation(() => {
+            modalsModel.pushModal("NewWorkstationModal");
+        });
+    } catch (e) {
+        console.log("failed to initialize onMenuItemNewWorkstation handler", e);
+    }
+
     const workspaceAtom: Atom<Workspace> = atom((get) => {
         const windowData = WOS.getObjectValue<WaveWindow>(WOS.makeORef("window", get(windowIdAtom)), get);
         if (windowData == null) {

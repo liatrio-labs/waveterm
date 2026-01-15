@@ -37,15 +37,63 @@ import clsx from "clsx";
 import * as jotai from "jotai";
 import { atom, useAtomValue } from "jotai";
 import * as React from "react";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Component, ErrorInfo, ReactNode } from "react";
 
 import { ActivityLog } from "./components/activity-log";
 import { GitGraph } from "./components/git-graph";
 import { SessionRowActions, BulkActionBar } from "./components/dashboard-actions";
 import { FilterToolbar as DashboardToolbar } from "./components/dashboard-toolbar";
-import { processSessionUpdates } from "@/app/store/activitylog";
+import { processSessionUpdates, clearSessionTracking } from "@/app/store/activitylog";
 
 import "./dashboard.scss";
+
+// ============================================================================
+// Error Boundary Component
+// ============================================================================
+
+interface ErrorBoundaryProps {
+    children: ReactNode;
+    fallbackMessage?: string;
+}
+
+interface ErrorBoundaryState {
+    hasError: boolean;
+    error: Error | null;
+}
+
+class DashboardErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    constructor(props: ErrorBoundaryProps) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+        console.error("[Dashboard] Component error:", error.message);
+    }
+
+    render(): ReactNode {
+        if (this.state.hasError) {
+            return (
+                <div className="error-boundary-fallback">
+                    <i className="fa-solid fa-exclamation-triangle" />
+                    <span>{this.props.fallbackMessage || "Something went wrong"}</span>
+                    <button
+                        className="retry-btn"
+                        onClick={() => this.setState({ hasError: false, error: null })}
+                    >
+                        Retry
+                    </button>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
 
 // ============================================================================
 // View Model
@@ -522,6 +570,12 @@ function DashboardView({ model, blockRef }: ViewComponentProps<DashboardViewMode
     const projectPath = useAtomValue(cwProjectPathAtom);
     const config = useAtomValue(cwConfigAtom);
     const displayMode = useAtomValue(dashboardModeAtom);
+    const pollInterval = useAtomValue(dashboardPollIntervalAtom);
+
+    // Clear session tracking when project changes to prevent stale state
+    useEffect(() => {
+        clearSessionTracking();
+    }, [projectPath]);
 
     // Track session status changes for activity log
     useEffect(() => {
@@ -532,7 +586,6 @@ function DashboardView({ model, blockRef }: ViewComponentProps<DashboardViewMode
     useEffect(() => {
         if (!projectPath || !config) return;
 
-        const pollInterval = globalStore.get(dashboardPollIntervalAtom);
         const interval = setInterval(() => {
             loadSessions(projectPath).catch(err => {
                 console.error("[Dashboard] Poll error:", err);
@@ -541,7 +594,7 @@ function DashboardView({ model, blockRef }: ViewComponentProps<DashboardViewMode
         }, pollInterval);
 
         return () => clearInterval(interval);
-    }, [projectPath, config]);
+    }, [projectPath, config, pollInterval]);
 
     return (
         <div className={clsx("dashboard-view", `mode-${displayMode}`)}>
@@ -559,11 +612,15 @@ function DashboardView({ model, blockRef }: ViewComponentProps<DashboardViewMode
                 <div className="dashboard-main">
                     <SessionTable />
                     <div className="dashboard-graph">
-                        <GitGraph />
+                        <DashboardErrorBoundary fallbackMessage="Failed to load git graph">
+                            <GitGraph />
+                        </DashboardErrorBoundary>
                     </div>
                 </div>
                 <div className="dashboard-activity">
-                    <ActivityLog />
+                    <DashboardErrorBoundary fallbackMessage="Failed to load activity log">
+                        <ActivityLog />
+                    </DashboardErrorBoundary>
                 </div>
             </div>
 
