@@ -1,8 +1,13 @@
 // Copyright 2025, Liatrio
 // SPDX-License-Identifier: Apache-2.0
 
+/**
+ * @vitest-environment jsdom
+ */
+
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { Provider } from "jotai";
 import { createStore } from "jotai/vanilla";
