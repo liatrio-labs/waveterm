@@ -432,6 +432,51 @@ class RpcApiType {
         return client.wshRpcCall("path", data, opts);
     }
 
+    // command "platformlink" [call]
+    PlatformLinkCommand(client: WshClient, data: CommandPlatformLinkData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("platformlink", data, opts);
+    }
+
+    // command "platformproducts" [call]
+    PlatformProductsCommand(client: WshClient, data: CommandPlatformProductsData, opts?: RpcOpts): Promise<PlatformProductsData> {
+        return client.wshRpcCall("platformproducts", data, opts);
+    }
+
+    // command "platformprojects" [call]
+    PlatformProjectsCommand(client: WshClient, opts?: RpcOpts): Promise<PlatformProjectsData> {
+        return client.wshRpcCall("platformprojects", null, opts);
+    }
+
+    // command "platformspecs" [call]
+    PlatformSpecsCommand(client: WshClient, data: CommandPlatformSpecsData, opts?: RpcOpts): Promise<PlatformSpecsData> {
+        return client.wshRpcCall("platformspecs", data, opts);
+    }
+
+    // command "platformstatus" [call]
+    PlatformStatusCommand(client: WshClient, opts?: RpcOpts): Promise<PlatformStatusData> {
+        return client.wshRpcCall("platformstatus", null, opts);
+    }
+
+    // command "platformtaskdetail" [call]
+    PlatformTaskDetailCommand(client: WshClient, data: CommandPlatformTaskDetailData, opts?: RpcOpts): Promise<PlatformTaskDetailData> {
+        return client.wshRpcCall("platformtaskdetail", data, opts);
+    }
+
+    // command "platformtasks" [call]
+    PlatformTasksCommand(client: WshClient, data: CommandPlatformTasksData, opts?: RpcOpts): Promise<PlatformTasksData> {
+        return client.wshRpcCall("platformtasks", data, opts);
+    }
+
+    // command "platformunlink" [call]
+    PlatformUnlinkCommand(client: WshClient, data: CommandPlatformUnlinkData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("platformunlink", data, opts);
+    }
+
+    // command "platformupdatestatus" [call]
+    PlatformUpdateStatusCommand(client: WshClient, data: CommandPlatformUpdateStatusData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("platformupdatestatus", data, opts);
+    }
+
     // command "processmetrics" [call]
     ProcessMetricsCommand(client: WshClient, data: CommandProcessMetricsData, opts?: RpcOpts): Promise<ProcessMetricsData> {
         return client.wshRpcCall("processmetrics", data, opts);

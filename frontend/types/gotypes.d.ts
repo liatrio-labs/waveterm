@@ -405,6 +405,44 @@ declare global {
         message: string;
     };
 
+    // wshrpc.CommandPlatformLinkData
+    type CommandPlatformLinkData = {
+        taskId: string;
+        worktreeDir?: string;
+        force?: boolean;
+    };
+
+    // wshrpc.CommandPlatformProductsData
+    type CommandPlatformProductsData = {
+        projectId: string;
+    };
+
+    // wshrpc.CommandPlatformSpecsData
+    type CommandPlatformSpecsData = {
+        productId: string;
+    };
+
+    // wshrpc.CommandPlatformTaskDetailData
+    type CommandPlatformTaskDetailData = {
+        taskId: string;
+    };
+
+    // wshrpc.CommandPlatformTasksData
+    type CommandPlatformTasksData = {
+        specId: string;
+    };
+
+    // wshrpc.CommandPlatformUnlinkData
+    type CommandPlatformUnlinkData = {
+        worktreeDir?: string;
+    };
+
+    // wshrpc.CommandPlatformUpdateStatusData
+    type CommandPlatformUpdateStatusData = {
+        taskId: string;
+        status: string;
+    };
+
     // wshrpc.CommandProcessMetricsBatchData
     type CommandProcessMetricsBatchData = {
         pids: number[];
@@ -1125,6 +1163,92 @@ declare global {
         open: boolean;
         openexternal: boolean;
         tabid: string;
+    };
+
+    // wshrpc.PlatformProductData
+    type PlatformProductData = {
+        id: string;
+        projectId: string;
+        name: string;
+        description?: string;
+    };
+
+    // wshrpc.PlatformProductsData
+    type PlatformProductsData = {
+        products: PlatformProductData[];
+    };
+
+    // wshrpc.PlatformProjectData
+    type PlatformProjectData = {
+        id: string;
+        name: string;
+        description?: string;
+    };
+
+    // wshrpc.PlatformProjectsData
+    type PlatformProjectsData = {
+        projects: PlatformProjectData[];
+    };
+
+    // wshrpc.PlatformSpecData
+    type PlatformSpecData = {
+        id: string;
+        productId: string;
+        name: string;
+        status: string;
+    };
+
+    // wshrpc.PlatformSpecsData
+    type PlatformSpecsData = {
+        specs: PlatformSpecData[];
+    };
+
+    // wshrpc.PlatformStatusData
+    type PlatformStatusData = {
+        connected: boolean;
+        offlineMode?: boolean;
+        baseUrl: string;
+        apiKeyConfigured: boolean;
+        user?: PlatformUserData;
+        error?: string;
+    };
+
+    // wshrpc.PlatformSubTaskData
+    type PlatformSubTaskData = {
+        id: string;
+        taskId: string;
+        title: string;
+        status: string;
+    };
+
+    // wshrpc.PlatformTaskData
+    type PlatformTaskData = {
+        id: string;
+        specId: string;
+        title: string;
+        description?: string;
+        status: string;
+        checkpointMode: boolean;
+        subTasks?: PlatformSubTaskData[];
+    };
+
+    // wshrpc.PlatformTaskDetailData
+    type PlatformTaskDetailData = {
+        task: PlatformTaskData;
+        spec: PlatformSpecData;
+    };
+
+    // wshrpc.PlatformTasksData
+    type PlatformTasksData = {
+        tasks: PlatformTaskData[];
+    };
+
+    // wshrpc.PlatformUserData
+    type PlatformUserData = {
+        id: string;
+        email: string;
+        name: string;
+        avatarUrl?: string;
     };
 
     // waveobj.Point

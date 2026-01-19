@@ -1,0 +1,64 @@
+// Copyright 2025, Liatrio
+// SPDX-License-Identifier: Apache-2.0
+
+.platform-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+
+    &__indicator {
+        font-size: 10px;
+    }
+
+    &__label {
+        font-weight: 500;
+    }
+
+    &__user {
+        color: var(--secondary-text-color, #888);
+        margin-left: 4px;
+    }
+
+    &__connect-btn,
+    &__refresh-btn {
+        margin-left: 8px;
+        padding: 2px 8px;
+        font-size: 11px;
+        border: 1px solid var(--border-color, #444);
+        border-radius: 3px;
+        background: transparent;
+        color: var(--main-text-color, #fff);
+        cursor: pointer;
+
+        &:hover {
+            background: var(--highlight-bg-color, #333);
+        }
+    }
+
+    &--connected {
+        .platform-status__indicator {
+            color: #4ade80; // green
+        }
+    }
+
+    &--offline {
+        .platform-status__indicator {
+            color: #f87171; // red
+        }
+    }
+
+    &--disconnected {
+        .platform-status__indicator {
+            color: #9ca3af; // gray
+        }
+    }
+
+    &--loading {
+        .platform-status__indicator {
+            color: #fbbf24; // yellow
+        }
+    }
+}

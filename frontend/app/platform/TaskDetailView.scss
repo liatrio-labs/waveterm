@@ -1,0 +1,215 @@
+// Copyright 2025, Liatrio
+// SPDX-License-Identifier: Apache-2.0
+
+.task-detail-view {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border-color, #444);
+    background: var(--block-bg-color, #1a1a1a);
+    max-height: 300px;
+
+    &--loading,
+    &--error {
+        padding: 16px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--secondary-text-color, #888);
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border-color, #333);
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--main-text-color, #fff);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__close-btn {
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        color: var(--secondary-text-color, #888);
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+
+        &:hover {
+            color: var(--main-text-color, #fff);
+        }
+    }
+
+    &__content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
+    &__meta {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    &__status {
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        border-radius: 3px;
+
+        &--completed {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        &--processing,
+        &--initializing {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+        }
+
+        &--pending {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+        }
+
+        &--planned {
+            background: rgba(156, 163, 175, 0.15);
+            color: #6b7280;
+        }
+
+        &--error,
+        &--timed_out,
+        &--stopped {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+        &--awaiting_feedback {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+    }
+
+    &__checkpoint {
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        border-radius: 3px;
+    }
+
+    &__section {
+        margin-bottom: 12px;
+    }
+
+    &__section-title {
+        margin: 0 0 6px 0;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        color: var(--secondary-text-color, #888);
+        letter-spacing: 0.5px;
+    }
+
+    &__description {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--main-text-color, #ddd);
+    }
+
+    &__spec {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    &__spec-name {
+        font-size: 13px;
+        color: var(--main-text-color, #ddd);
+    }
+
+    &__spec-link {
+        padding: 2px 8px;
+        font-size: 11px;
+        background: transparent;
+        border: 1px solid var(--border-color, #444);
+        border-radius: 3px;
+        color: var(--accent-color, #4a90d9);
+        cursor: pointer;
+
+        &:hover {
+            background: var(--highlight-bg-color, #333);
+        }
+    }
+
+    &__subtasks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__subtask {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 4px 0;
+        font-size: 12px;
+        color: var(--main-text-color, #ddd);
+
+        &--completed {
+            .task-detail-view__subtask-title {
+                text-decoration: line-through;
+                opacity: 0.6;
+            }
+
+            .task-detail-view__subtask-check {
+                color: #4ade80;
+            }
+        }
+    }
+
+    &__subtask-check {
+        flex-shrink: 0;
+        width: 16px;
+        text-align: center;
+        color: var(--secondary-text-color, #888);
+    }
+
+    &__subtask-title {
+        flex: 1;
+    }
+
+    &__actions {
+        padding: 10px 12px;
+        border-top: 1px solid var(--border-color, #333);
+    }
+
+    &__link-btn {
+        width: 100%;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        background: var(--accent-color, #4a90d9);
+        border: none;
+        border-radius: 4px;
+        color: #fff;
+        cursor: pointer;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+}
