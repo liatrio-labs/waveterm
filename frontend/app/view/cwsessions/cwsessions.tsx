@@ -42,6 +42,7 @@ interface SessionItemProps {
     onSelect: () => void;
     onDelete: () => void;
     onOpenTerminal: () => void;
+    onLaunchClaude: () => void;
 }
 
 interface WebSessionItemProps {
@@ -71,9 +72,9 @@ class CwSessionsViewModel implements ViewModel {
         this.tabModel = tabModel;
         this.blockAtom = WOS.getWaveObjectAtom<Block>(`block:${blockId}`);
 
-        this.viewIcon = atom("git-branch");
+        this.viewIcon = atom("robot");
         this.viewName = atom("CW Sessions");
-        this.viewText = atom("Liatrio Code Sessions");
+        this.viewText = atom("Claude Code Sessions");
 
         // Initialize on construction
         this.initialize();
@@ -133,7 +134,7 @@ function SessionStatusBadge({ status }: { status: CWSessionStatus }) {
     );
 }
 
-const SessionItem = React.memo(function SessionItem({ session, isActive, onSelect, onDelete, onOpenTerminal }: SessionItemProps) {
+const SessionItem = React.memo(function SessionItem({ session, isActive, onSelect, onDelete, onOpenTerminal, onLaunchClaude }: SessionItemProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -170,7 +171,15 @@ const SessionItem = React.memo(function SessionItem({ session, isActive, onSelec
                         aria-label="Open terminal for this session"
                     >
                         <i className="fa-solid fa-terminal" aria-hidden="true" />
-                        Open Terminal
+                        Terminal
+                    </Button>
+                    <Button
+                        className="ghost small"
+                        onClick={(e) => { e.stopPropagation(); onLaunchClaude(); }}
+                        aria-label="Launch Claude Code for this session"
+                    >
+                        <i className="fa-solid fa-robot" aria-hidden="true" />
+                        Claude
                     </Button>
                     <Button
                         className="ghost small danger"
@@ -178,7 +187,6 @@ const SessionItem = React.memo(function SessionItem({ session, isActive, onSelec
                         aria-label="Delete this session"
                     >
                         <i className="fa-solid fa-trash" aria-hidden="true" />
-                        Delete
                     </Button>
                 </div>
             )}
@@ -535,12 +543,8 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
         try {
             console.log("[CwSessions] Opening terminal for:", session.worktreePath);
 
-            // Get auto-start setting from block metadata
-            const blockMeta = globalStore.get(model.blockAtom)?.meta;
-            const autoStartClaude = blockMeta?.["cw:autostartclaude"] as boolean | undefined;
-
             // Create a single terminal block with frame metadata showing session info
-            const blockId = await RpcApi.CreateBlockCommand(TabRpcClient, {
+            await RpcApi.CreateBlockCommand(TabRpcClient, {
                 tabid: model.tabModel.tabId,
                 blockdef: {
                     meta: {
@@ -553,20 +557,59 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                 },
                 magnified: false,
             });
-
-            // Auto-start Claude Code if enabled (default: true)
-            if (autoStartClaude ?? true) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                await RpcApi.ControllerInputCommand(TabRpcClient, {
-                    blockid: blockId,
-                    inputdata64: btoa("claude\n"),
-                });
-            }
         } catch (err) {
             console.error("[CwSessions] Failed to open terminal:", err);
             setError("Failed to open terminal");
         }
-    }, [model.tabModel, model.blockAtom, getShortPath]);
+    }, [model.tabModel, getShortPath]);
+
+    const handleLaunchClaude = useCallback(async (session: CWSession) => {
+        try {
+            console.log("[CwSessions] Launching Claude Code for:", session.worktreePath);
+
+            // Create a terminal block with frame metadata showing session info
+            const oref = await RpcApi.CreateBlockCommand(TabRpcClient, {
+                tabid: model.tabModel.tabId,
+                blockdef: {
+                    meta: {
+                        view: "term",
+                        controller: "shell",
+                        "cmd:cwd": session.worktreePath,
+                        "frame:title": `Claude: ${session.branchName || session.name}`,
+                        "frame:text": getShortPath(session.worktreePath),
+                    },
+                },
+                magnified: false,
+            });
+
+            // Extract block ID from ORef (format: "block:uuid")
+            const blockId = oref.startsWith("block:") ? oref.slice(6) : oref;
+
+            // Launch Claude Code with --dangerously-skip-permissions
+            // Retry with increasing delays to wait for controller initialization
+            const maxRetries = 5;
+            const baseDelay = 500;
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    await new Promise(resolve => setTimeout(resolve, baseDelay * (attempt + 1)));
+                    await RpcApi.ControllerInputCommand(TabRpcClient, {
+                        blockid: blockId,
+                        inputdata64: btoa("claude --dangerously-skip-permissions\n"),
+                    });
+                    return; // Success, exit the function
+                } catch (inputErr) {
+                    if (attempt === maxRetries - 1) {
+                        throw inputErr; // Last attempt, rethrow
+                    }
+                    console.log(`[CwSessions] Controller not ready, retrying... (attempt ${attempt + 1})`);
+                }
+            }
+        } catch (err) {
+            console.error("[CwSessions] Failed to launch Claude Code:", err);
+            setError("Failed to launch Claude Code");
+        }
+    }, [model.tabModel, getShortPath]);
 
     const handleCreateSession = useCallback(async (name: string, branchName?: string) => {
         if (!projectPath) {
@@ -672,6 +715,7 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                                     onSelect={() => setActiveSession(session.id)}
                                     onDelete={() => handleDeleteSession(session.id)}
                                     onOpenTerminal={() => handleOpenTerminal(session)}
+                                    onLaunchClaude={() => handleLaunchClaude(session)}
                                 />
                             ))}
                         </div>
