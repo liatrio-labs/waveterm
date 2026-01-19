@@ -246,21 +246,26 @@ function getShortPath(fullPath: string): string {
 }
 
 /**
- * Flatten a layout node into creation instructions
- * This handles nested splits by converting them into sequential block creations
- *
- * @param node - The layout node to flatten
- * @param worktreePath - Optional worktree path for terminal/file browser blocks
- * @param baseIndex - The base index in the overall instructions array (for relativeTo references)
- * @param sessionInfo - Optional session info for frame title display
- * @returns Array of creation instructions with correct relativeTo indices
+ * Block info collected during tree traversal
  */
-function flattenLayoutNode(
+interface CollectedBlock {
+    blockDef: BlockDef;
+    columnIndex: number; // Which column this block belongs to (for horizontal ordering)
+    rowIndex: number; // Position within column (0 = top/primary, 1+ = stacked below)
+    splitAction?: "splitright" | "splitdown";
+}
+
+/**
+ * Recursively collect blocks from the layout tree
+ * Returns blocks grouped by their column position
+ */
+function collectBlocksFromTree(
     node: CWLayoutNode,
     worktreePath?: string,
-    baseIndex: number = 0,
-    sessionInfo?: CWSessionInfo
-): BlockCreationInstruction[] {
+    sessionInfo?: CWSessionInfo,
+    columnStart: number = 0,
+    rowOffset: number = 0
+): { blocks: CollectedBlock[], columnCount: number } {
     if (node.type === "block") {
         const meta: Record<string, any> = {
             view: node.blockType,
@@ -268,17 +273,14 @@ function flattenLayoutNode(
             ...node.blockMeta,
         };
 
-        // Add worktree path as cwd for terminal blocks
         if (node.blockType === "term" && worktreePath) {
             meta["cmd:cwd"] = worktreePath;
         }
 
-        // Add worktree path for file browser preview blocks
         if (node.blockType === "preview" && worktreePath && node.blockMeta?.["file:path"] === ".") {
             meta["file:path"] = worktreePath;
         }
 
-        // Add frame metadata for terminal blocks if session info provided
         if (node.blockType === "term" && sessionInfo) {
             meta["frame:title"] = sessionInfo.branchName || sessionInfo.name;
             if (worktreePath) {
@@ -286,37 +288,108 @@ function flattenLayoutNode(
             }
         }
 
-        return [{ blockDef: { meta } }];
+        return {
+            blocks: [{
+                blockDef: { meta },
+                columnIndex: columnStart,
+                rowIndex: rowOffset,
+            }],
+            columnCount: 1,
+        };
     }
 
     if (node.type === "split" && node.children && node.children.length >= 2) {
-        const instructions: BlockCreationInstruction[] = [];
         const isHorizontal = node.direction === "horizontal";
 
-        // First child becomes the base block(s)
-        const firstChildInstructions = flattenLayoutNode(node.children[0], worktreePath, baseIndex, sessionInfo);
-        instructions.push(...firstChildInstructions);
+        if (isHorizontal) {
+            // Horizontal split: children go into different columns
+            const firstResult = collectBlocksFromTree(node.children[0], worktreePath, sessionInfo, columnStart, 0);
+            const secondResult = collectBlocksFromTree(node.children[1], worktreePath, sessionInfo, columnStart + firstResult.columnCount, 0);
 
-        // Track the index of the last block in the first child group - this is the split target
-        const firstChildLastBlockIndex = baseIndex + firstChildInstructions.length - 1;
+            return {
+                blocks: [...firstResult.blocks, ...secondResult.blocks],
+                columnCount: firstResult.columnCount + secondResult.columnCount,
+            };
+        } else {
+            // Vertical split: children stack in the same column
+            const firstResult = collectBlocksFromTree(node.children[0], worktreePath, sessionInfo, columnStart, rowOffset);
+            // Find the max row in first result to know where second starts
+            const maxRow = Math.max(...firstResult.blocks.map(b => b.rowIndex));
+            const secondResult = collectBlocksFromTree(node.children[1], worktreePath, sessionInfo, columnStart, maxRow + 1);
 
-        // Second child splits from the last block of the first child
-        const secondChildBaseIndex = baseIndex + firstChildInstructions.length;
-        const secondChildInstructions = flattenLayoutNode(node.children[1], worktreePath, secondChildBaseIndex, sessionInfo);
-
-        if (secondChildInstructions.length > 0) {
-            // The first instruction of the second child gets the split action
-            // It should split from the last block of the first child
-            secondChildInstructions[0].splitAction = isHorizontal ? "splitright" : "splitdown";
-            secondChildInstructions[0].relativeTo = firstChildLastBlockIndex;
+            return {
+                blocks: [...firstResult.blocks, ...secondResult.blocks],
+                columnCount: Math.max(firstResult.columnCount, secondResult.columnCount),
+            };
         }
-        instructions.push(...secondChildInstructions);
-
-        return instructions;
     }
 
-    // Fallback to terminal block
-    return [{ blockDef: { meta: { view: "term", controller: "shell" } } }];
+    return {
+        blocks: [{
+            blockDef: { meta: { view: "term", controller: "shell" } },
+            columnIndex: columnStart,
+            rowIndex: rowOffset,
+        }],
+        columnCount: 1,
+    };
+}
+
+/**
+ * Flatten a layout node into creation instructions
+ * Creates blocks in order: all row-0 blocks first (establishes columns), then row-1+, etc.
+ */
+function flattenLayoutNode(
+    node: CWLayoutNode,
+    worktreePath?: string,
+    baseIndex: number = 0,
+    sessionInfo?: CWSessionInfo
+): BlockCreationInstruction[] {
+    // Collect all blocks with column/row info
+    const { blocks } = collectBlocksFromTree(node, worktreePath, sessionInfo);
+
+    // Sort: first by rowIndex (primary blocks first), then by columnIndex
+    blocks.sort((a, b) => {
+        if (a.rowIndex !== b.rowIndex) return a.rowIndex - b.rowIndex;
+        return a.columnIndex - b.columnIndex;
+    });
+
+    // Build instructions with correct split targets
+    const result: BlockCreationInstruction[] = [];
+    const columnToBlockIndex = new Map<number, number>(); // Maps column -> index of its primary (row 0) block
+
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        const instruction: BlockCreationInstruction = {
+            blockDef: block.blockDef,
+        };
+
+        if (i > 0) {
+            if (block.rowIndex === 0) {
+                // Primary block in a new column - split right from previous column's primary block
+                const prevColumnPrimaryIndex = columnToBlockIndex.get(block.columnIndex - 1);
+                if (prevColumnPrimaryIndex !== undefined) {
+                    instruction.splitAction = "splitright";
+                    instruction.relativeTo = prevColumnPrimaryIndex;
+                }
+            } else {
+                // Stacked block - split down from this column's primary block
+                const columnPrimaryIndex = columnToBlockIndex.get(block.columnIndex);
+                if (columnPrimaryIndex !== undefined) {
+                    instruction.splitAction = "splitdown";
+                    instruction.relativeTo = columnPrimaryIndex;
+                }
+            }
+        }
+
+        // Track primary blocks for each column
+        if (block.rowIndex === 0) {
+            columnToBlockIndex.set(block.columnIndex, baseIndex + i);
+        }
+
+        result.push(instruction);
+    }
+
+    return result;
 }
 
 /**
@@ -391,13 +464,15 @@ export async function applyLayoutTemplate(
             let blockId: string;
             if (createBlockFn) {
                 const oref = await createBlockFn(createData);
-                blockId = oref.oid;
+                // Extract block ID from ORef (format: "block:uuid")
+                blockId = oref.startsWith("block:") ? oref.slice(6) : oref;
             } else {
                 // Dynamic import to avoid circular dependencies
                 const { RpcApi } = await import("@/app/store/wshclientapi");
                 const { TabRpcClient } = await import("@/app/store/wshrpcutil");
                 const oref = await RpcApi.CreateBlockCommand(TabRpcClient, createData);
-                blockId = oref.oid;
+                // Extract block ID from ORef (format: "block:uuid")
+                blockId = oref.startsWith("block:") ? oref.slice(6) : oref;
             }
             createdBlockIds.push(blockId);
 
@@ -547,7 +622,8 @@ export async function applyTemplateToExistingTab(
     let firstBlockId: string;
     try {
         const oref = await RpcApi.CreateBlockCommand(TabRpcClient, firstCreateData);
-        firstBlockId = oref.oid;
+        // Extract block ID from ORef (format: "block:uuid")
+        firstBlockId = oref.startsWith("block:") ? oref.slice(6) : oref;
         console.log("[applyTemplateToExistingTab] Created first block:", firstBlockId);
     } catch (err) {
         console.error("[applyTemplateToExistingTab] Failed to create first block:", err);
@@ -593,7 +669,9 @@ export async function applyTemplateToExistingTab(
 
         try {
             const oref = await RpcApi.CreateBlockCommand(TabRpcClient, createData);
-            createdBlockIds.push(oref.oid);
+            // Extract block ID from ORef (format: "block:uuid")
+            const blockId = oref.startsWith("block:") ? oref.slice(6) : oref;
+            createdBlockIds.push(blockId);
         } catch (err) {
             console.error(`[applyTemplateToExistingTab] Failed to create block ${i}:`, err);
             throw err;
@@ -707,22 +785,25 @@ export async function captureCurrentLayoutAsTemplate(
 /**
  * Convert a Wave LayoutNode tree to a CWLayoutNode tree
  * This preserves the actual split structure including vertical stacks
+ * Note: Go JSON serialization uses lowercase property names (flexdirection, not flexDirection)
  */
 function convertLayoutNodeToCWLayout(
-    node: LayoutNode,
+    node: any, // Using any because Go JSON uses lowercase props
     blockMetaMap: Map<string, any>
 ): CWLayoutNode {
-    // Leaf node - has data with blockId
-    if (node.data?.blockId) {
-        const meta = blockMetaMap.get(node.data.blockId);
+    // Leaf node - has data with blockId (Go uses lowercase: blockid)
+    const blockId = node.data?.blockid || node.data?.blockId;
+    if (blockId) {
+        const meta = blockMetaMap.get(blockId);
         return blockMetaToLayoutNode(meta);
     }
 
     // Split node - has children
     if (node.children && node.children.length > 0) {
-        // Determine direction from flexDirection
+        // Determine direction from flexDirection (Go uses lowercase: flexdirection)
         // Row = horizontal split, Column = vertical split (stack)
-        const isHorizontal = node.flexDirection === "row";
+        const flexDir = node.flexdirection || node.flexDirection;
+        const isHorizontal = flexDir === "row";
 
         if (node.children.length === 1) {
             // Single child - recurse into it
@@ -759,7 +840,7 @@ function convertLayoutNodeToCWLayout(
  * Converts [A, B, C] into a tree structure that preserves the linear arrangement
  */
 function buildNestedSplits(
-    children: LayoutNode[],
+    children: any[], // Using any because Go JSON uses lowercase props
     isHorizontal: boolean,
     blockMetaMap: Map<string, any>
 ): CWLayoutNode {
