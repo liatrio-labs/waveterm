@@ -104,6 +104,21 @@ be provided to Claude Code when starting a session on this worktree.`,
 	PreRunE: preRunSetupRpcClient,
 }
 
+var platformUpdateStatusCmd = &cobra.Command{
+	Use:   "update-status <status>",
+	Short: "Update the status of the linked task",
+	Long: `Update the status of the platform task linked to the current worktree.
+
+Valid statuses: planned, pending, initializing, processing, completed, error, timed_out, stopped, awaiting_feedback
+
+Example:
+  wsh platform update-status processing
+  wsh platform update-status completed`,
+	Args:    cobra.ExactArgs(1),
+	RunE:    platformUpdateStatusRun,
+	PreRunE: preRunSetupRpcClient,
+}
+
 var platformProjectsJSON bool
 var platformLinkForce bool
 var platformContextJSON bool
@@ -117,6 +132,7 @@ func init() {
 	platformCmd.AddCommand(platformLinkCmd)
 	platformCmd.AddCommand(platformUnlinkCmd)
 	platformCmd.AddCommand(platformContextCmd)
+	platformCmd.AddCommand(platformUpdateStatusCmd)
 
 	platformStatusCmd.Flags().BoolVar(&platformStatusJSON, "json", false, "Output in JSON format")
 	platformProjectsCmd.Flags().BoolVar(&platformProjectsJSON, "json", false, "Output in JSON format")
@@ -561,5 +577,48 @@ func platformContextRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	// Format and print the context prompt
 	prompt := cwplatform.FormatContextPrompt(contextData)
 	WriteStdout("%s", prompt)
+	return nil
+}
+
+func platformUpdateStatusRun(cmd *cobra.Command, args []string) (rtnErr error) {
+	defer func() {
+		sendActivity("platform:update-status", rtnErr == nil)
+	}()
+
+	newStatus := args[0]
+
+	// Validate status
+	if !cwplatform.IsValidTaskStatus(newStatus) {
+		return fmt.Errorf("invalid status '%s'. Valid statuses: planned, pending, initializing, processing, completed, error, timed_out, stopped, awaiting_feedback", newStatus)
+	}
+
+	// Get current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting current directory: %w", err)
+	}
+
+	// Check for task association
+	assoc, err := cwworktree.GetTaskAssociation(cwd)
+	if err != nil || assoc == nil {
+		return fmt.Errorf("no task linked to this worktree. Use 'wsh platform link <taskId>' first")
+	}
+
+	// Check if logged in
+	apiKey, err := getStoredAPIKey()
+	if err != nil || apiKey == "" {
+		return fmt.Errorf("not logged in. Run 'wsh platform login' to authenticate")
+	}
+
+	// Update status via platform API
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	client := cwplatform.NewClient(apiKey)
+	if err := client.UpdateTaskStatus(ctx, assoc.TaskID, newStatus); err != nil {
+		return fmt.Errorf("updating task status: %w", err)
+	}
+
+	WriteStdout("Task status updated to '%s'\n", newStatus)
 	return nil
 }

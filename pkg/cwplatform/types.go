@@ -80,6 +80,24 @@ const (
 	TaskStatusAwaitingFeedback = "awaiting_feedback"
 )
 
+// validTaskStatuses is the set of valid task status values
+var validTaskStatuses = map[string]bool{
+	TaskStatusPlanned:          true,
+	TaskStatusPending:          true,
+	TaskStatusInitializing:     true,
+	TaskStatusProcessing:       true,
+	TaskStatusCompleted:        true,
+	TaskStatusError:            true,
+	TaskStatusTimedOut:         true,
+	TaskStatusStopped:          true,
+	TaskStatusAwaitingFeedback: true,
+}
+
+// IsValidTaskStatus checks if a status string is a valid task status
+func IsValidTaskStatus(status string) bool {
+	return validTaskStatuses[status]
+}
+
 // TaskAssociation represents the link between a local worktree and a platform task.
 type TaskAssociation struct {
 	TaskID      string    `json:"taskId"`
