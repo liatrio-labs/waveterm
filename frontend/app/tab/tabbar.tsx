@@ -5,7 +5,9 @@ import { Button } from "@/app/element/button";
 import { modalsModel } from "@/app/store/modalmodel";
 import { WorkspaceLayoutModel } from "@/app/workspace/workspace-layout-model";
 import { deleteLayoutModelForTab } from "@/layout/index";
-import { atoms, createTab, getApi, globalStore, setActiveTab } from "@/store/global";
+import { atoms, createBlock, createTab, getApi, globalStore, setActiveTab } from "@/store/global";
+import * as WOS from "@/store/wos";
+import { getLayoutModelForStaticTab } from "@/layout/index";
 import { isMacOS, isWindows } from "@/util/platformutil";
 import { fireAndForget } from "@/util/util";
 import { useAtomValue } from "jotai";
@@ -19,6 +21,9 @@ import { Tab } from "./tab";
 import "./tabbar.scss";
 import { UpdateStatusBanner } from "./updatebanner";
 import { WorkspaceSwitcher } from "./workspaceswitcher";
+import { SandboxToggle } from "@/app/view/cw/sandbox/sandboxtoggle";
+import { TemplateQuickMenu } from "@/app/view/cw/settings/templatequickmenu";
+import { applyTemplateToExistingTab, CWLayoutTemplate } from "@/app/workspace/cwtemplates";
 
 const TabDefaultWidth = 130;
 const TabMinWidth = 100;
@@ -162,6 +167,37 @@ function setIsEqual(a: Set<string> | null, b: Set<string> | null): boolean {
 const TabBar = memo(({ workspace }: TabBarProps) => {
     const [tabIds, setTabIds] = useState<string[]>([]);
     const [dragStartPositions, setDragStartPositions] = useState<number[]>([]);
+
+    const handleToggleSettings = useCallback(() => {
+        const layoutModel = getLayoutModelForStaticTab();
+        if (!layoutModel) return;
+
+        const leafs = globalStore.get(layoutModel.leafs) as any[];
+        if (!leafs) return;
+
+        // Find existing settings block
+        for (const leaf of leafs) {
+            const blockId = leaf?.data?.blockId;
+            if (!blockId) continue;
+
+            const blockAtom = WOS.getWaveObjectAtom<Block>(WOS.makeORef("block", blockId));
+            const blockData = globalStore.get(blockAtom);
+
+            if (blockData?.meta?.view === "cwsettings") {
+                // Settings block exists, close it
+                fireAndForget(() => layoutModel.closeNode(leaf.id));
+                return;
+            }
+        }
+
+        // No settings block found, create one
+        createBlock({
+            meta: {
+                view: "cwsettings",
+            },
+        });
+    }, []);
+
     const [draggingTab, setDraggingTab] = useState<string>();
     const [tabsLoaded, setTabsLoaded] = useState({});
     const [newTabId, setNewTabId] = useState<string | null>(null);
@@ -196,6 +232,21 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
     const isFullScreen = useAtomValue(atoms.isFullScreen);
     const zoomFactor = useAtomValue(atoms.zoomFactorAtom);
     const settings = useAtomValue(atoms.settingsAtom);
+
+    const handleApplyTemplate = useCallback((template: CWLayoutTemplate) => {
+        if (!activeTabId) {
+            console.warn("[TabBar] No active tab to apply template to");
+            return;
+        }
+        fireAndForget(async () => {
+            try {
+                await applyTemplateToExistingTab(template, activeTabId);
+                console.log("[TabBar] Successfully applied template:", template.name);
+            } catch (err) {
+                console.error("[TabBar] Failed to apply template:", err);
+            }
+        });
+    }, [activeTabId]);
 
     let prevDelta: number;
     let prevDragDirection: string;
@@ -684,6 +735,15 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
             </div>
             <IconButton className="add-tab" ref={addBtnRef} decl={addtabButtonDecl} />
             <div className="tab-bar-right">
+                <SandboxToggle />
+                <TemplateQuickMenu onApplyTemplate={handleApplyTemplate} />
+                <Button
+                    className="ghost"
+                    onClick={handleToggleSettings}
+                    title="Settings (⌘,)"
+                >
+                    <i className="fa-solid fa-gear" />
+                </Button>
                 <UpdateStatusBanner ref={updateStatusBannerRef} />
                 <ConfigErrorIcon buttonRef={configErrorButtonRef} />
                 <div

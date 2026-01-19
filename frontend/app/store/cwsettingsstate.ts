@@ -133,6 +133,9 @@ export const customShortcutsAtom = getSettingsKeyAtom("cw:customshortcuts");
 export const onboardingCompletedAtom = getSettingsKeyAtom("cw:onboardingcompleted");
 export const tourCompletedAtom = getSettingsKeyAtom("cw:tourcompleted");
 
+// Custom templates
+export const customTemplatesAtom = getSettingsKeyAtom("cw:customtemplates");
+
 // ============================================================================
 // Actions
 // ============================================================================
@@ -147,6 +150,26 @@ export async function setSettingsValue(key: string, value: any): Promise<void> {
         console.error(`[CWSettings] Failed to set ${key}:`, err);
         throw err;
     }
+}
+
+/**
+ * Save custom templates array
+ */
+export async function saveCustomTemplates(templates: any[]): Promise<void> {
+    try {
+        await RpcApi.SetConfigCommand(TabRpcClient, { "cw:customtemplates": templates });
+    } catch (err) {
+        console.error("[CWSettings] Failed to save custom templates:", err);
+        throw err;
+    }
+}
+
+/**
+ * Get custom templates from global store
+ */
+export function getCustomTemplates(): any[] {
+    const config = globalStore.get(atoms.fullConfigAtom);
+    return config?.settings?.["cw:customtemplates"] ?? [];
 }
 
 /**

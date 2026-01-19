@@ -1,0 +1,128 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+.save-template-modal {
+    min-width: 400px;
+    max-width: 500px;
+
+    .save-template-content {
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--main-text-color);
+
+            i {
+                color: var(--accent-color);
+            }
+        }
+
+        .save-template-description {
+            margin: 0 0 20px 0;
+            color: var(--secondary-text-color);
+            font-size: 14px;
+        }
+
+        .save-template-error {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 6px;
+            color: #ff3b30;
+            font-size: 13px;
+
+            i {
+                flex-shrink: 0;
+            }
+        }
+
+        .save-template-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+
+                label {
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: var(--main-text-color);
+                }
+
+                input[type="text"] {
+                    padding: 8px 12px;
+                    background: var(--block-bg-color);
+                    border: 1px solid var(--border-color);
+                    border-radius: 6px;
+                    color: var(--main-text-color);
+                    font-size: 14px;
+
+                    &:focus {
+                        outline: none;
+                        border-color: var(--accent-color);
+                    }
+
+                    &::placeholder {
+                        color: var(--secondary-text-color);
+                        opacity: 0.7;
+                    }
+
+                    &:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+                }
+
+                .icon-picker {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+
+                    .icon-option {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 36px;
+                        height: 36px;
+                        background: var(--block-bg-color);
+                        border: 2px solid var(--border-color);
+                        border-radius: 6px;
+                        color: var(--secondary-text-color);
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+
+                        &:hover:not(:disabled) {
+                            border-color: var(--accent-color);
+                            color: var(--main-text-color);
+                        }
+
+                        &.selected {
+                            border-color: var(--accent-color);
+                            background: rgba(var(--accent-color-rgb), 0.1);
+                            color: var(--accent-color);
+                        }
+
+                        &:disabled {
+                            opacity: 0.5;
+                            cursor: not-allowed;
+                        }
+
+                        i {
+                            font-size: 14px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

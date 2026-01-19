@@ -11,12 +11,13 @@
       style-src 'self' 'unsafe-inline';
       font-src 'self' data:;
       img-src 'self' data: blob: https:;
-      connect-src 'self' ws: wss: https:;
+      connect-src 'self' ws: wss: https: http://127.0.0.1:* http://localhost:*;
       media-src 'self' blob:;
       worker-src 'self' blob:;
       frame-src 'self';
     " />
     <title>Liatrio Code</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" />
     <link rel="stylesheet" href="/fontawesome/css/brands.min.css" />
     <link rel="stylesheet" href="/fontawesome/css/solid.min.css" />

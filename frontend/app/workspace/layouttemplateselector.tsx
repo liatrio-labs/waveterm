@@ -3,26 +3,32 @@
 
 import clsx from "clsx";
 import React from "react";
+import { useAtomValue } from "jotai";
 import { CW_LAYOUT_TEMPLATES, CWLayoutTemplate, DEFAULT_TEMPLATE } from "./cwtemplates";
+import { customTemplatesAtom } from "@/app/store/cwsettingsstate";
 import "./layouttemplateselector.scss";
 
 interface LayoutTemplateSelectorProps {
     selectedTemplateId?: string;
     onSelectTemplate: (template: CWLayoutTemplate) => void;
     showDefault?: boolean;
+    showCustom?: boolean;
 }
 
 export const LayoutTemplateSelector: React.FC<LayoutTemplateSelectorProps> = ({
     selectedTemplateId,
     onSelectTemplate,
     showDefault = true,
+    showCustom = true,
 }) => {
     const effectiveSelectedId = selectedTemplateId || DEFAULT_TEMPLATE.id;
+    const storedCustomTemplates = useAtomValue(customTemplatesAtom);
+    const customTemplates: CWLayoutTemplate[] = Array.isArray(storedCustomTemplates) ? storedCustomTemplates : [];
 
     return (
         <div className="layout-template-selector">
             {showDefault && (
-                <div className="template-section-label">Layout Templates</div>
+                <div className="template-section-label">Built-in Templates</div>
             )}
             <div className="template-grid">
                 {CW_LAYOUT_TEMPLATES.map((template) => (
@@ -51,6 +57,39 @@ export const LayoutTemplateSelector: React.FC<LayoutTemplateSelectorProps> = ({
                     </div>
                 ))}
             </div>
+
+            {showCustom && customTemplates.length > 0 && (
+                <>
+                    <div className="template-section-label" style={{ marginTop: "16px" }}>
+                        Custom Templates
+                    </div>
+                    <div className="template-grid">
+                        {customTemplates.map((template) => (
+                            <div
+                                key={template.id}
+                                className={clsx("template-card", "custom", {
+                                    selected: template.id === effectiveSelectedId,
+                                })}
+                                onClick={() => onSelectTemplate(template)}
+                            >
+                                <div className="template-thumbnail">
+                                    <TemplateThumbnail template={template} />
+                                </div>
+                                <div className="template-info">
+                                    <div className="template-name">
+                                        <i className={`fa fa-${template.icon || "columns"}`} />
+                                        {template.name}
+                                    </div>
+                                    <div className="template-description">
+                                        {template.description || "Custom template"}
+                                    </div>
+                                </div>
+                                <div className="template-badge custom">Custom</div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

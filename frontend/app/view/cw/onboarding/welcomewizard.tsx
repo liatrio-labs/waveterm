@@ -18,6 +18,8 @@ import {
     tourCompletedAtom,
     setSettingsValue,
 } from "@/app/store/cwsettingsstate";
+import { getApi } from "@/app/store/global";
+import { setProjectPath } from "@/app/store/cwstate";
 
 import "./welcomewizard.scss";
 
@@ -77,11 +79,38 @@ function Step1Welcome({ onNext, onSkip }: WizardStepProps) {
 
 function Step2Defaults({ onNext, onBack, onSkip }: WizardStepProps) {
     const [sessionCount, setSessionCount] = useState(3);
+    const [repoPath, setRepoPath] = useState<string | null>(null);
+
+    const handleBrowseRepo = async () => {
+        try {
+            const result = await getApi().showOpenDialog({
+                properties: ["openDirectory"],
+                title: "Select Git Repository",
+                buttonLabel: "Select Folder",
+            });
+            if (!result.canceled && result.filePaths.length > 0) {
+                setRepoPath(result.filePaths[0]);
+            }
+        } catch (err) {
+            console.error("[WelcomeWizard] Failed to open folder dialog:", err);
+        }
+    };
 
     const handleNext = useCallback(async () => {
-        await setSettingsValue("cw:defaultsessioncount", sessionCount);
-        onNext();
-    }, [sessionCount, onNext]);
+        try {
+            await setSettingsValue("cw:defaultsessioncount", sessionCount);
+            // Set the initial project path if user selected one
+            if (repoPath) {
+                await setSettingsValue("cw:defaultprojectpath", repoPath);
+                setProjectPath(repoPath);
+            }
+            onNext();
+        } catch (err) {
+            console.error("[WelcomeWizard] Step2 error:", err);
+            // Continue anyway if settings fail to save
+            onNext();
+        }
+    }, [sessionCount, repoPath, onNext]);
 
     return (
         <div className="wizard-step">
@@ -109,6 +138,23 @@ function Step2Defaults({ onNext, onBack, onSkip }: WizardStepProps) {
                         ))}
                     </div>
                 </div>
+
+                <div className="wizard-form-group">
+                    <label>Default Repository (Optional)</label>
+                    <p className="wizard-form-hint">Set a default git repository for your workspace</p>
+                    <div className="wizard-repo-picker">
+                        <input
+                            type="text"
+                            value={repoPath || ""}
+                            placeholder="No repository selected"
+                            readOnly
+                        />
+                        <Button className="ghost small" onClick={handleBrowseRepo}>
+                            <i className="fa-solid fa-folder-open" />
+                            Browse
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <div className="wizard-step-actions">
@@ -130,9 +176,14 @@ function Step3Notifications({ onNext, onBack, onSkip }: WizardStepProps) {
     const [notificationStyle, setNotificationStyle] = useState("rich");
 
     const handleNext = useCallback(async () => {
-        await setSettingsValue("cw:notificationsenabled", notificationsEnabled);
-        await setSettingsValue("cw:notificationstyle", notificationStyle);
-        onNext();
+        try {
+            await setSettingsValue("cw:notificationsenabled", notificationsEnabled);
+            await setSettingsValue("cw:notificationstyle", notificationStyle);
+            onNext();
+        } catch (err) {
+            console.error("[WelcomeWizard] Step3 error:", err);
+            onNext();
+        }
     }, [notificationsEnabled, notificationStyle, onNext]);
 
     return (
@@ -198,8 +249,13 @@ function Step4Shortcuts({ onNext, onBack, onSkip }: WizardStepProps) {
     const [profile, setProfile] = useState("default");
 
     const handleNext = useCallback(async () => {
-        await setSettingsValue("cw:shortcutprofile", profile);
-        onNext();
+        try {
+            await setSettingsValue("cw:shortcutprofile", profile);
+            onNext();
+        } catch (err) {
+            console.error("[WelcomeWizard] Step4 error:", err);
+            onNext();
+        }
     }, [profile, onNext]);
 
     return (
@@ -250,7 +306,11 @@ function Step4Shortcuts({ onNext, onBack, onSkip }: WizardStepProps) {
     );
 }
 
-function Step5Ready({ onNext, onBack, onSkip }: WizardStepProps) {
+interface Step5Props extends WizardStepProps {
+    onComplete: () => void;
+}
+
+function Step5Ready({ onBack, onComplete }: Step5Props) {
     return (
         <div className="wizard-step">
             <div className="wizard-step-icon success">
@@ -276,7 +336,7 @@ function Step5Ready({ onNext, onBack, onSkip }: WizardStepProps) {
                     <i className="fa-solid fa-arrow-left" />
                     Back
                 </Button>
-                <Button className="solid green" onClick={onNext}>
+                <Button className="solid green" onClick={onComplete}>
                     <i className="fa-solid fa-rocket" />
                     Start Using Liatrio Code
                 </Button>
@@ -292,13 +352,24 @@ function Step5Ready({ onNext, onBack, onSkip }: WizardStepProps) {
 export function WelcomeWizard() {
     const [currentStep, setCurrentStep] = useState<WizardStep>(1);
 
+    const completeWizard = useCallback(async () => {
+        console.log("[WelcomeWizard] completeWizard called");
+        try {
+            await setSettingsValue("cw:onboardingcompleted", true);
+        } catch (err) {
+            console.error("[WelcomeWizard] Failed to save completion state:", err);
+        }
+        modalsModel.popModal();
+    }, []);
+
     const handleNext = useCallback(() => {
+        console.log("[WelcomeWizard] handleNext called, currentStep:", currentStep);
         if (currentStep < 5) {
             setCurrentStep((s) => (s + 1) as WizardStep);
         } else {
             completeWizard();
         }
-    }, [currentStep]);
+    }, [currentStep, completeWizard]);
 
     const handleBack = useCallback(() => {
         if (currentStep > 1) {
@@ -308,12 +379,7 @@ export function WelcomeWizard() {
 
     const handleSkip = useCallback(() => {
         completeWizard();
-    }, []);
-
-    const completeWizard = async () => {
-        await setSettingsValue("cw:onboardingcompleted", true);
-        modalsModel.popModal();
-    };
+    }, [completeWizard]);
 
     const stepProps: WizardStepProps = {
         onNext: handleNext,
@@ -341,7 +407,7 @@ export function WelcomeWizard() {
                     {currentStep === 2 && <Step2Defaults {...stepProps} />}
                     {currentStep === 3 && <Step3Notifications {...stepProps} />}
                     {currentStep === 4 && <Step4Shortcuts {...stepProps} />}
-                    {currentStep === 5 && <Step5Ready {...stepProps} />}
+                    {currentStep === 5 && <Step5Ready {...stepProps} onComplete={completeWizard} />}
                 </div>
             </div>
         </div>

@@ -22,6 +22,7 @@ import {
     setSettingsValue,
     useQuickSettings,
 } from "@/app/store/cwsettingsstate";
+import { modalsModel } from "@/app/store/modalmodel";
 
 import "./quicksettings.scss";
 
@@ -105,6 +106,19 @@ function QuickSettingsContent({ onOpenFullSettings, onClose }: QuickSettingsCont
                 />
             </div>
 
+            <div className="quick-settings-actions">
+                <button
+                    className="quick-setting-action"
+                    onClick={() => {
+                        onClose();
+                        modalsModel.pushModal("SaveTemplateModal", {});
+                    }}
+                >
+                    <i className="fa-solid fa-floppy-disk" />
+                    <span>Save Layout as Template</span>
+                </button>
+            </div>
+
             <div className="quick-settings-footer">
                 <Button className="ghost small" onClick={onOpenFullSettings}>
                     <i className="fa-solid fa-gear" />
@@ -178,18 +192,13 @@ interface QuickSettingsButtonProps {
 }
 
 export function QuickSettingsButton({ onOpenFullSettings }: QuickSettingsButtonProps) {
-    const { toggle } = useQuickSettings();
-
     return (
-        <div className="quick-settings-container">
-            <Button
-                className="ghost"
-                onClick={toggle}
-                title="Quick Settings"
-            >
-                <i className="fa-solid fa-gear" />
-            </Button>
-            <QuickSettingsPanel onOpenFullSettings={onOpenFullSettings} />
-        </div>
+        <Button
+            className="ghost"
+            onClick={onOpenFullSettings}
+            title="Settings (⌘,)"
+        >
+            <i className="fa-solid fa-gear" />
+        </Button>
     );
 }

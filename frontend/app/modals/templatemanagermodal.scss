@@ -1,0 +1,226 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+.template-manager-modal {
+    min-width: 450px;
+    max-width: 550px;
+    max-height: 70vh;
+
+    .template-manager-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--main-text-color);
+
+            i {
+                color: var(--accent-color);
+            }
+        }
+
+        .template-manager-error {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 6px;
+            color: #ff3b30;
+            font-size: 13px;
+
+            i {
+                flex-shrink: 0;
+            }
+        }
+
+        .template-manager-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--secondary-text-color);
+
+            i {
+                font-size: 48px;
+                margin-bottom: 16px;
+                opacity: 0.5;
+            }
+
+            p {
+                margin: 0 0 4px 0;
+                font-size: 16px;
+                font-weight: 500;
+                color: var(--main-text-color);
+            }
+
+            span {
+                font-size: 13px;
+            }
+        }
+
+        .template-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 4px;
+
+            .template-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                background: var(--block-bg-color);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                transition: border-color 0.15s ease;
+
+                &:hover {
+                    border-color: var(--accent-color);
+                }
+
+                &.editing {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .template-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    background: rgba(var(--accent-color-rgb), 0.1);
+                    border-radius: 8px;
+                    color: var(--accent-color);
+                    flex-shrink: 0;
+
+                    i {
+                        font-size: 16px;
+                    }
+                }
+
+                .template-info {
+                    flex: 1;
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+
+                    .template-name {
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: var(--main-text-color);
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .template-description {
+                        font-size: 12px;
+                        color: var(--secondary-text-color);
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+
+                .template-actions {
+                    display: flex;
+                    gap: 4px;
+                    flex-shrink: 0;
+
+                    .action-btn {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 28px;
+                        height: 28px;
+                        background: transparent;
+                        border: none;
+                        border-radius: 4px;
+                        color: var(--secondary-text-color);
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+
+                        &:hover:not(:disabled) {
+                            background: var(--highlight-bg-color);
+                            color: var(--main-text-color);
+                        }
+
+                        &.danger:hover:not(:disabled) {
+                            background: rgba(255, 59, 48, 0.1);
+                            color: #ff3b30;
+                        }
+
+                        &:disabled {
+                            opacity: 0.5;
+                            cursor: not-allowed;
+                        }
+
+                        i {
+                            font-size: 12px;
+                        }
+                    }
+                }
+
+                .template-edit-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    width: 100%;
+
+                    input {
+                        padding: 8px 10px;
+                        background: var(--main-bg-color);
+                        border: 1px solid var(--border-color);
+                        border-radius: 4px;
+                        color: var(--main-text-color);
+                        font-size: 13px;
+
+                        &:focus {
+                            outline: none;
+                            border-color: var(--accent-color);
+                        }
+
+                        &::placeholder {
+                            color: var(--secondary-text-color);
+                            opacity: 0.7;
+                        }
+                    }
+
+                    .edit-actions {
+                        display: flex;
+                        justify-content: flex-end;
+                        gap: 8px;
+                        margin-top: 4px;
+                    }
+                }
+            }
+        }
+
+        .template-manager-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+
+            .template-count {
+                font-size: 12px;
+                color: var(--secondary-text-color);
+            }
+        }
+    }
+}

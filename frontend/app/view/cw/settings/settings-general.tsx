@@ -20,6 +20,7 @@ import {
 } from "@/app/store/cwsettingsstate";
 
 import { SettingRow, SettingToggle, SettingSelect, SettingNumber } from "./settings-common";
+import { ExportImportPanel } from "../backup/exportimport";
 
 export function SettingsGeneral() {
     const defaultSessionCount = useAtomValue(defaultSessionCountAtom) ?? 3;
@@ -83,6 +84,11 @@ export function SettingsGeneral() {
                     value={sandboxShowIndicator}
                     onChange={(v) => handleChange("cw:sandboxshowindicator", v)}
                 />
+            </div>
+
+            <div className="settings-section">
+                <h4>Backup & Restore</h4>
+                <ExportImportPanel />
             </div>
         </div>
     );

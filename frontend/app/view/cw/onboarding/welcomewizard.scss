@@ -181,6 +181,32 @@
     }
 }
 
+// Repo Picker
+.wizard-repo-picker {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    input {
+        flex: 1;
+        padding: 10px 12px;
+        background: var(--block-bg-color);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--main-text-color);
+        font-size: 13px;
+
+        &::placeholder {
+            color: var(--secondary-text-color);
+            opacity: 0.7;
+        }
+    }
+
+    .button {
+        flex-shrink: 0;
+    }
+}
+
 // Style Picker
 .wizard-style-picker {
     display: flex;

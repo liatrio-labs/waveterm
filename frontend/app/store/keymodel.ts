@@ -29,6 +29,7 @@ import { CHORD_TIMEOUT } from "@/util/sharedconst";
 import { fireAndForget } from "@/util/util";
 import * as jotai from "jotai";
 import { modalsModel } from "./modalmodel";
+import { shortcutOverlayOpenAtom } from "@/app/view/cw/shortcuts/shortcutoverlay";
 
 type KeyHandler = (event: WaveKeyboardEvent) => boolean;
 
@@ -665,6 +666,17 @@ function registerGlobalKeys() {
         // Toggle dashboard panel visibility
         const { toggleDashboardPanel } = require("@/app/store/dashboardstate");
         toggleDashboardPanel();
+        return true;
+    });
+    globalKeyMap.set("Cmd:Shift:/", () => {
+        // Toggle keyboard shortcuts overlay (Cmd+?)
+        const current = globalStore.get(shortcutOverlayOpenAtom);
+        globalStore.set(shortcutOverlayOpenAtom, !current);
+        return true;
+    });
+    globalKeyMap.set("Cmd:,", () => {
+        // Open settings view
+        createBlock({ meta: { view: "cwsettings" } });
         return true;
     });
     const allKeys = Array.from(globalKeyMap.keys());

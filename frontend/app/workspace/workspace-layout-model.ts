@@ -176,6 +176,12 @@ class WorkspaceLayoutModel {
         this.handleAIPanelResize(aiPanelPixelWidth, currentWindowWidth);
         const newPercentage = this.getAIPanelPercentage(currentWindowWidth);
         const mainContentPercentage = 100 - newPercentage;
+
+        // Skip setLayout if panel is collapsed (0%) to avoid react-resizable-panels error
+        if (newPercentage === 0 || mainContentPercentage === 0) {
+            return;
+        }
+
         this.inResize = true;
         const layout = [newPercentage, mainContentPercentage];
         this.panelGroupRef.setLayout(layout);

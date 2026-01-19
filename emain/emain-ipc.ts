@@ -266,6 +266,9 @@ export function initIpcHandlers() {
         "XDG_CACHE_HOME",
         "EDITOR",
         "VISUAL",
+        // Wave server endpoints (needed for frontend to connect to backend)
+        "WAVE_SERVER_WEB_ENDPOINT",
+        "WAVE_SERVER_WS_ENDPOINT",
     ]);
 
     electron.ipcMain.on("get-env", (event, varName) => {

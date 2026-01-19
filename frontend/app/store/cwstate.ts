@@ -10,6 +10,9 @@ import { useEffect, useCallback, useRef } from "react";
 import { globalStore } from "./jotaiStore";
 import { RpcApi } from "./wshclientapi";
 import { TabRpcClient } from "./wshrpcutil";
+import { activeTabIdAtom } from "@/app/store/tab-model";
+import * as WOS from "@/app/store/wos";
+import { ObjectService } from "@/app/store/services";
 
 // ============================================================================
 // Atoms
@@ -256,10 +259,43 @@ export async function getSessionStatus(projectPath: string, sessionId: string): 
 }
 
 /**
+ * Update all file browser (preview) blocks in the active tab to the given path
+ */
+async function updateFileBrowsersToPath(path: string): Promise<void> {
+    const activeTabId = globalStore.get(activeTabIdAtom);
+    if (!activeTabId) return;
+
+    const tabData = WOS.getObjectValue<Tab>(WOS.makeORef("tab", activeTabId));
+    if (!tabData?.blockids) return;
+
+    for (const blockId of tabData.blockids) {
+        const block = WOS.getObjectValue<Block>(WOS.makeORef("block", blockId));
+        if (!block?.meta) continue;
+
+        const viewType = block.meta.view;
+        if (viewType === "preview" || viewType === "directoryview") {
+            const blockOref = WOS.makeORef("block", blockId);
+            await ObjectService.UpdateObjectMeta(blockOref, { file: path });
+        }
+    }
+}
+
+/**
  * Set active session
  */
 export function setActiveSession(sessionId: string | null): void {
     globalStore.set(cwActiveSessionIdAtom, sessionId);
+
+    // Update file browsers to the session's worktree path
+    if (sessionId) {
+        const sessions = globalStore.get(cwSessionsAtom);
+        const session = sessions.find(s => s.id === sessionId);
+        if (session?.worktreePath) {
+            updateFileBrowsersToPath(session.worktreePath).catch(err => {
+                console.error("Failed to update file browsers:", err);
+            });
+        }
+    }
 }
 
 /**

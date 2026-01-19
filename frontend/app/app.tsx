@@ -22,6 +22,12 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { AppBackground } from "./app-bg";
 import { CenteredDiv } from "./element/quickelems";
 import { NotificationBubbles } from "./notification/notificationbubbles";
+import { ShortcutOverlay } from "./view/cw/shortcuts/shortcutoverlay";
+import { WelcomeWizard, shouldShowOnboarding } from "./view/cw/onboarding/welcomewizard";
+import { modalsModel } from "./store/modalmodel";
+
+// Track if onboarding has been shown this session to prevent re-showing after dismiss
+let onboardingShownThisSession = false;
 
 import "./app.scss";
 
@@ -283,6 +289,24 @@ const AppInner = () => {
     const windowData = useAtomValue(GlobalModel.getInstance().windowDataAtom);
     const isFullScreen = useAtomValue(atoms.isFullScreen);
 
+    // Check for first-run onboarding
+    useEffect(() => {
+        const checkOnboarding = async () => {
+            // Don't re-show if already shown this session
+            if (onboardingShownThisSession) {
+                return;
+            }
+            const show = await shouldShowOnboarding();
+            if (show) {
+                onboardingShownThisSession = true;
+                modalsModel.pushModal("WelcomeWizard", {});
+            }
+        };
+        // Small delay to ensure app is initialized
+        const timer = setTimeout(checkOnboarding, 500);
+        return () => clearTimeout(timer);
+    }, []);
+
     if (client == null || windowData == null) {
         return (
             <div className="flex flex-col w-full h-full">
@@ -308,6 +332,7 @@ const AppInner = () => {
                 <Workspace />
             </DndProvider>
             <FlashError />
+            <ShortcutOverlay />
             {isDev() ? <NotificationBubbles></NotificationBubbles> : null}
         </div>
     );
