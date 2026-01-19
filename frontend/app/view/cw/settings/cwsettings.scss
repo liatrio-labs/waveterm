@@ -449,6 +449,71 @@
 }
 
 // ============================================================================
+// Settings Info Box
+// ============================================================================
+
+.settings-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    background: rgba(var(--accent-color-rgb, 229, 123, 58), 0.1);
+    border: 1px solid rgba(var(--accent-color-rgb, 229, 123, 58), 0.2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--main-text-color);
+    line-height: 1.5;
+
+    i {
+        flex-shrink: 0;
+        margin-top: 2px;
+        color: var(--accent-color, #E57B3A);
+    }
+
+    code {
+        background: var(--block-bg-color);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        color: var(--accent-color, #E57B3A);
+    }
+}
+
+// ============================================================================
+// Settings Commands List
+// ============================================================================
+
+.settings-commands {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-command {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--panel-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    code {
+        flex-shrink: 0;
+        min-width: 200px;
+        font-size: 12px;
+        font-family: var(--termfontfamily, monospace);
+        color: var(--accent-color, #E57B3A);
+    }
+
+    span {
+        font-size: 12px;
+        color: var(--secondary-text-color);
+    }
+}
+
+// ============================================================================
 // Info Banner
 // ============================================================================
 

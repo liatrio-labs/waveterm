@@ -6,3 +6,4 @@ export { HierarchyDropdown } from "./HierarchyDropdown";
 export { TaskList } from "./TaskList";
 export { TaskDetailView } from "./TaskDetailView";
 export { TaskPanel, default } from "./TaskPanel";
+export { PlatformViewModel } from "./platform-model";

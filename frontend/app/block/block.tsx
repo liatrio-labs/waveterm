@@ -17,6 +17,7 @@ import { TsunamiViewModel } from "@/app/view/tsunami/tsunami";
 import { VDomModel } from "@/app/view/vdom/vdom-model";
 import { CwSessionsViewModel } from "@/app/view/cwsessions/cwsessions";
 import { CwSettingsViewModel } from "@/app/view/cw/settings/cwsettings";
+import { PlatformViewModel } from "@/app/platform/platform-model";
 import { DashboardViewModel } from "@/app/view/dashboard/dashboard";
 import { WelcomeScreenViewModel } from "@/app/view/welcomescreen/welcomescreen";
 import { ErrorBoundary } from "@/element/errorboundary";
@@ -62,6 +63,7 @@ BlockRegistry.set("aifilediff", AiFileDiffViewModel);
 BlockRegistry.set("waveconfig", WaveConfigViewModel);
 BlockRegistry.set("cwsessions", CwSessionsViewModel);
 BlockRegistry.set("cwsettings", CwSettingsViewModel);
+BlockRegistry.set("platform", PlatformViewModel);
 BlockRegistry.set("dashboard", DashboardViewModel);
 BlockRegistry.set("welcomescreen", WelcomeScreenViewModel);
 

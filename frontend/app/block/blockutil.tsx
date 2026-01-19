@@ -33,6 +33,9 @@ export function blockViewToIcon(view: string): string {
     if (view == "cwsessions") {
         return "git-branch";
     }
+    if (view == "platform") {
+        return "cloud";
+    }
     return "square";
 }
 
@@ -60,6 +63,9 @@ export function blockViewToName(view: string): string {
     }
     if (view == "cwsessions") {
         return "CW Sessions";
+    }
+    if (view == "platform") {
+        return "Platform";
     }
     return view;
 }

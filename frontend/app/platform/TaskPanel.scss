@@ -1,6 +1,14 @@
 // Copyright 2025, Liatrio
 // SPDX-License-Identifier: Apache-2.0
 
+// Wrapper for platform view block
+.platform-view {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 .task-panel {
     display: flex;
     flex-direction: column;

@@ -34,6 +34,7 @@ import { SettingsPlugins } from "./settings-plugins";
 import { SettingsMcp } from "./settings-mcp";
 import { SettingsShortcuts } from "./settings-shortcuts";
 import { SettingsAppearance } from "./settings-appearance";
+import { SettingsPlatform } from "./settings-platform";
 
 import "./cwsettings.scss";
 
@@ -155,6 +156,8 @@ function SettingsContent() {
                 return <SettingsShortcuts />;
             case "appearance":
                 return <SettingsAppearance />;
+            case "platform":
+                return <SettingsPlatform />;
             default:
                 return <div className="settings-placeholder">Select a category</div>;
         }

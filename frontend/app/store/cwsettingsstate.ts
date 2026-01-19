@@ -22,7 +22,8 @@ export type SettingsCategory =
     | "plugins"
     | "mcp"
     | "shortcuts"
-    | "appearance";
+    | "appearance"
+    | "platform";
 
 export interface SettingsCategoryInfo {
     id: SettingsCategory;
@@ -77,6 +78,12 @@ export const SETTINGS_CATEGORIES: SettingsCategoryInfo[] = [
         label: "Appearance",
         icon: "fa-palette",
         description: "Theme, colors, and visual preferences",
+    },
+    {
+        id: "platform",
+        label: "Platform",
+        icon: "fa-cloud",
+        description: "Agentic Platform integration settings",
     },
 ];
 
@@ -135,6 +142,13 @@ export const tourCompletedAtom = getSettingsKeyAtom("cw:tourcompleted");
 
 // Custom templates
 export const customTemplatesAtom = getSettingsKeyAtom("cw:customtemplates");
+
+// Platform settings
+export const platformEnabledAtom = getSettingsKeyAtom("platform:enabled");
+export const platformBaseUrlAtom = getSettingsKeyAtom("platform:baseUrl");
+export const platformDisplayModeAtom = getSettingsKeyAtom("platform:displayMode");
+export const platformPollIntervalAtom = getSettingsKeyAtom("platform:pollInterval");
+export const platformAutoInjectContextAtom = getSettingsKeyAtom("platform:autoInjectContext");
 
 // ============================================================================
 // Actions
@@ -204,6 +218,13 @@ export async function resetCategoryToDefaults(category: SettingsCategory): Promi
             "cw:dashboarddensity": "comfortable",
             "cw:tabstyle": "standard",
             "cw:accentcolor": "#E57B3A",
+        },
+        platform: {
+            "platform:enabled": false,
+            "platform:baseUrl": "https://agenticteam.dev",
+            "platform:displayMode": "sidebar",
+            "platform:pollInterval": 30000,
+            "platform:autoInjectContext": true,
         },
     };
 
