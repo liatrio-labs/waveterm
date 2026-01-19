@@ -92,6 +92,17 @@ type WshRpcInterface interface {
 	ProcessMetricsCommand(ctx context.Context, data CommandProcessMetricsData) (*ProcessMetricsData, error)
 	ProcessMetricsBatchCommand(ctx context.Context, data CommandProcessMetricsBatchData) (map[int32]*ProcessMetricsData, error)
 
+	// Liatrio Code platform integration commands
+	PlatformStatusCommand(ctx context.Context) (*PlatformStatusData, error)
+	PlatformProjectsCommand(ctx context.Context) (*PlatformProjectsData, error)
+	PlatformProductsCommand(ctx context.Context, data CommandPlatformProductsData) (*PlatformProductsData, error)
+	PlatformSpecsCommand(ctx context.Context, data CommandPlatformSpecsData) (*PlatformSpecsData, error)
+	PlatformTasksCommand(ctx context.Context, data CommandPlatformTasksData) (*PlatformTasksData, error)
+	PlatformTaskDetailCommand(ctx context.Context, data CommandPlatformTaskDetailData) (*PlatformTaskDetailData, error)
+	PlatformLinkCommand(ctx context.Context, data CommandPlatformLinkData) error
+	PlatformUnlinkCommand(ctx context.Context, data CommandPlatformUnlinkData) error
+	PlatformUpdateStatusCommand(ctx context.Context, data CommandPlatformUpdateStatusData) error
+
 	BlockInfoCommand(ctx context.Context, blockId string) (*BlockInfoData, error)
 	BlocksListCommand(ctx context.Context, data BlocksListRequest) ([]BlocksListEntry, error)
 	WaveInfoCommand(ctx context.Context) (*WaveInfoData, error)
@@ -836,4 +847,119 @@ type ProcessMetricsData struct {
 	MemoryRSS  uint64  `json:"memoryrss"`
 	Running    bool    `json:"running"`
 	Name       string  `json:"name,omitempty"`
+}
+
+// Liatrio Code platform integration types
+
+type CommandPlatformStatusData struct {
+	// No parameters needed
+}
+
+type PlatformStatusData struct {
+	Connected        bool               `json:"connected"`
+	OfflineMode      bool               `json:"offlineMode,omitempty"`
+	BaseURL          string             `json:"baseUrl"`
+	APIKeyConfigured bool               `json:"apiKeyConfigured"`
+	User             *PlatformUserData  `json:"user,omitempty"`
+	Error            string             `json:"error,omitempty"`
+}
+
+type PlatformUserData struct {
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatarUrl,omitempty"`
+}
+
+type CommandPlatformProjectsData struct {
+	// No parameters needed
+}
+
+type PlatformProjectsData struct {
+	Projects []PlatformProjectData `json:"projects"`
+}
+
+type PlatformProjectData struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type CommandPlatformProductsData struct {
+	ProjectID string `json:"projectId"`
+}
+
+type PlatformProductsData struct {
+	Products []PlatformProductData `json:"products"`
+}
+
+type PlatformProductData struct {
+	ID          string `json:"id"`
+	ProjectID   string `json:"projectId"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type CommandPlatformSpecsData struct {
+	ProductID string `json:"productId"`
+}
+
+type PlatformSpecsData struct {
+	Specs []PlatformSpecData `json:"specs"`
+}
+
+type PlatformSpecData struct {
+	ID        string `json:"id"`
+	ProductID string `json:"productId"`
+	Name      string `json:"name"`
+	Status    string `json:"status"`
+}
+
+type CommandPlatformTasksData struct {
+	SpecID string `json:"specId"`
+}
+
+type PlatformTasksData struct {
+	Tasks []PlatformTaskData `json:"tasks"`
+}
+
+type PlatformTaskData struct {
+	ID             string                `json:"id"`
+	SpecID         string                `json:"specId"`
+	Title          string                `json:"title"`
+	Description    string                `json:"description,omitempty"`
+	Status         string                `json:"status"`
+	CheckpointMode bool                  `json:"checkpointMode"`
+	SubTasks       []PlatformSubTaskData `json:"subTasks,omitempty"`
+}
+
+type PlatformSubTaskData struct {
+	ID     string `json:"id"`
+	TaskID string `json:"taskId"`
+	Title  string `json:"title"`
+	Status string `json:"status"`
+}
+
+type CommandPlatformTaskDetailData struct {
+	TaskID string `json:"taskId"`
+}
+
+type PlatformTaskDetailData struct {
+	Task PlatformTaskData `json:"task"`
+	Spec PlatformSpecData `json:"spec"`
+}
+
+type CommandPlatformLinkData struct {
+	TaskID      string `json:"taskId"`
+	WorktreeDir string `json:"worktreeDir,omitempty"`
+	Force       bool   `json:"force,omitempty"`
+}
+
+type CommandPlatformUnlinkData struct {
+	WorktreeDir string `json:"worktreeDir,omitempty"`
+}
+
+type CommandPlatformUpdateStatusData struct {
+	TaskID string `json:"taskId"`
+	Status string `json:"status"`
 }

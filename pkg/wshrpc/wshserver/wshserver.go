@@ -26,6 +26,7 @@ import (
 	"github.com/greggcoppen/claudewave/app/pkg/blockcontroller"
 	"github.com/greggcoppen/claudewave/app/pkg/blocklogger"
 	"github.com/greggcoppen/claudewave/app/pkg/cwmonitor"
+	"github.com/greggcoppen/claudewave/app/pkg/cwplatform"
 	"github.com/greggcoppen/claudewave/app/pkg/cwworktree"
 	"github.com/greggcoppen/claudewave/app/pkg/buildercontroller"
 	"github.com/greggcoppen/claudewave/app/pkg/filebackup"
@@ -846,6 +847,252 @@ func (ws *WshServer) ProcessMetricsBatchCommand(ctx context.Context, data wshrpc
 		}
 	}
 	return result, nil
+}
+
+// Platform integration commands
+
+func (ws *WshServer) PlatformStatusCommand(ctx context.Context) (*wshrpc.PlatformStatusData, error) {
+	status := &wshrpc.PlatformStatusData{
+		BaseURL: cwplatform.DefaultBaseURL,
+	}
+
+	// Check if API key is configured
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil || apiKey == "" {
+		status.APIKeyConfigured = false
+		status.Error = "Not logged in"
+		return status, nil
+	}
+	status.APIKeyConfigured = true
+
+	// Try to fetch user info
+	client := cwplatform.NewClient(apiKey)
+	user, err := client.GetCurrentUser(ctx)
+	if err != nil {
+		status.Connected = false
+		status.OfflineMode = true
+		status.Error = err.Error()
+		return status, nil
+	}
+
+	status.Connected = true
+	status.User = &wshrpc.PlatformUserData{
+		ID:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		AvatarURL: user.AvatarURL,
+	}
+
+	return status, nil
+}
+
+func (ws *WshServer) PlatformProjectsCommand(ctx context.Context) (*wshrpc.PlatformProjectsData, error) {
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+	projects, err := client.GetProjects(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &wshrpc.PlatformProjectsData{
+		Projects: make([]wshrpc.PlatformProjectData, len(projects)),
+	}
+	for i, p := range projects {
+		result.Projects[i] = wshrpc.PlatformProjectData{
+			ID:          p.ID,
+			Name:        p.Name,
+			Description: p.Description,
+		}
+	}
+
+	return result, nil
+}
+
+func (ws *WshServer) PlatformProductsCommand(ctx context.Context, data wshrpc.CommandPlatformProductsData) (*wshrpc.PlatformProductsData, error) {
+	if data.ProjectID == "" {
+		return nil, fmt.Errorf("projectId is required")
+	}
+
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+	products, err := client.GetProducts(ctx, data.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &wshrpc.PlatformProductsData{
+		Products: make([]wshrpc.PlatformProductData, len(products)),
+	}
+	for i, p := range products {
+		result.Products[i] = wshrpc.PlatformProductData{
+			ID:          p.ID,
+			ProjectID:   p.ProjectID,
+			Name:        p.Name,
+			Description: p.Description,
+		}
+	}
+
+	return result, nil
+}
+
+func (ws *WshServer) PlatformSpecsCommand(ctx context.Context, data wshrpc.CommandPlatformSpecsData) (*wshrpc.PlatformSpecsData, error) {
+	if data.ProductID == "" {
+		return nil, fmt.Errorf("productId is required")
+	}
+
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+	specs, err := client.GetSpecs(ctx, data.ProductID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &wshrpc.PlatformSpecsData{
+		Specs: make([]wshrpc.PlatformSpecData, len(specs)),
+	}
+	for i, s := range specs {
+		result.Specs[i] = wshrpc.PlatformSpecData{
+			ID:        s.ID,
+			ProductID: s.ProductID,
+			Name:      s.Name,
+			Status:    s.Status,
+		}
+	}
+
+	return result, nil
+}
+
+func (ws *WshServer) PlatformTasksCommand(ctx context.Context, data wshrpc.CommandPlatformTasksData) (*wshrpc.PlatformTasksData, error) {
+	if data.SpecID == "" {
+		return nil, fmt.Errorf("specId is required")
+	}
+
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+	tasks, err := client.GetTasks(ctx, data.SpecID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &wshrpc.PlatformTasksData{
+		Tasks: make([]wshrpc.PlatformTaskData, len(tasks)),
+	}
+	for i, t := range tasks {
+		subTasks := make([]wshrpc.PlatformSubTaskData, len(t.SubTasks))
+		for j, st := range t.SubTasks {
+			subTasks[j] = wshrpc.PlatformSubTaskData{
+				ID:     st.ID,
+				TaskID: st.TaskID,
+				Title:  st.Title,
+				Status: st.Status,
+			}
+		}
+		result.Tasks[i] = wshrpc.PlatformTaskData{
+			ID:             t.ID,
+			SpecID:         t.SpecID,
+			Title:          t.Title,
+			Description:    t.Description,
+			Status:         t.Status,
+			CheckpointMode: t.CheckpointMode,
+			SubTasks:       subTasks,
+		}
+	}
+
+	return result, nil
+}
+
+func (ws *WshServer) PlatformTaskDetailCommand(ctx context.Context, data wshrpc.CommandPlatformTaskDetailData) (*wshrpc.PlatformTaskDetailData, error) {
+	if data.TaskID == "" {
+		return nil, fmt.Errorf("taskId is required")
+	}
+
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+	task, spec, err := client.GetTaskWithSpec(ctx, data.TaskID)
+	if err != nil {
+		return nil, err
+	}
+
+	subTasks := make([]wshrpc.PlatformSubTaskData, len(task.SubTasks))
+	for i, st := range task.SubTasks {
+		subTasks[i] = wshrpc.PlatformSubTaskData{
+			ID:     st.ID,
+			TaskID: st.TaskID,
+			Title:  st.Title,
+			Status: st.Status,
+		}
+	}
+
+	return &wshrpc.PlatformTaskDetailData{
+		Task: wshrpc.PlatformTaskData{
+			ID:             task.ID,
+			SpecID:         task.SpecID,
+			Title:          task.Title,
+			Description:    task.Description,
+			Status:         task.Status,
+			CheckpointMode: task.CheckpointMode,
+			SubTasks:       subTasks,
+		},
+		Spec: wshrpc.PlatformSpecData{
+			ID:        spec.ID,
+			ProductID: spec.ProductID,
+			Name:      spec.Name,
+			Status:    spec.Status,
+		},
+	}, nil
+}
+
+func (ws *WshServer) PlatformLinkCommand(ctx context.Context, data wshrpc.CommandPlatformLinkData) error {
+	if data.TaskID == "" {
+		return fmt.Errorf("taskId is required")
+	}
+
+	// TODO: Implement worktree-to-task association storage
+	// For now, this is a placeholder that will be fully implemented in Task 5.0
+	return fmt.Errorf("not yet implemented - see Task 5.0")
+}
+
+func (ws *WshServer) PlatformUnlinkCommand(ctx context.Context, data wshrpc.CommandPlatformUnlinkData) error {
+	// TODO: Implement worktree-to-task unlink
+	// For now, this is a placeholder that will be fully implemented in Task 5.0
+	return fmt.Errorf("not yet implemented - see Task 5.0")
+}
+
+func (ws *WshServer) PlatformUpdateStatusCommand(ctx context.Context, data wshrpc.CommandPlatformUpdateStatusData) error {
+	if data.TaskID == "" {
+		return fmt.Errorf("taskId is required")
+	}
+	if data.Status == "" {
+		return fmt.Errorf("status is required")
+	}
+
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		return fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+	return client.UpdateTaskStatus(ctx, data.TaskID, data.Status)
 }
 
 func (ws *WshServer) ConnStatusCommand(ctx context.Context) ([]wshrpc.ConnStatus, error) {

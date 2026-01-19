@@ -59,13 +59,26 @@ var platformStatusCmd = &cobra.Command{
 	PreRunE: preRunSetupRpcClient,
 }
 
+var platformProjectsCmd = &cobra.Command{
+	Use:   "projects",
+	Short: "List available projects",
+	Long:  "List all projects accessible to the authenticated user on the platform.",
+	Args:  cobra.NoArgs,
+	RunE:  platformProjectsRun,
+	PreRunE: preRunSetupRpcClient,
+}
+
+var platformProjectsJSON bool
+
 func init() {
 	rootCmd.AddCommand(platformCmd)
 	platformCmd.AddCommand(platformLoginCmd)
 	platformCmd.AddCommand(platformLogoutCmd)
 	platformCmd.AddCommand(platformStatusCmd)
+	platformCmd.AddCommand(platformProjectsCmd)
 
 	platformStatusCmd.Flags().BoolVar(&platformStatusJSON, "json", false, "Output in JSON format")
+	platformProjectsCmd.Flags().BoolVar(&platformProjectsJSON, "json", false, "Output in JSON format")
 }
 
 func platformLoginRun(cmd *cobra.Command, args []string) (rtnErr error) {
@@ -268,4 +281,52 @@ func deleteStoredAPIKey() error {
 	var nilValue *string = nil
 	secrets := map[string]*string{cwplatform.PlatformAPIKeyName: nilValue}
 	return wshclient.SetSecretsCommand(RpcClient, secrets, &wshrpc.RpcOpts{Timeout: 2000})
+}
+
+func platformProjectsRun(cmd *cobra.Command, args []string) (rtnErr error) {
+	defer func() {
+		sendActivity("platform:projects", rtnErr == nil)
+	}()
+
+	// Check if logged in
+	apiKey, err := getStoredAPIKey()
+	if err != nil || apiKey == "" {
+		return fmt.Errorf("not logged in. Run 'wsh platform login' to authenticate")
+	}
+
+	// Fetch projects
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	client := cwplatform.NewClient(apiKey)
+	projects, err := client.GetProjects(ctx)
+	if err != nil {
+		return fmt.Errorf("fetching projects: %w", err)
+	}
+
+	if platformProjectsJSON {
+		jsonBytes, err := json.MarshalIndent(projects, "", "  ")
+		if err != nil {
+			return fmt.Errorf("marshaling projects: %w", err)
+		}
+		WriteStdout("%s\n", string(jsonBytes))
+		return nil
+	}
+
+	// Human-readable output
+	if len(projects) == 0 {
+		WriteStdout("No projects found.\n")
+		return nil
+	}
+
+	WriteStdout("Projects\n")
+	WriteStdout("========\n")
+	for _, p := range projects {
+		WriteStdout("  %s  %s\n", p.ID, p.Name)
+		if p.Description != "" {
+			WriteStdout("         %s\n", p.Description)
+		}
+	}
+
+	return nil
 }
