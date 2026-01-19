@@ -92,8 +92,21 @@ var platformUnlinkCmd = &cobra.Command{
 	PreRunE: preRunSetupRpcClient,
 }
 
+var platformContextCmd = &cobra.Command{
+	Use:   "context",
+	Short: "Display context for linked task",
+	Long: `Display the context that would be injected into a Claude Code session.
+
+This shows the task description, specification content, and sub-tasks that would
+be provided to Claude Code when starting a session on this worktree.`,
+	Args:    cobra.NoArgs,
+	RunE:    platformContextRun,
+	PreRunE: preRunSetupRpcClient,
+}
+
 var platformProjectsJSON bool
 var platformLinkForce bool
+var platformContextJSON bool
 
 func init() {
 	rootCmd.AddCommand(platformCmd)
@@ -103,10 +116,12 @@ func init() {
 	platformCmd.AddCommand(platformProjectsCmd)
 	platformCmd.AddCommand(platformLinkCmd)
 	platformCmd.AddCommand(platformUnlinkCmd)
+	platformCmd.AddCommand(platformContextCmd)
 
 	platformStatusCmd.Flags().BoolVar(&platformStatusJSON, "json", false, "Output in JSON format")
 	platformProjectsCmd.Flags().BoolVar(&platformProjectsJSON, "json", false, "Output in JSON format")
 	platformLinkCmd.Flags().BoolVar(&platformLinkForce, "force", false, "Force link even if task has active session")
+	platformContextCmd.Flags().BoolVar(&platformContextJSON, "json", false, "Output raw context data in JSON format")
 }
 
 func platformLoginRun(cmd *cobra.Command, args []string) (rtnErr error) {
@@ -496,5 +511,55 @@ func platformUnlinkRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	}
 
 	WriteStdout("Successfully unlinked from task: %s\n", existingAssoc.TaskTitle)
+	return nil
+}
+
+func platformContextRun(cmd *cobra.Command, args []string) (rtnErr error) {
+	defer func() {
+		sendActivity("platform:context", rtnErr == nil)
+	}()
+
+	// Get current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting current directory: %w", err)
+	}
+
+	// Check for task association
+	assoc, err := cwworktree.GetTaskAssociation(cwd)
+	if err != nil || assoc == nil {
+		WriteStdout("No task linked to this worktree.\n")
+		WriteStdout("Use 'wsh platform link <taskId>' to link a task.\n")
+		return nil
+	}
+
+	// Check if logged in
+	apiKey, err := getStoredAPIKey()
+	if err != nil || apiKey == "" {
+		return fmt.Errorf("not logged in. Run 'wsh platform login' to authenticate")
+	}
+
+	// Generate context
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	client := cwplatform.NewClient(apiKey)
+	contextData, err := client.GenerateContext(ctx, assoc.TaskID)
+	if err != nil {
+		return fmt.Errorf("generating context: %w", err)
+	}
+
+	if platformContextJSON {
+		jsonBytes, err := json.MarshalIndent(contextData, "", "  ")
+		if err != nil {
+			return fmt.Errorf("marshaling context: %w", err)
+		}
+		WriteStdout("%s\n", string(jsonBytes))
+		return nil
+	}
+
+	// Format and print the context prompt
+	prompt := cwplatform.FormatContextPrompt(contextData)
+	WriteStdout("%s", prompt)
 	return nil
 }
