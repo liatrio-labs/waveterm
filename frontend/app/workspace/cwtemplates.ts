@@ -238,18 +238,28 @@ interface BlockCreationInstruction {
 }
 
 /**
+ * Get a shortened path for display (last 2 path components)
+ */
+function getShortPath(fullPath: string): string {
+    const parts = fullPath.split('/');
+    return parts.length > 2 ? '.../' + parts.slice(-2).join('/') : fullPath;
+}
+
+/**
  * Flatten a layout node into creation instructions
  * This handles nested splits by converting them into sequential block creations
  *
  * @param node - The layout node to flatten
  * @param worktreePath - Optional worktree path for terminal/file browser blocks
  * @param baseIndex - The base index in the overall instructions array (for relativeTo references)
+ * @param sessionInfo - Optional session info for frame title display
  * @returns Array of creation instructions with correct relativeTo indices
  */
 function flattenLayoutNode(
     node: CWLayoutNode,
     worktreePath?: string,
-    baseIndex: number = 0
+    baseIndex: number = 0,
+    sessionInfo?: CWSessionInfo
 ): BlockCreationInstruction[] {
     if (node.type === "block") {
         const meta: Record<string, any> = {
@@ -268,6 +278,14 @@ function flattenLayoutNode(
             meta["file:path"] = worktreePath;
         }
 
+        // Add frame metadata for terminal blocks if session info provided
+        if (node.blockType === "term" && sessionInfo) {
+            meta["frame:title"] = sessionInfo.branchName || sessionInfo.name;
+            if (worktreePath) {
+                meta["frame:text"] = getShortPath(worktreePath);
+            }
+        }
+
         return [{ blockDef: { meta } }];
     }
 
@@ -276,7 +294,7 @@ function flattenLayoutNode(
         const isHorizontal = node.direction === "horizontal";
 
         // First child becomes the base block(s)
-        const firstChildInstructions = flattenLayoutNode(node.children[0], worktreePath, baseIndex);
+        const firstChildInstructions = flattenLayoutNode(node.children[0], worktreePath, baseIndex, sessionInfo);
         instructions.push(...firstChildInstructions);
 
         // Track the index of the last block in the first child group - this is the split target
@@ -284,7 +302,7 @@ function flattenLayoutNode(
 
         // Second child splits from the last block of the first child
         const secondChildBaseIndex = baseIndex + firstChildInstructions.length;
-        const secondChildInstructions = flattenLayoutNode(node.children[1], worktreePath, secondChildBaseIndex);
+        const secondChildInstructions = flattenLayoutNode(node.children[1], worktreePath, secondChildBaseIndex, sessionInfo);
 
         if (secondChildInstructions.length > 0) {
             // The first instruction of the second child gets the split action
@@ -302,6 +320,14 @@ function flattenLayoutNode(
 }
 
 /**
+ * Session info for frame title display
+ */
+export interface CWSessionInfo {
+    name: string;
+    branchName: string;
+}
+
+/**
  * Options for applying a layout template
  */
 export interface ApplyLayoutTemplateOptions {
@@ -310,12 +336,18 @@ export interface ApplyLayoutTemplateOptions {
     worktreePath?: string;
     autoStartClaude?: boolean;
     createBlockFn?: (data: CommandCreateBlockData) => Promise<ORef>;
+    sessionInfo?: CWSessionInfo;
 }
 
 /**
  * Apply a layout template to create blocks in a tab
  *
- * @param options - Configuration options for applying the template
+ * @param template - The layout template to apply
+ * @param tabId - The tab ID to create blocks in
+ * @param worktreePath - Optional worktree path for terminal/file browser blocks
+ * @param createBlockFn - Optional custom function to create blocks
+ * @param autoStartClaude - Whether to auto-start Claude Code in terminal
+ * @param sessionInfo - Optional session info for frame title display
  * @returns Promise resolving to array of created block IDs
  */
 export async function applyLayoutTemplate(
@@ -323,11 +355,12 @@ export async function applyLayoutTemplate(
     tabId: string,
     worktreePath?: string,
     createBlockFn?: (data: CommandCreateBlockData) => Promise<ORef>,
-    autoStartClaude?: boolean
+    autoStartClaude?: boolean,
+    sessionInfo?: CWSessionInfo
 ): Promise<string[]> {
     console.log("[applyLayoutTemplate] Template layout:", JSON.stringify(template.layout, null, 2));
 
-    const instructions = flattenLayoutNode(template.layout, worktreePath);
+    const instructions = flattenLayoutNode(template.layout, worktreePath, 0, sessionInfo);
     console.log("[applyLayoutTemplate] Flattened instructions:", instructions.map((inst, i) => ({
         index: i,
         blockType: inst.blockDef.meta?.view,

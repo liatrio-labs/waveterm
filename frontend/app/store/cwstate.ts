@@ -299,13 +299,68 @@ export function setActiveSession(sessionId: string | null): void {
 }
 
 /**
+ * Options for setting project path
+ */
+export interface SetProjectPathOptions {
+    tabId?: string;
+    autoOpenTerminals?: boolean;
+}
+
+/**
+ * Get a shortened path for display (last 2 path components)
+ */
+function getShortPath(fullPath: string): string {
+    const parts = fullPath.split('/');
+    return parts.length > 2 ? '.../' + parts.slice(-2).join('/') : fullPath;
+}
+
+/**
+ * Open terminals for all sessions in a project
+ */
+export async function openTerminalsForSessions(
+    tabId: string,
+    sessions: CWSession[]
+): Promise<void> {
+    for (const session of sessions) {
+        try {
+            await RpcApi.CreateBlockCommand(TabRpcClient, {
+                tabid: tabId,
+                blockdef: {
+                    meta: {
+                        view: "term",
+                        controller: "shell",
+                        "cmd:cwd": session.worktreePath,
+                        "frame:title": session.branchName || session.name,
+                        "frame:text": getShortPath(session.worktreePath),
+                    },
+                },
+                magnified: false,
+            });
+        } catch (err) {
+            console.error(`[cwstate] Failed to open terminal for session ${session.name}:`, err);
+        }
+    }
+}
+
+/**
  * Set project path
  */
-export function setProjectPath(path: string | null): void {
+export async function setProjectPath(
+    path: string | null,
+    options?: SetProjectPathOptions
+): Promise<void> {
     globalStore.set(cwProjectPathAtom, path);
     if (path) {
-        loadSessions(path);
+        // Update file browsers to the project path
+        await updateFileBrowsersToPath(path);
+
+        const sessions = await loadSessions(path);
         loadWebSessions(path);
+
+        // Auto-open terminals if requested and tabId provided
+        if (options?.autoOpenTerminals && options?.tabId && sessions.length > 0) {
+            await openTerminalsForSessions(options.tabId, sessions);
+        }
     } else {
         globalStore.set(cwSessionsAtom, []);
         globalStore.set(cwWebSessionsAtom, []);

@@ -30,8 +30,6 @@ import { atom, useAtom, useAtomValue, useSetAtom, PrimitiveAtom } from "jotai";
 import * as React from "react";
 import { useState, useEffect, useCallback } from "react";
 
-import { applyLayoutTemplate, getTemplateById, DEFAULT_TEMPLATE } from "@/app/workspace/cwtemplates";
-
 import "./cwsessions.scss";
 
 // ============================================================================
@@ -448,14 +446,23 @@ function EmptyState({ onCreateFirst }: { onCreateFirst: () => void }) {
     );
 }
 
-function NoProjectState() {
+function NoProjectState({ onBrowse }: { onBrowse: () => void }) {
     return (
         <div className="empty-state" role="region" aria-label="No project selected">
-            <div className="empty-state-icon" aria-hidden="true">
+            <button
+                className="empty-state-icon clickable"
+                onClick={onBrowse}
+                aria-label="Browse for git repository"
+                type="button"
+            >
                 <i className="fa-solid fa-folder-open" />
-            </div>
+            </button>
             <h3>Select a Project</h3>
-            <p>Enter the path to a git repository above to manage Liatrio Code sessions.</p>
+            <p>Enter the path to a git repository above or click the icon to browse.</p>
+            <Button className="solid green" onClick={onBrowse}>
+                <i className="fa-solid fa-folder-tree" aria-hidden="true" />
+                Browse for Project
+            </Button>
         </div>
     );
 }
@@ -501,6 +508,66 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
         setProjectPath(path);
     }, []);
 
+    const handleBrowseForProject = useCallback(async () => {
+        try {
+            const result = await getApi().showOpenDialog({
+                properties: ["openDirectory"],
+                title: "Select Git Repository",
+                buttonLabel: "Select Folder",
+            });
+            if (!result.canceled && result.filePaths.length > 0) {
+                const selectedPath = result.filePaths[0];
+                handleProjectPathChange(selectedPath);
+            }
+        } catch (err) {
+            console.error("[CwSessions] Failed to open folder dialog:", err);
+            setError("Failed to open folder browser");
+        }
+    }, [handleProjectPathChange]);
+
+    // Helper to get shortened path for display
+    const getShortPath = useCallback((fullPath: string): string => {
+        const parts = fullPath.split('/');
+        return parts.length > 2 ? '.../' + parts.slice(-2).join('/') : fullPath;
+    }, []);
+
+    const handleOpenTerminal = useCallback(async (session: CWSession) => {
+        try {
+            console.log("[CwSessions] Opening terminal for:", session.worktreePath);
+
+            // Get auto-start setting from block metadata
+            const blockMeta = globalStore.get(model.blockAtom)?.meta;
+            const autoStartClaude = blockMeta?.["cw:autostartclaude"] as boolean | undefined;
+
+            // Create a single terminal block with frame metadata showing session info
+            const blockId = await RpcApi.CreateBlockCommand(TabRpcClient, {
+                tabid: model.tabModel.tabId,
+                blockdef: {
+                    meta: {
+                        view: "term",
+                        controller: "shell",
+                        "cmd:cwd": session.worktreePath,
+                        "frame:title": session.branchName || session.name,
+                        "frame:text": getShortPath(session.worktreePath),
+                    },
+                },
+                magnified: false,
+            });
+
+            // Auto-start Claude Code if enabled (default: true)
+            if (autoStartClaude ?? true) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await RpcApi.ControllerInputCommand(TabRpcClient, {
+                    blockid: blockId,
+                    inputdata64: btoa("claude\n"),
+                });
+            }
+        } catch (err) {
+            console.error("[CwSessions] Failed to open terminal:", err);
+            setError("Failed to open terminal");
+        }
+    }, [model.tabModel, model.blockAtom, getShortPath]);
+
     const handleCreateSession = useCallback(async (name: string, branchName?: string) => {
         if (!projectPath) {
             setError("No project path set");
@@ -512,7 +579,10 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
         try {
             const result = await createSession(projectPath, { name, branchName });
             console.log("[CwSessions] Session created:", result);
-            if (!result) {
+            if (result) {
+                // Auto-open terminal for the new session
+                await handleOpenTerminal(result);
+            } else {
                 setError("Failed to create session");
             }
         } catch (err) {
@@ -521,7 +591,7 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
         } finally {
             setIsLoading(false);
         }
-    }, [projectPath]);
+    }, [projectPath, handleOpenTerminal]);
 
     const handleDeleteSession = useCallback(async (sessionId: string) => {
         if (!projectPath) return;
@@ -534,54 +604,6 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
             }
         }
     }, [projectPath]);
-
-    const handleOpenTerminal = useCallback(async (session: CWSession) => {
-        try {
-            console.log("[CwSessions] Opening terminal for:", session.worktreePath);
-
-            // Get the layout template and auto-start setting from block metadata
-            const blockMeta = globalStore.get(model.blockAtom)?.meta;
-            const templateId = blockMeta?.["cw:layouttemplate"] as string | undefined;
-            const autoStartClaude = blockMeta?.["cw:autostartclaude"] as boolean | undefined;
-            const template = templateId ? getTemplateById(templateId) : DEFAULT_TEMPLATE;
-
-            if (template) {
-                // Apply the full layout template with auto-start
-                await applyLayoutTemplate(
-                    template,
-                    model.tabModel.tabId,
-                    session.worktreePath,
-                    undefined,
-                    autoStartClaude ?? true // Default to true if not set
-                );
-            } else {
-                // Fallback to single terminal block
-                const oref = await RpcApi.CreateBlockCommand(TabRpcClient, {
-                    tabid: model.tabModel.tabId,
-                    blockdef: {
-                        meta: {
-                            view: "term",
-                            controller: "shell",
-                            "cmd:cwd": session.worktreePath,
-                        },
-                    },
-                    magnified: false,
-                });
-
-                // Auto-start Claude Code if enabled
-                if (autoStartClaude ?? true) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    await RpcApi.ControllerInputCommand(TabRpcClient, {
-                        blockid: oref.oid,
-                        inputdata64: btoa("claude\n"),
-                    });
-                }
-            }
-        } catch (err) {
-            console.error("[CwSessions] Failed to open terminal:", err);
-            setError("Failed to open terminal");
-        }
-    }, [model.tabModel, model.blockAtom]);
 
     const handleTeleportWebSession = useCallback((webSessionId: string) => {
         modalsModel.pushModal("TeleportModal", { webSessionId });
@@ -616,7 +638,7 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
 
             <div className="cwsessions-content">
                 {!projectPath ? (
-                    <NoProjectState />
+                    <NoProjectState onBrowse={handleBrowseForProject} />
                 ) : sessions.length === 0 ? (
                     <EmptyState onCreateFirst={() => setShowCreateDialog(true)} />
                 ) : (

@@ -1331,6 +1331,7 @@ declare global {
         "cw:tourcompleted"?: boolean;
         "cw:shortcutprofile"?: string;
         "cw:customshortcuts"?: string;
+        "cw:customtemplates"?: any[];
     };
 
     // waveobj.StickerClickOptsType
