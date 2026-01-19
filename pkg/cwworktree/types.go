@@ -7,11 +7,27 @@ import "errors"
 
 // WorktreeInfo contains basic information about a git worktree
 type WorktreeInfo struct {
-	Path       string `json:"path"`
-	BranchName string `json:"branchname"`
-	IsClean    bool   `json:"isclean"`
-	CommitHash string `json:"commithash"`
-	SessionID  string `json:"sessionid,omitempty"`
+	Path           string `json:"path"`
+	BranchName     string `json:"branchname"`
+	IsClean        bool   `json:"isclean"`
+	CommitHash     string `json:"commithash"`
+	SessionID      string `json:"sessionid,omitempty"`
+	PlatformTaskID string `json:"platformTaskId,omitempty"`
+	PlatformSpecID string `json:"platformSpecId,omitempty"`
+	TaskTitle      string `json:"taskTitle,omitempty"`
+	SpecContent    string `json:"specContent,omitempty"`
+}
+
+// TaskAssociation represents the link between a worktree and a platform task
+type TaskAssociation struct {
+	TaskID       string `json:"taskId"`
+	SpecID       string `json:"specId,omitempty"`
+	TaskTitle    string `json:"taskTitle,omitempty"`
+	SpecName     string `json:"specName,omitempty"`
+	SpecContent  string `json:"specContent,omitempty"`
+	LinkedAt     int64  `json:"linkedAt"`
+	LinkedBy     string `json:"linkedBy,omitempty"` // "manual" or "branch-pattern"
+	WorktreePath string `json:"worktreePath,omitempty"`
 }
 
 // WorktreeStatus contains detailed status of a worktree

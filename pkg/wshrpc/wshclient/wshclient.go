@@ -524,6 +524,60 @@ func PathCommand(w *wshutil.WshRpc, data wshrpc.PathCommandData, opts *wshrpc.Rp
 	return resp, err
 }
 
+// command "platformlink", wshserver.PlatformLinkCommand
+func PlatformLinkCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformLinkData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "platformlink", data, opts)
+	return err
+}
+
+// command "platformproducts", wshserver.PlatformProductsCommand
+func PlatformProductsCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformProductsData, opts *wshrpc.RpcOpts) (*wshrpc.PlatformProductsData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.PlatformProductsData](w, "platformproducts", data, opts)
+	return resp, err
+}
+
+// command "platformprojects", wshserver.PlatformProjectsCommand
+func PlatformProjectsCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) (*wshrpc.PlatformProjectsData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.PlatformProjectsData](w, "platformprojects", nil, opts)
+	return resp, err
+}
+
+// command "platformspecs", wshserver.PlatformSpecsCommand
+func PlatformSpecsCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformSpecsData, opts *wshrpc.RpcOpts) (*wshrpc.PlatformSpecsData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.PlatformSpecsData](w, "platformspecs", data, opts)
+	return resp, err
+}
+
+// command "platformstatus", wshserver.PlatformStatusCommand
+func PlatformStatusCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) (*wshrpc.PlatformStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.PlatformStatusData](w, "platformstatus", nil, opts)
+	return resp, err
+}
+
+// command "platformtaskdetail", wshserver.PlatformTaskDetailCommand
+func PlatformTaskDetailCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformTaskDetailData, opts *wshrpc.RpcOpts) (*wshrpc.PlatformTaskDetailData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.PlatformTaskDetailData](w, "platformtaskdetail", data, opts)
+	return resp, err
+}
+
+// command "platformtasks", wshserver.PlatformTasksCommand
+func PlatformTasksCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformTasksData, opts *wshrpc.RpcOpts) (*wshrpc.PlatformTasksData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.PlatformTasksData](w, "platformtasks", data, opts)
+	return resp, err
+}
+
+// command "platformunlink", wshserver.PlatformUnlinkCommand
+func PlatformUnlinkCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformUnlinkData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "platformunlink", data, opts)
+	return err
+}
+
+// command "platformupdatestatus", wshserver.PlatformUpdateStatusCommand
+func PlatformUpdateStatusCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformUpdateStatusData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "platformupdatestatus", data, opts)
+	return err
+}
+
 // command "processmetrics", wshserver.ProcessMetricsCommand
 func ProcessMetricsCommand(w *wshutil.WshRpc, data wshrpc.CommandProcessMetricsData, opts *wshrpc.RpcOpts) (*wshrpc.ProcessMetricsData, error) {
 	resp, err := sendRpcRequestCallHelper[*wshrpc.ProcessMetricsData](w, "processmetrics", data, opts)
