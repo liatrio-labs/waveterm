@@ -183,6 +183,7 @@ type SettingsType struct {
 	CWTourCompleted          *bool   `json:"cw:tourcompleted,omitempty"`
 	CWShortcutProfile        string  `json:"cw:shortcutprofile,omitempty"`
 	CWCustomShortcuts        string  `json:"cw:customshortcuts,omitempty"`
+	CWCustomTemplates        []any   `json:"cw:customtemplates,omitempty"`
 }
 
 func (s *SettingsType) GetAiSettings() *AiSettingsType {

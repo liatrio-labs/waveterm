@@ -240,11 +240,16 @@ interface BlockCreationInstruction {
 /**
  * Flatten a layout node into creation instructions
  * This handles nested splits by converting them into sequential block creations
+ *
+ * @param node - The layout node to flatten
+ * @param worktreePath - Optional worktree path for terminal/file browser blocks
+ * @param baseIndex - The base index in the overall instructions array (for relativeTo references)
+ * @returns Array of creation instructions with correct relativeTo indices
  */
 function flattenLayoutNode(
     node: CWLayoutNode,
     worktreePath?: string,
-    parentDirection?: "horizontal" | "vertical"
+    baseIndex: number = 0
 ): BlockCreationInstruction[] {
     if (node.type === "block") {
         const meta: Record<string, any> = {
@@ -270,16 +275,22 @@ function flattenLayoutNode(
         const instructions: BlockCreationInstruction[] = [];
         const isHorizontal = node.direction === "horizontal";
 
-        // First child becomes the base block
-        const firstChildInstructions = flattenLayoutNode(node.children[0], worktreePath, node.direction);
+        // First child becomes the base block(s)
+        const firstChildInstructions = flattenLayoutNode(node.children[0], worktreePath, baseIndex);
         instructions.push(...firstChildInstructions);
 
-        // Second child splits from the first
-        const secondChildInstructions = flattenLayoutNode(node.children[1], worktreePath, node.direction);
+        // Track the index of the last block in the first child group - this is the split target
+        const firstChildLastBlockIndex = baseIndex + firstChildInstructions.length - 1;
+
+        // Second child splits from the last block of the first child
+        const secondChildBaseIndex = baseIndex + firstChildInstructions.length;
+        const secondChildInstructions = flattenLayoutNode(node.children[1], worktreePath, secondChildBaseIndex);
+
         if (secondChildInstructions.length > 0) {
             // The first instruction of the second child gets the split action
+            // It should split from the last block of the first child
             secondChildInstructions[0].splitAction = isHorizontal ? "splitright" : "splitdown";
-            secondChildInstructions[0].relativeTo = 0; // Split from the first block in this group
+            secondChildInstructions[0].relativeTo = firstChildLastBlockIndex;
         }
         instructions.push(...secondChildInstructions);
 
@@ -314,7 +325,16 @@ export async function applyLayoutTemplate(
     createBlockFn?: (data: CommandCreateBlockData) => Promise<ORef>,
     autoStartClaude?: boolean
 ): Promise<string[]> {
+    console.log("[applyLayoutTemplate] Template layout:", JSON.stringify(template.layout, null, 2));
+
     const instructions = flattenLayoutNode(template.layout, worktreePath);
+    console.log("[applyLayoutTemplate] Flattened instructions:", instructions.map((inst, i) => ({
+        index: i,
+        blockType: inst.blockDef.meta?.view,
+        splitAction: inst.splitAction,
+        relativeTo: inst.relativeTo
+    })));
+
     const createdBlockIds: string[] = [];
     let firstTermBlockId: string | null = null;
 
@@ -463,7 +483,19 @@ export async function applyTemplateToExistingTab(
     // then auto-delete the empty workspace, and close the window.
 
     // Get the template instructions first
+    console.log("[applyTemplateToExistingTab] Template being applied:", template.name);
+    console.log("[applyTemplateToExistingTab] Template layout:", JSON.stringify(template.layout, null, 2));
+
     const instructions = flattenLayoutNode(template.layout, worktreePath);
+    console.log("[applyTemplateToExistingTab] Generated", instructions.length, "instructions:",
+        instructions.map((inst, i) => ({
+            index: i,
+            blockType: inst.blockDef.meta?.view,
+            splitAction: inst.splitAction,
+            relativeTo: inst.relativeTo
+        }))
+    );
+
     if (instructions.length === 0) {
         console.error("[applyTemplateToExistingTab] Template has no blocks");
         throw new Error("Template has no blocks");
@@ -564,15 +596,14 @@ export async function captureCurrentLayoutAsTemplate(
     const { RpcApi } = await import("@/app/store/wshclientapi");
     const { TabRpcClient } = await import("@/app/store/wshrpcutil");
     const { globalStore } = await import("@/app/store/jotaiStore");
-    const { atoms } = await import("@/store/global");
     const WOS = await import("@/app/store/wos");
 
-    // Get tab data to get block IDs
+    // Get tab data to get layout state
     const tabORef = WOS.makeORef("tab", tabId);
     const tabAtom = WOS.getWaveObjectAtom<Tab>(tabORef);
     const tabData = globalStore.get(tabAtom);
 
-    if (!tabData || !tabData.blockids || tabData.blockids.length === 0) {
+    if (!tabData) {
         // Return a simple terminal-only template as fallback
         return {
             id: generateTemplateId(),
@@ -586,23 +617,14 @@ export async function captureCurrentLayoutAsTemplate(
         };
     }
 
-    // Get block info for each block
-    const blockInfos: { blockId: string; meta: any }[] = [];
-    for (const blockId of tabData.blockids) {
-        try {
-            const blockInfo = await RpcApi.BlockInfoCommand(TabRpcClient, blockId);
-            if (blockInfo?.block?.meta) {
-                blockInfos.push({
-                    blockId,
-                    meta: blockInfo.block.meta,
-                });
-            }
-        } catch (err) {
-            console.warn(`[captureLayout] Failed to get block info for ${blockId}:`, err);
-        }
-    }
+    // Get the layout state which contains the actual tree structure
+    const layoutStateORef = WOS.makeORef("layout", tabData.layoutstate);
+    const layoutStateAtom = WOS.getWaveObjectAtom<LayoutState>(layoutStateORef);
+    const layoutState = globalStore.get(layoutStateAtom);
 
-    if (blockInfos.length === 0) {
+    // Note: The property is 'rootnode' (lowercase) from Go JSON serialization
+    if (!layoutState?.rootnode) {
+        console.warn("[captureLayout] No rootnode found in layoutState:", layoutState);
         // Fallback to terminal-only
         return {
             id: generateTemplateId(),
@@ -616,10 +638,29 @@ export async function captureCurrentLayoutAsTemplate(
         };
     }
 
-    // Build layout from blocks
-    // For simplicity, create a horizontal split layout with all blocks
-    // This is a simplified approach - a full implementation would capture actual split ratios
-    const layout = buildLayoutFromBlocks(blockInfos);
+    // Build a map of blockId -> block meta for looking up block types
+    const blockMetaMap: Map<string, any> = new Map();
+    const blockIds = tabData.blockids || [];
+
+    for (const blockId of blockIds) {
+        try {
+            const blockInfo = await RpcApi.BlockInfoCommand(TabRpcClient, blockId);
+            if (blockInfo?.block?.meta) {
+                blockMetaMap.set(blockId, blockInfo.block.meta);
+            }
+        } catch (err) {
+            console.warn(`[captureLayout] Failed to get block info for ${blockId}:`, err);
+        }
+    }
+
+    // Log the raw Wave layout tree for debugging
+    console.log("[captureLayout] Raw Wave rootnode:", JSON.stringify(layoutState.rootnode, null, 2));
+    console.log("[captureLayout] Block meta map:", Array.from(blockMetaMap.entries()));
+
+    // Convert the Wave layout tree to our CWLayoutNode format
+    const layout = convertLayoutNodeToCWLayout(layoutState.rootnode, blockMetaMap);
+
+    console.log("[captureLayout] Converted CWLayout:", JSON.stringify(layout, null, 2));
 
     return {
         id: generateTemplateId(),
@@ -631,30 +672,103 @@ export async function captureCurrentLayoutAsTemplate(
 }
 
 /**
- * Build a CWLayoutNode from a list of blocks
- * Creates a balanced tree of horizontal splits
+ * Convert a Wave LayoutNode tree to a CWLayoutNode tree
+ * This preserves the actual split structure including vertical stacks
  */
-function buildLayoutFromBlocks(blockInfos: { blockId: string; meta: any }[]): CWLayoutNode {
-    if (blockInfos.length === 0) {
+function convertLayoutNodeToCWLayout(
+    node: LayoutNode,
+    blockMetaMap: Map<string, any>
+): CWLayoutNode {
+    // Leaf node - has data with blockId
+    if (node.data?.blockId) {
+        const meta = blockMetaMap.get(node.data.blockId);
+        return blockMetaToLayoutNode(meta);
+    }
+
+    // Split node - has children
+    if (node.children && node.children.length > 0) {
+        // Determine direction from flexDirection
+        // Row = horizontal split, Column = vertical split (stack)
+        const isHorizontal = node.flexDirection === "row";
+
+        if (node.children.length === 1) {
+            // Single child - recurse into it
+            return convertLayoutNodeToCWLayout(node.children[0], blockMetaMap);
+        }
+
+        if (node.children.length === 2) {
+            // Binary split - calculate ratio from sizes
+            const totalSize = node.children[0].size + node.children[1].size;
+            const ratio = node.children[0].size / totalSize;
+
+            return {
+                type: "split",
+                direction: isHorizontal ? "horizontal" : "vertical",
+                ratio: ratio,
+                children: [
+                    convertLayoutNodeToCWLayout(node.children[0], blockMetaMap),
+                    convertLayoutNodeToCWLayout(node.children[1], blockMetaMap),
+                ],
+            };
+        }
+
+        // More than 2 children - create nested binary splits
+        // This handles cases like 3+ stacked blocks
+        return buildNestedSplits(node.children, isHorizontal, blockMetaMap);
+    }
+
+    // Fallback to terminal block
+    return { type: "block", blockType: "term" };
+}
+
+/**
+ * Build nested binary splits from an array of children
+ * Converts [A, B, C] into a tree structure that preserves the linear arrangement
+ */
+function buildNestedSplits(
+    children: LayoutNode[],
+    isHorizontal: boolean,
+    blockMetaMap: Map<string, any>
+): CWLayoutNode {
+    if (children.length === 0) {
         return { type: "block", blockType: "term" };
     }
 
-    if (blockInfos.length === 1) {
-        return blockMetaToLayoutNode(blockInfos[0].meta);
+    if (children.length === 1) {
+        return convertLayoutNodeToCWLayout(children[0], blockMetaMap);
     }
 
-    // Create a balanced binary tree of splits
-    const mid = Math.floor(blockInfos.length / 2);
-    const leftBlocks = blockInfos.slice(0, mid);
-    const rightBlocks = blockInfos.slice(mid);
+    if (children.length === 2) {
+        const totalSize = children[0].size + children[1].size;
+        const ratio = children[0].size / totalSize;
+
+        return {
+            type: "split",
+            direction: isHorizontal ? "horizontal" : "vertical",
+            ratio: ratio,
+            children: [
+                convertLayoutNodeToCWLayout(children[0], blockMetaMap),
+                convertLayoutNodeToCWLayout(children[1], blockMetaMap),
+            ],
+        };
+    }
+
+    // For 3+ children, create a nested structure
+    // First child vs rest of children
+    const firstChild = children[0];
+    const restChildren = children.slice(1);
+
+    // Calculate sizes
+    const totalSize = children.reduce((sum, c) => sum + c.size, 0);
+    const firstRatio = firstChild.size / totalSize;
 
     return {
         type: "split",
-        direction: "horizontal",
-        ratio: leftBlocks.length / blockInfos.length,
+        direction: isHorizontal ? "horizontal" : "vertical",
+        ratio: firstRatio,
         children: [
-            buildLayoutFromBlocks(leftBlocks),
-            buildLayoutFromBlocks(rightBlocks),
+            convertLayoutNodeToCWLayout(firstChild, blockMetaMap),
+            buildNestedSplits(restChildren, isHorizontal, blockMetaMap),
         ],
     };
 }

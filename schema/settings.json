@@ -340,6 +340,10 @@
         },
         "cw:customshortcuts": {
           "type": "string"
+        },
+        "cw:customtemplates": {
+          "items": true,
+          "type": "array"
         }
       },
       "additionalProperties": false,

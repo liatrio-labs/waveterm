@@ -135,5 +135,6 @@ const (
 	ConfigKey_CWTourCompleted                = "cw:tourcompleted"
 	ConfigKey_CWShortcutProfile              = "cw:shortcutprofile"
 	ConfigKey_CWCustomShortcuts              = "cw:customshortcuts"
+	ConfigKey_CWCustomTemplates              = "cw:customtemplates"
 )
 
