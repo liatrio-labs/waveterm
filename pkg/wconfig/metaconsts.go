@@ -136,5 +136,12 @@ const (
 	ConfigKey_CWShortcutProfile              = "cw:shortcutprofile"
 	ConfigKey_CWCustomShortcuts              = "cw:customshortcuts"
 	ConfigKey_CWCustomTemplates              = "cw:customtemplates"
+
+	// Platform integration settings
+	ConfigKey_PlatformEnabled                = "platform:enabled"
+	ConfigKey_PlatformBaseUrl                = "platform:baseUrl"
+	ConfigKey_PlatformDisplayMode            = "platform:displayMode"
+	ConfigKey_PlatformPollInterval           = "platform:pollInterval"
+	ConfigKey_PlatformAutoInjectContext      = "platform:autoInjectContext"
 )
 

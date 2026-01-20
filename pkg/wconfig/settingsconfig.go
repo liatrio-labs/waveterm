@@ -184,6 +184,13 @@ type SettingsType struct {
 	CWShortcutProfile        string  `json:"cw:shortcutprofile,omitempty"`
 	CWCustomShortcuts        string  `json:"cw:customshortcuts,omitempty"`
 	CWCustomTemplates        []any   `json:"cw:customtemplates,omitempty"`
+
+	// Platform integration settings
+	PlatformEnabled          *bool   `json:"platform:enabled,omitempty"`
+	PlatformBaseUrl          string  `json:"platform:baseUrl,omitempty"`
+	PlatformDisplayMode      string  `json:"platform:displayMode,omitempty"`
+	PlatformPollInterval     int     `json:"platform:pollInterval,omitempty"`
+	PlatformAutoInjectContext *bool  `json:"platform:autoInjectContext,omitempty"`
 }
 
 func (s *SettingsType) GetAiSettings() *AiSettingsType {
