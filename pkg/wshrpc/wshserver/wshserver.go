@@ -1419,6 +1419,91 @@ func (ws *WshServer) GitHubCreatePRCommand(ctx context.Context, data wshrpc.Comm
 	}, nil
 }
 
+func (ws *WshServer) GitHubGetPRCommand(ctx context.Context, data wshrpc.CommandGitHubGetPRData) (*wshrpc.GitHubPRStatusData, error) {
+	if data.RepoOwner == "" || data.RepoName == "" {
+		return nil, fmt.Errorf("repoowner and reponame are required")
+	}
+	if data.PRNumber <= 0 {
+		return nil, fmt.Errorf("prnumber is required")
+	}
+
+	resp, err := cwgit.GetPullRequest(data.RepoOwner, data.RepoName, data.PRNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.GitHubPRStatusData{
+		Number:    resp.Number,
+		State:     resp.State,
+		Merged:    resp.Merged,
+		Mergeable: resp.Mergeable,
+		HTMLURL:   resp.HTMLURL,
+		Title:     resp.Title,
+		HeadRef:   resp.HeadRef,
+		BaseRef:   resp.BaseRef,
+	}, nil
+}
+
+func (ws *WshServer) GitHubGetPRByBranchCommand(ctx context.Context, data wshrpc.CommandGitHubGetPRByBranchData) (*wshrpc.GitHubPRStatusData, error) {
+	if data.RepoPath == "" {
+		return nil, fmt.Errorf("repopath is required")
+	}
+
+	// Get repo info
+	repoInfo, err := cwgit.GetRepoInfo(data.RepoPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repo info: %w", err)
+	}
+
+	// Get head branch - use provided or current
+	headBranch := data.HeadBranch
+	if headBranch == "" {
+		headBranch, err = cwgit.GetCurrentBranch(data.RepoPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get current branch: %w", err)
+		}
+	}
+
+	resp, err := cwgit.GetPullRequestByBranch(repoInfo.Owner, repoInfo.RepoName, headBranch)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp == nil {
+		return nil, nil // No PR found
+	}
+
+	return &wshrpc.GitHubPRStatusData{
+		Number:    resp.Number,
+		State:     resp.State,
+		Merged:    resp.Merged,
+		Mergeable: resp.Mergeable,
+		HTMLURL:   resp.HTMLURL,
+		Title:     resp.Title,
+		HeadRef:   resp.HeadRef,
+		BaseRef:   resp.BaseRef,
+	}, nil
+}
+
+func (ws *WshServer) GitHubMergePRCommand(ctx context.Context, data wshrpc.CommandGitHubMergePRData) error {
+	if data.RepoOwner == "" || data.RepoName == "" {
+		return fmt.Errorf("repoowner and reponame are required")
+	}
+	if data.PRNumber <= 0 {
+		return fmt.Errorf("prnumber is required")
+	}
+
+	return cwgit.MergePullRequest(data.RepoOwner, data.RepoName, data.PRNumber, data.MergeMethod)
+}
+
+func (ws *WshServer) GitPushBranchCommand(ctx context.Context, data wshrpc.CommandGitPushBranchData) error {
+	if data.RepoPath == "" {
+		return fmt.Errorf("repopath is required")
+	}
+
+	return cwgit.PushCurrentBranch(data.RepoPath, data.SetUpstream)
+}
+
 func (ws *WshServer) ConnStatusCommand(ctx context.Context) ([]wshrpc.ConnStatus, error) {
 	rtn := conncontroller.GetAllConnStatus()
 	return rtn, nil

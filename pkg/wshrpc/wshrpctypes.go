@@ -115,6 +115,10 @@ type WshRpcInterface interface {
 	GitHubAuthCommand(ctx context.Context, data CommandGitHubAuthData) error
 	GitHubAuthStatusCommand(ctx context.Context) (*GitHubAuthStatusData, error)
 	GitHubCreatePRCommand(ctx context.Context, data CommandGitHubPRCreateData) (*GitHubPRResponseData, error)
+	GitHubGetPRCommand(ctx context.Context, data CommandGitHubGetPRData) (*GitHubPRStatusData, error)
+	GitHubGetPRByBranchCommand(ctx context.Context, data CommandGitHubGetPRByBranchData) (*GitHubPRStatusData, error)
+	GitHubMergePRCommand(ctx context.Context, data CommandGitHubMergePRData) error
+	GitPushBranchCommand(ctx context.Context, data CommandGitPushBranchData) error
 
 	BlockInfoCommand(ctx context.Context, blockId string) (*BlockInfoData, error)
 	BlocksListCommand(ctx context.Context, data BlocksListRequest) ([]BlocksListEntry, error)
@@ -1092,4 +1096,38 @@ type CommandGitHubAuthData struct {
 
 type GitHubAuthStatusData struct {
 	Configured bool `json:"configured"`
+}
+
+type CommandGitHubGetPRData struct {
+	RepoOwner string `json:"repoowner"`
+	RepoName  string `json:"reponame"`
+	PRNumber  int    `json:"prnumber"`
+}
+
+type CommandGitHubGetPRByBranchData struct {
+	RepoPath   string `json:"repopath"`
+	HeadBranch string `json:"headbranch,omitempty"` // If empty, uses current branch
+}
+
+type CommandGitHubMergePRData struct {
+	RepoOwner   string `json:"repoowner"`
+	RepoName    string `json:"reponame"`
+	PRNumber    int    `json:"prnumber"`
+	MergeMethod string `json:"mergemethod,omitempty"` // "merge", "squash", or "rebase"
+}
+
+type CommandGitPushBranchData struct {
+	RepoPath    string `json:"repopath"`
+	SetUpstream bool   `json:"setupstream,omitempty"`
+}
+
+type GitHubPRStatusData struct {
+	Number    int    `json:"number"`
+	State     string `json:"state"`     // "open", "closed"
+	Merged    bool   `json:"merged"`
+	Mergeable *bool  `json:"mergeable"` // nil if unknown/pending
+	HTMLURL   string `json:"htmlurl"`
+	Title     string `json:"title"`
+	HeadRef   string `json:"headref"`
+	BaseRef   string `json:"baseref"`
 }

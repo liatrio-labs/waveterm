@@ -51,6 +51,18 @@ type GitHubPRResponse struct {
 	HTMLURL string `json:"htmlurl"`
 }
 
+// GitHubPRStatusResponse contains the status of a pull request
+type GitHubPRStatusResponse struct {
+	Number    int    `json:"number"`
+	State     string `json:"state"`     // "open", "closed"
+	Merged    bool   `json:"merged"`
+	Mergeable *bool  `json:"mergeable"` // nil if unknown/pending
+	HTMLURL   string `json:"htmlurl"`
+	Title     string `json:"title"`
+	HeadRef   string `json:"headref"`
+	BaseRef   string `json:"baseref"`
+}
+
 // GitRemoteInfo contains information parsed from a git remote URL
 type GitRemoteInfo struct {
 	Host      string `json:"host"`      // e.g., "github.com"

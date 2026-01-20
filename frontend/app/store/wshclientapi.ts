@@ -417,6 +417,26 @@ class RpcApiType {
         return client.wshRpcCall("githubcreatepr", data, opts);
     }
 
+    // command "githubgetpr" [call]
+    GitHubGetPRCommand(client: WshClient, data: CommandGitHubGetPRData, opts?: RpcOpts): Promise<GitHubPRStatusData> {
+        return client.wshRpcCall("githubgetpr", data, opts);
+    }
+
+    // command "githubgetprbybranch" [call]
+    GitHubGetPRByBranchCommand(client: WshClient, data: CommandGitHubGetPRByBranchData, opts?: RpcOpts): Promise<GitHubPRStatusData> {
+        return client.wshRpcCall("githubgetprbybranch", data, opts);
+    }
+
+    // command "githubmergepr" [call]
+    GitHubMergePRCommand(client: WshClient, data: CommandGitHubMergePRData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("githubmergepr", data, opts);
+    }
+
+    // command "gitpushbranch" [call]
+    GitPushBranchCommand(client: WshClient, data: CommandGitPushBranchData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("gitpushbranch", data, opts);
+    }
+
     // command "gitstageall" [call]
     GitStageAllCommand(client: WshClient, data: CommandGitStageAllData, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("gitstageall", data, opts);

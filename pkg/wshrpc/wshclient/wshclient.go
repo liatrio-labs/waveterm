@@ -506,6 +506,30 @@ func GitHubCreatePRCommand(w *wshutil.WshRpc, data wshrpc.CommandGitHubPRCreateD
 	return resp, err
 }
 
+// command "githubgetpr", wshserver.GitHubGetPRCommand
+func GitHubGetPRCommand(w *wshutil.WshRpc, data wshrpc.CommandGitHubGetPRData, opts *wshrpc.RpcOpts) (*wshrpc.GitHubPRStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.GitHubPRStatusData](w, "githubgetpr", data, opts)
+	return resp, err
+}
+
+// command "githubgetprbybranch", wshserver.GitHubGetPRByBranchCommand
+func GitHubGetPRByBranchCommand(w *wshutil.WshRpc, data wshrpc.CommandGitHubGetPRByBranchData, opts *wshrpc.RpcOpts) (*wshrpc.GitHubPRStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.GitHubPRStatusData](w, "githubgetprbybranch", data, opts)
+	return resp, err
+}
+
+// command "githubmergepr", wshserver.GitHubMergePRCommand
+func GitHubMergePRCommand(w *wshutil.WshRpc, data wshrpc.CommandGitHubMergePRData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "githubmergepr", data, opts)
+	return err
+}
+
+// command "gitpushbranch", wshserver.GitPushBranchCommand
+func GitPushBranchCommand(w *wshutil.WshRpc, data wshrpc.CommandGitPushBranchData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "gitpushbranch", data, opts)
+	return err
+}
+
 // command "gitstageall", wshserver.GitStageAllCommand
 func GitStageAllCommand(w *wshutil.WshRpc, data wshrpc.CommandGitStageAllData, opts *wshrpc.RpcOpts) error {
 	_, err := sendRpcRequestCallHelper[any](w, "gitstageall", data, opts)

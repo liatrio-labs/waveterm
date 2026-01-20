@@ -63,6 +63,25 @@ export const cwPollingEnabledAtom = atom<boolean>(true) as PrimitiveAtom<boolean
  */
 export const cwLastPollAtom = atom<number>(0) as PrimitiveAtom<number>;
 
+/**
+ * PR info by worktree path
+ */
+export interface SessionPRInfo {
+    number: number;
+    state: string;
+    merged: boolean;
+    mergeable?: boolean;
+    htmlUrl: string;
+    title: string;
+    headRef: string;
+    baseRef: string;
+    repoOwner: string;
+    repoName: string;
+    lastUpdated: number;
+}
+
+export const cwSessionPRsAtom = atom<Map<string, SessionPRInfo>>(new Map()) as PrimitiveAtom<Map<string, SessionPRInfo>>;
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -118,7 +137,7 @@ export async function setCWConfigValue(key: string, value: any): Promise<void> {
 }
 
 /**
- * Load sessions from worktrees
+ * Load sessions from worktrees with detailed git status
  */
 export async function loadSessions(projectPath: string): Promise<CWSession[]> {
     try {
@@ -127,6 +146,7 @@ export async function loadSessions(projectPath: string): Promise<CWSession[]> {
         const existingSessions = globalStore.get(cwSessionsAtom);
         const now = Date.now();
 
+        // Build initial sessions from worktree list
         const sessions: CWSession[] = worktrees
             .filter(wt => wt.sessionid) // Only include worktrees with session IDs
             .map(wt => {
@@ -135,22 +155,242 @@ export async function loadSessions(projectPath: string): Promise<CWSession[]> {
 
                 return {
                     id: existing?.id ?? generateSessionId(),
-                    name: wt.sessionid ?? existing?.name ?? `Session ${sessions.length + 1}`,
+                    name: wt.sessionid ?? existing?.name ?? `Session`,
                     worktreePath: wt.path,
                     branchName: wt.branchname,
                     status: wt.isclean ? "idle" as CWSessionStatus : "running" as CWSessionStatus,
                     terminalBlockId: existing?.terminalBlockId,
                     createdAt: existing?.createdAt ?? now,
                     lastActivityAt: now,
+                    // Preserve existing git status until updated
+                    uncommittedCount: existing?.uncommittedCount,
+                    stagedCount: existing?.stagedCount,
+                    ahead: existing?.ahead,
+                    behind: existing?.behind,
+                    isClean: wt.isclean,
                 };
             });
 
         globalStore.set(cwSessionsAtom, sessions);
         globalStore.set(cwLastPollAtom, now);
+
+        // Fetch detailed status for each session in background
+        fetchSessionsDetailedStatus(projectPath, sessions);
+
         return sessions;
     } catch (err) {
         console.error("Failed to load sessions:", err);
         return [];
+    }
+}
+
+/**
+ * Fetch detailed git status for all sessions (called in background)
+ */
+async function fetchSessionsDetailedStatus(projectPath: string, sessions: CWSession[]): Promise<void> {
+    try {
+        const updatedSessions = await Promise.all(
+            sessions.map(async (session) => {
+                try {
+                    const sessionName = session.worktreePath.split('/').pop() ?? '';
+                    const status = await RpcApi.WorktreeStatusCommand(TabRpcClient, {
+                        projectpath: projectPath,
+                        sessionname: sessionName,
+                    });
+
+                    if (status) {
+                        return {
+                            ...session,
+                            uncommittedCount: status.uncommittedfiles?.length ?? 0,
+                            stagedCount: status.stagedfiles?.length ?? 0,
+                            ahead: status.ahead ?? 0,
+                            behind: status.behind ?? 0,
+                            isClean: status.isclean ?? true,
+                        };
+                    }
+                } catch (err) {
+                    console.warn(`Failed to fetch status for session ${session.name}:`, err);
+                }
+                return session;
+            })
+        );
+
+        // Update the atom with detailed status
+        globalStore.set(cwSessionsAtom, updatedSessions);
+    } catch (err) {
+        console.error("Failed to fetch detailed session status:", err);
+    }
+}
+
+/**
+ * Get PR info for a session by its worktree path
+ */
+/**
+ * Parse repo owner and name from GitHub PR URL
+ */
+function parseRepoFromPRUrl(htmlUrl: string): { owner: string; name: string } | null {
+    // Match: https://github.com/owner/repo/pull/123
+    const match = htmlUrl.match(/github\.com\/([^/]+)\/([^/]+)\/pull\//);
+    if (!match) {
+        return null;
+    }
+    return { owner: match[1], name: match[2] };
+}
+
+export async function fetchSessionPRInfo(worktreePath: string): Promise<SessionPRInfo | null> {
+    try {
+        const prStatus = await RpcApi.GitHubGetPRByBranchCommand(TabRpcClient, {
+            repopath: worktreePath,
+        });
+
+        if (!prStatus) {
+            return null;
+        }
+
+        // Extract repo owner/name from the PR URL
+        const repoInfo = parseRepoFromPRUrl(prStatus.htmlurl);
+        if (!repoInfo) {
+            console.error("Could not parse repo info from PR URL:", prStatus.htmlurl);
+            return null;
+        }
+
+        const prInfo: SessionPRInfo = {
+            number: prStatus.number,
+            state: prStatus.state,
+            merged: prStatus.merged,
+            mergeable: prStatus.mergeable ?? undefined,
+            htmlUrl: prStatus.htmlurl,
+            title: prStatus.title,
+            headRef: prStatus.headref,
+            baseRef: prStatus.baseref,
+            repoOwner: repoInfo.owner,
+            repoName: repoInfo.name,
+            lastUpdated: Date.now(),
+        };
+
+        // Update the atom
+        const currentPRs = globalStore.get(cwSessionPRsAtom);
+        const newPRs = new Map(currentPRs);
+        newPRs.set(worktreePath, prInfo);
+        globalStore.set(cwSessionPRsAtom, newPRs);
+
+        return prInfo;
+    } catch (err) {
+        console.error(`Failed to fetch PR info for ${worktreePath}:`, err);
+        return null;
+    }
+}
+
+/**
+ * Set PR info for a session after creating a PR
+ */
+export function setSessionPRInfo(worktreePath: string, prResponse: GitHubPRResponseData): void {
+    // Extract repo owner/name from the PR URL
+    const repoInfo = parseRepoFromPRUrl(prResponse.htmlurl);
+
+    const prInfo: SessionPRInfo = {
+        number: prResponse.number,
+        state: "open",
+        merged: false,
+        htmlUrl: prResponse.htmlurl,
+        title: "",
+        headRef: "",
+        baseRef: "",
+        repoOwner: repoInfo?.owner ?? "",
+        repoName: repoInfo?.name ?? "",
+        lastUpdated: Date.now(),
+    };
+
+    const currentPRs = globalStore.get(cwSessionPRsAtom);
+    const newPRs = new Map(currentPRs);
+    newPRs.set(worktreePath, prInfo);
+    globalStore.set(cwSessionPRsAtom, newPRs);
+}
+
+/**
+ * Clear PR info for a session (e.g., after merge and cleanup)
+ */
+export function clearSessionPRInfo(worktreePath: string): void {
+    const currentPRs = globalStore.get(cwSessionPRsAtom);
+    const newPRs = new Map(currentPRs);
+    newPRs.delete(worktreePath);
+    globalStore.set(cwSessionPRsAtom, newPRs);
+}
+
+/**
+ * Merge a PR for a session
+ */
+export async function mergeSessionPR(worktreePath: string, mergeMethod?: string): Promise<boolean> {
+    try {
+        // Get the PR info first
+        const currentPRs = globalStore.get(cwSessionPRsAtom);
+        const prInfo = currentPRs.get(worktreePath);
+
+        if (!prInfo) {
+            console.error("No PR info found for worktree:", worktreePath);
+            return false;
+        }
+
+        // Use stored repo owner/name (extracted when PR was fetched)
+        if (!prInfo.repoOwner || !prInfo.repoName) {
+            console.error("Missing repo owner/name in PR info for:", worktreePath);
+            return false;
+        }
+
+        await RpcApi.GitHubMergePRCommand(TabRpcClient, {
+            repoowner: prInfo.repoOwner,
+            reponame: prInfo.repoName,
+            prnumber: prInfo.number,
+            mergemethod: mergeMethod || "squash",
+        });
+
+        // Update the PR info to show merged
+        const updatedPRInfo: SessionPRInfo = {
+            ...prInfo,
+            state: "closed",
+            merged: true,
+            lastUpdated: Date.now(),
+        };
+        const newPRs = new Map(currentPRs);
+        newPRs.set(worktreePath, updatedPRInfo);
+        globalStore.set(cwSessionPRsAtom, newPRs);
+
+        return true;
+    } catch (err) {
+        console.error("Failed to merge PR:", err);
+        return false;
+    }
+}
+
+/**
+ * Push the current branch for a session
+ */
+export async function pushSessionBranch(worktreePath: string, setUpstream: boolean = true): Promise<boolean> {
+    try {
+        await RpcApi.GitPushBranchCommand(TabRpcClient, {
+            repopath: worktreePath,
+            setupstream: setUpstream,
+        });
+        return true;
+    } catch (err) {
+        console.error("Failed to push branch:", err);
+        return false;
+    }
+}
+
+/**
+ * Sync a session from main (fetch + rebase)
+ */
+export async function syncSessionFromMain(projectPath: string, sessionName: string): Promise<boolean> {
+    try {
+        await RpcApi.WorktreeSyncCommand(TabRpcClient, {
+            projectpath: projectPath,
+            sessionname: sessionName,
+        });
+        return true;
+    } catch (err) {
+        console.error("Failed to sync session from main:", err);
+        throw err;
     }
 }
 

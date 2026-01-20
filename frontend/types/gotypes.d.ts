@@ -391,12 +391,39 @@ declare global {
         token: string;
     };
 
+    // wshrpc.CommandGitHubGetPRByBranchData
+    type CommandGitHubGetPRByBranchData = {
+        repopath: string;
+        headbranch?: string;
+    };
+
+    // wshrpc.CommandGitHubGetPRData
+    type CommandGitHubGetPRData = {
+        repoowner: string;
+        reponame: string;
+        prnumber: number;
+    };
+
+    // wshrpc.CommandGitHubMergePRData
+    type CommandGitHubMergePRData = {
+        repoowner: string;
+        reponame: string;
+        prnumber: number;
+        mergemethod?: string;
+    };
+
     // wshrpc.CommandGitHubPRCreateData
     type CommandGitHubPRCreateData = {
         repopath: string;
         title: string;
         body: string;
         basebranch?: string;
+    };
+
+    // wshrpc.CommandGitPushBranchData
+    type CommandGitPushBranchData = {
+        repopath: string;
+        setupstream?: boolean;
     };
 
     // wshrpc.CommandGitStageAllData
@@ -1055,6 +1082,18 @@ declare global {
         number: number;
         url: string;
         htmlurl: string;
+    };
+
+    // wshrpc.GitHubPRStatusData
+    type GitHubPRStatusData = {
+        number: number;
+        state: string;
+        merged: boolean;
+        mergeable: boolean;
+        htmlurl: string;
+        title: string;
+        headref: string;
+        baseref: string;
     };
 
     // waveobj.LayoutActionData

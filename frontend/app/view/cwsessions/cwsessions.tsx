@@ -12,6 +12,7 @@ import {
     cwActiveSessionIdAtom,
     cwConfigAtom,
     cwWebSessionsAtom,
+    cwSessionPRsAtom,
     loadSessions,
     createSession,
     deleteSession,
@@ -19,11 +20,17 @@ import {
     setProjectPath,
     loadCWConfig,
     useCWWebSessionActions,
+    fetchSessionPRInfo,
+    mergeSessionPR,
+    pushSessionBranch,
+    syncSessionFromMain,
+    SessionPRInfo,
 } from "@/app/store/cwstate";
 import { modalsModel } from "@/app/store/modalmodel";
 import { globalStore } from "@/app/store/jotaiStore";
 import { atoms } from "@/store/global";
 import { Button } from "@/app/element/button";
+import { PRModal } from "@/app/view/cwgitchanges/components/pr-modal";
 import clsx from "clsx";
 import * as jotai from "jotai";
 import { atom, useAtom, useAtomValue, useSetAtom, PrimitiveAtom } from "jotai";
@@ -39,10 +46,16 @@ import "./cwsessions.scss";
 interface SessionItemProps {
     session: CWSession;
     isActive: boolean;
+    prInfo: SessionPRInfo | null;
+    isSyncing: boolean;
     onSelect: () => void;
     onDelete: () => void;
     onOpenTerminal: () => void;
     onLaunchClaude: () => void;
+    onCreatePR: () => void;
+    onMergePR: () => void;
+    onRefreshPR: () => void;
+    onSyncFromMain: () => void;
 }
 
 interface WebSessionItemProps {
@@ -134,13 +147,121 @@ function SessionStatusBadge({ status }: { status: CWSessionStatus }) {
     );
 }
 
-const SessionItem = React.memo(function SessionItem({ session, isActive, onSelect, onDelete, onOpenTerminal, onLaunchClaude }: SessionItemProps) {
+function FileChangeBadges({ session }: { session: CWSession }) {
+    const { uncommittedCount, stagedCount, ahead, behind, isClean } = session;
+
+    // If clean with no ahead/behind, show a clean badge
+    if (isClean && !ahead && !behind) {
+        return (
+            <div className="file-change-badges">
+                <span className="change-badge clean" title="Working tree clean">
+                    <i className="fa-solid fa-check" aria-hidden="true" />
+                    Clean
+                </span>
+            </div>
+        );
+    }
+
+    const badges = [];
+
+    // Staged changes (blue)
+    if (stagedCount && stagedCount > 0) {
+        badges.push(
+            <span key="staged" className="change-badge staged" title={`${stagedCount} staged changes`}>
+                <i className="fa-solid fa-plus-circle" aria-hidden="true" />
+                {stagedCount}
+            </span>
+        );
+    }
+
+    // Uncommitted changes (yellow) - shows modified files not yet staged
+    if (uncommittedCount && uncommittedCount > 0) {
+        badges.push(
+            <span key="uncommitted" className="change-badge modified" title={`${uncommittedCount} uncommitted changes`}>
+                <i className="fa-solid fa-pen" aria-hidden="true" />
+                {uncommittedCount}
+            </span>
+        );
+    }
+
+    // Ahead of remote (green arrow up)
+    if (ahead && ahead > 0) {
+        badges.push(
+            <span key="ahead" className="change-badge ahead" title={`${ahead} commits ahead of remote`}>
+                <i className="fa-solid fa-arrow-up" aria-hidden="true" />
+                {ahead}
+            </span>
+        );
+    }
+
+    // Behind remote (red arrow down)
+    if (behind && behind > 0) {
+        badges.push(
+            <span key="behind" className="change-badge behind" title={`${behind} commits behind remote`}>
+                <i className="fa-solid fa-arrow-down" aria-hidden="true" />
+                {behind}
+            </span>
+        );
+    }
+
+    if (badges.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="file-change-badges" role="status" aria-label="File change status">
+            {badges}
+        </div>
+    );
+}
+
+function PRStatusBadge({ prInfo, onRefresh }: { prInfo: SessionPRInfo; onRefresh: () => void }) {
+    const getStatusClass = () => {
+        if (prInfo.merged) return "merged";
+        if (prInfo.state === "closed") return "closed";
+        return "open";
+    };
+
+    const getStatusText = () => {
+        if (prInfo.merged) return "Merged";
+        if (prInfo.state === "closed") return "Closed";
+        return "Open";
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        window.open(prInfo.htmlUrl, "_blank");
+    };
+
+    return (
+        <span
+            className={clsx("pr-status-badge", getStatusClass())}
+            onClick={handleClick}
+            title={`PR #${prInfo.number}: ${prInfo.title || "View on GitHub"}`}
+            role="link"
+        >
+            <i className="fa-brands fa-github" aria-hidden="true" />
+            #{prInfo.number}
+            <span className="pr-state">{getStatusText()}</span>
+        </span>
+    );
+}
+
+const SessionItem = React.memo(function SessionItem({ session, isActive, prInfo, isSyncing, onSelect, onDelete, onOpenTerminal, onLaunchClaude, onCreatePR, onMergePR, onRefreshPR, onSyncFromMain }: SessionItemProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onSelect();
         }
     };
+
+    // Determine if PR button should be enabled (has commits ahead or local changes)
+    const canCreatePR = (session.ahead ?? 0) > 0 ||
+                        (session.stagedCount ?? 0) > 0 ||
+                        (session.uncommittedCount ?? 0) > 0;
+
+    // Determine if sync button should be shown (behind main)
+    const needsSync = (session.behind ?? 0) > 0;
 
     return (
         <div
@@ -160,7 +281,11 @@ const SessionItem = React.memo(function SessionItem({ session, isActive, onSelec
                     </div>
                     <div className="session-item-branch">{session.branchName}</div>
                 </div>
-                <SessionStatusBadge status={session.status} />
+                <div className="session-item-badges">
+                    {prInfo && <PRStatusBadge prInfo={prInfo} onRefresh={onRefreshPR} />}
+                    <FileChangeBadges session={session} />
+                    <SessionStatusBadge status={session.status} />
+                </div>
             </div>
 
             {isActive && (
@@ -181,6 +306,44 @@ const SessionItem = React.memo(function SessionItem({ session, isActive, onSelec
                         <i className="fa-solid fa-robot" aria-hidden="true" />
                         Claude
                     </Button>
+                    {needsSync && (
+                        <Button
+                            className="ghost small sync"
+                            onClick={(e) => { e.stopPropagation(); onSyncFromMain(); }}
+                            aria-label="Sync changes from main branch"
+                            title={`Pull ${session.behind} commit${session.behind !== 1 ? 's' : ''} from main`}
+                            disabled={isSyncing}
+                        >
+                            {isSyncing ? (
+                                <i className="fa-solid fa-spinner fa-spin" aria-hidden="true" />
+                            ) : (
+                                <i className="fa-solid fa-arrow-down" aria-hidden="true" />
+                            )}
+                            {isSyncing ? 'Syncing...' : 'Sync'}
+                        </Button>
+                    )}
+                    {prInfo && prInfo.state === "open" && !prInfo.merged ? (
+                        <Button
+                            className="ghost small merge"
+                            onClick={(e) => { e.stopPropagation(); onMergePR(); }}
+                            aria-label="Merge pull request"
+                            title="Merge PR (squash)"
+                        >
+                            <i className="fa-solid fa-code-merge" aria-hidden="true" />
+                            Merge PR
+                        </Button>
+                    ) : (
+                        <Button
+                            className="ghost small github"
+                            onClick={(e) => { e.stopPropagation(); onCreatePR(); }}
+                            aria-label="Create pull request for this session"
+                            disabled={!canCreatePR}
+                            title={canCreatePR ? "Create pull request" : "No changes to create PR"}
+                        >
+                            <i className="fa-brands fa-github" aria-hidden="true" />
+                            Create PR
+                        </Button>
+                    )}
                     <Button
                         className="ghost small danger"
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
@@ -491,10 +654,16 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
     const activeWebSessions = webSessions.filter(ws => ws.status === "active");
     const completedWebSessions = webSessions.filter(ws => ws.status === "completed");
 
+    // PR tracking
+    const sessionPRs = useAtomValue(cwSessionPRsAtom);
+
     // Local state for UI
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
+    const [prModalSession, setPrModalSession] = useState<CWSession | null>(null);
+    const [isMerging, setIsMerging] = useState(false);
+    const [syncingSessionId, setSyncingSessionId] = useState<string | null>(null);
 
     // Polling effect
     useEffect(() => {
@@ -663,6 +832,108 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
         }
     }, [webSessionActions]);
 
+    const handleCreatePR = useCallback((session: CWSession) => {
+        // Open the PR modal for this session
+        setPrModalSession(session);
+    }, []);
+
+    const handleClosePRModal = useCallback(async () => {
+        const sessionPath = prModalSession?.worktreePath;
+        setPrModalSession(null);
+        // Refresh sessions and fetch PR info
+        if (projectPath) {
+            loadSessions(projectPath);
+            // Fetch PR info for the session that just had a PR created
+            if (sessionPath) {
+                await fetchSessionPRInfo(sessionPath);
+            }
+        }
+    }, [projectPath, prModalSession]);
+
+    const handleMergePR = useCallback(async (session: CWSession) => {
+        if (!confirm(`Are you sure you want to merge the PR for "${session.name}"? This will squash and merge the changes.`)) {
+            return;
+        }
+
+        setIsMerging(true);
+        setError(null);
+
+        try {
+            const success = await mergeSessionPR(session.worktreePath);
+            if (success) {
+                // Refresh PR info
+                await fetchSessionPRInfo(session.worktreePath);
+                // Refresh sessions to update status
+                if (projectPath) {
+                    loadSessions(projectPath);
+                }
+
+                // Prompt for cleanup after successful merge
+                const shouldCleanup = confirm(
+                    `PR for "${session.name}" has been merged successfully!\n\n` +
+                    `Do you want to delete this worktree session?\n\n` +
+                    `The branch "${session.branchName}" will be removed from your local repository.`
+                );
+
+                if (shouldCleanup) {
+                    try {
+                        await deleteSession(projectPath, session.id, true); // Force delete
+                    } catch (cleanupErr) {
+                        console.error("[CwSessions] Cleanup error:", cleanupErr);
+                        setError("PR merged, but failed to clean up worktree: " + (cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr)));
+                    }
+                }
+            } else {
+                setError("Failed to merge PR");
+            }
+        } catch (err) {
+            console.error("[CwSessions] Merge PR error:", err);
+            setError(err instanceof Error ? err.message : "Failed to merge PR");
+        } finally {
+            setIsMerging(false);
+        }
+    }, [projectPath]);
+
+    const handleRefreshPR = useCallback(async (session: CWSession) => {
+        try {
+            await fetchSessionPRInfo(session.worktreePath);
+        } catch (err) {
+            console.error("[CwSessions] Refresh PR error:", err);
+        }
+    }, []);
+
+    const handleSyncFromMain = useCallback(async (session: CWSession) => {
+        if (!projectPath) return;
+
+        // Extract session name from worktree path
+        const sessionName = session.worktreePath.split('/').pop() ?? '';
+
+        setSyncingSessionId(session.id);
+        setError(null);
+
+        try {
+            await syncSessionFromMain(projectPath, sessionName);
+            // Refresh sessions to update status
+            await loadSessions(projectPath);
+        } catch (err) {
+            console.error("[CwSessions] Sync from main error:", err);
+            setError(err instanceof Error ? err.message : "Failed to sync from main");
+        } finally {
+            setSyncingSessionId(null);
+        }
+    }, [projectPath]);
+
+    // Fetch PR info for all sessions on initial load
+    useEffect(() => {
+        if (sessions.length > 0 && projectPath) {
+            sessions.forEach(session => {
+                fetchSessionPRInfo(session.worktreePath).catch(err => {
+                    // Silently ignore - session may not have a PR
+                });
+            });
+        }
+    }, [sessions.length, projectPath]);
+
     return (
         <div className="cwsessions-view">
             <div className="cwsessions-header">
@@ -712,10 +983,16 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                                     key={session.id}
                                     session={session}
                                     isActive={session.id === activeSessionId}
+                                    prInfo={sessionPRs.get(session.worktreePath) ?? null}
+                                    isSyncing={syncingSessionId === session.id}
                                     onSelect={() => setActiveSession(session.id)}
                                     onDelete={() => handleDeleteSession(session.id)}
                                     onOpenTerminal={() => handleOpenTerminal(session)}
                                     onLaunchClaude={() => handleLaunchClaude(session)}
+                                    onCreatePR={() => handleCreatePR(session)}
+                                    onMergePR={() => handleMergePR(session)}
+                                    onRefreshPR={() => handleRefreshPR(session)}
+                                    onSyncFromMain={() => handleSyncFromMain(session)}
                                 />
                             ))}
                         </div>
@@ -788,6 +1065,13 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                 <CreateSessionDialog
                     onClose={() => setShowCreateDialog(false)}
                     onCreate={handleCreateSession}
+                />
+            )}
+
+            {prModalSession && (
+                <PRModal
+                    repoPath={prModalSession.worktreePath}
+                    onClose={handleClosePRModal}
                 />
             )}
         </div>
