@@ -25,11 +25,33 @@ import {
 import clsx from "clsx";
 import { PrimitiveAtom, atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { OverlayScrollbarsComponent, OverlayScrollbarsComponentRef } from "overlayscrollbars-react";
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { quote as shellQuote } from "shell-quote";
 import { debounce } from "throttle-debounce";
 import "./directorypreview.scss";
+
+// Git status indicator component
+const GitStatusIndicator = memo(({ status }: { status?: string }) => {
+    const config: Record<string, { color: string; icon: string; title: string }> = {
+        M: { color: "var(--warning-color)", icon: "fa-pen", title: "Modified" },
+        A: { color: "var(--success-color)", icon: "fa-plus", title: "Added" },
+        D: { color: "var(--error-color)", icon: "fa-minus", title: "Deleted" },
+        "?": { color: "var(--secondary-text-color)", icon: "fa-question", title: "Untracked" },
+        R: { color: "var(--accent-color)", icon: "fa-arrow-right", title: "Renamed" },
+        C: { color: "var(--accent-color)", icon: "fa-copy", title: "Copied" },
+        U: { color: "var(--error-color)", icon: "fa-exclamation-triangle", title: "Unmerged" },
+    };
+    if (!status || !config[status]) return null;
+    const { color, icon, title } = config[status];
+    return (
+        <i
+            className={`fa-solid ${icon} git-status-icon`}
+            style={{ color, fontSize: "10px", width: "14px", textAlign: "center" }}
+            title={title}
+        />
+    );
+});
 import { EntryManagerOverlay, EntryManagerOverlayProps, EntryManagerType } from "./entry-manager";
 import {
     cleanMimetype,
@@ -112,6 +134,34 @@ function DirectoryTable({
     const searchActive = useAtomValue(model.directorySearchActive);
     const fullConfig = useAtomValue(atoms.fullConfigAtom);
     const setErrorMsg = useSetAtom(model.errorMsgAtom);
+    const dirPath = useAtomValue(model.statFilePath);
+
+    // Git status state
+    const [gitStatus, setGitStatus] = useState<Record<string, string>>({});
+
+    // Fetch git status for the directory
+    useEffect(() => {
+        if (!dirPath) return;
+
+        const fetchGitStatus = async () => {
+            try {
+                const result = await RpcApi.GitDirectoryStatusCommand(TabRpcClient, { dirpath: dirPath }, null);
+                if (result?.files) {
+                    const statusMap: Record<string, string> = {};
+                    for (const [path, fileStatus] of Object.entries(result.files)) {
+                        statusMap[path] = fileStatus.status;
+                    }
+                    setGitStatus(statusMap);
+                }
+            } catch (e) {
+                // Not a git repo or error fetching status - silently ignore
+                setGitStatus({});
+            }
+        };
+
+        fetchGitStatus();
+    }, [dirPath, data]);
+
     const getIconFromMimeType = useCallback(
         (mimeType: string): string => {
             while (mimeType.length > 0) {
@@ -150,6 +200,14 @@ function DirectoryTable({
                 size: 200,
                 minSize: 90,
             }),
+            columnHelper.accessor("path", {
+                cell: (info) => <GitStatusIndicator status={gitStatus[info.getValue() ?? ""]} />,
+                header: () => <span></span>,
+                id: "gitstatus",
+                size: 20,
+                minSize: 20,
+                enableSorting: false,
+            }),
             columnHelper.accessor("modestr", {
                 cell: (info) => <span className="dir-table-modestr">{info.getValue()}</span>,
                 header: () => <span>Perm</span>,
@@ -182,7 +240,7 @@ function DirectoryTable({
             }),
             columnHelper.accessor("path", {}),
         ],
-        [fullConfig]
+        [fullConfig, gitStatus]
     );
 
     const setEntryManagerProps = useSetAtom(entryManagerOverlayPropsAtom);

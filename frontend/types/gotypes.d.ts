@@ -374,6 +374,42 @@ declare global {
         chatid: string;
     };
 
+    // wshrpc.CommandGitDirectoryStatusData
+    type CommandGitDirectoryStatusData = {
+        dirpath: string;
+    };
+
+    // wshrpc.CommandGitFileDiffData
+    type CommandGitFileDiffData = {
+        repopath: string;
+        filepath: string;
+        staged?: boolean;
+    };
+
+    // wshrpc.CommandGitHubAuthData
+    type CommandGitHubAuthData = {
+        token: string;
+    };
+
+    // wshrpc.CommandGitHubPRCreateData
+    type CommandGitHubPRCreateData = {
+        repopath: string;
+        title: string;
+        body: string;
+        basebranch?: string;
+    };
+
+    // wshrpc.CommandGitStageAllData
+    type CommandGitStageAllData = {
+        repopath: string;
+    };
+
+    // wshrpc.CommandGitStageFileData
+    type CommandGitStageFileData = {
+        repopath: string;
+        filepath: string;
+    };
+
     // wshrpc.CommandListAllAppFilesData
     type CommandListAllAppFilesData = {
         appid: string;
@@ -970,6 +1006,47 @@ declare global {
         configerrors: ConfigError[];
     };
 
+    // wshrpc.GitDirectoryStatusData
+    type GitDirectoryStatusData = {
+        reporoot: string;
+        branch: string;
+        files: {[key: string]: GitFileStatusData};
+        ahead: number;
+        behind: number;
+    };
+
+    // wshrpc.GitFileDiffData
+    type GitFileDiffData = {
+        path: string;
+        original: string;
+        modified: string;
+        isnew: boolean;
+        isdeleted: boolean;
+        isbinary: boolean;
+    };
+
+    // wshrpc.GitFileStatusData
+    type GitFileStatusData = {
+        path: string;
+        status: string;
+        indexstatus: string;
+        worktreestatus: string;
+        isstaged: boolean;
+        oldpath?: string;
+    };
+
+    // wshrpc.GitHubAuthStatusData
+    type GitHubAuthStatusData = {
+        configured: boolean;
+    };
+
+    // wshrpc.GitHubPRResponseData
+    type GitHubPRResponseData = {
+        number: number;
+        url: string;
+        htmlurl: string;
+    };
+
     // waveobj.LayoutActionData
     type LayoutActionData = {
         actiontype: string;
@@ -1456,6 +1533,11 @@ declare global {
         "cw:shortcutprofile"?: string;
         "cw:customshortcuts"?: string;
         "cw:customtemplates"?: any[];
+        "platform:enabled"?: boolean;
+        "platform:baseUrl"?: string;
+        "platform:displayMode"?: string;
+        "platform:pollInterval"?: number;
+        "platform:autoInjectContext"?: boolean;
     };
 
     // waveobj.StickerClickOptsType

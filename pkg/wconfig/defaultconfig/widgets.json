@@ -88,5 +88,29 @@
                 "pinnedurl": "https://agenticteam.dev/dashboard"
             }
         }
+    },
+    "defwidget@platform": {
+        "display:order": 1.5,
+        "icon": "list-check",
+        "label": "tasks",
+        "description": "Platform Task Panel - view and manage tasks from Agentic Platform",
+        "color": "#E57B3A",
+        "blockdef": {
+            "meta": {
+                "view": "platform"
+            }
+        }
+    },
+    "defwidget@gitchanges": {
+        "display:order": 2,
+        "icon": "code-compare",
+        "label": "git",
+        "description": "Git Changes - view diffs, stage/unstage files, create PRs",
+        "color": "#f97316",
+        "blockdef": {
+            "meta": {
+                "view": "cwgitchanges"
+            }
+        }
     }
 }

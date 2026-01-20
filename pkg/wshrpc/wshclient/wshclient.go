@@ -1025,4 +1025,59 @@ func WslStatusCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.ConnSta
 	return resp, err
 }
 
+// Liatrio Code Git commands
+
+// command "gitdirectorystatus", wshserver.GitDirectoryStatusCommand
+func GitDirectoryStatusCommand(w *wshutil.WshRpc, data wshrpc.CommandGitDirectoryStatusData, opts *wshrpc.RpcOpts) (*wshrpc.GitDirectoryStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.GitDirectoryStatusData](w, "gitdirectorystatus", data, opts)
+	return resp, err
+}
+
+// command "gitfilediff", wshserver.GitFileDiffCommand
+func GitFileDiffCommand(w *wshutil.WshRpc, data wshrpc.CommandGitFileDiffData, opts *wshrpc.RpcOpts) (*wshrpc.GitFileDiffData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.GitFileDiffData](w, "gitfilediff", data, opts)
+	return resp, err
+}
+
+// command "gitstagefile", wshserver.GitStageFileCommand
+func GitStageFileCommand(w *wshutil.WshRpc, data wshrpc.CommandGitStageFileData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "gitstagefile", data, opts)
+	return err
+}
+
+// command "gitunstagefile", wshserver.GitUnstageFileCommand
+func GitUnstageFileCommand(w *wshutil.WshRpc, data wshrpc.CommandGitStageFileData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "gitunstagefile", data, opts)
+	return err
+}
+
+// command "gitstageall", wshserver.GitStageAllCommand
+func GitStageAllCommand(w *wshutil.WshRpc, data wshrpc.CommandGitStageAllData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "gitstageall", data, opts)
+	return err
+}
+
+// command "gitunstageall", wshserver.GitUnstageAllCommand
+func GitUnstageAllCommand(w *wshutil.WshRpc, data wshrpc.CommandGitStageAllData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "gitunstageall", data, opts)
+	return err
+}
+
+// command "githubauth", wshserver.GitHubAuthCommand
+func GitHubAuthCommand(w *wshutil.WshRpc, data wshrpc.CommandGitHubAuthData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "githubauth", data, opts)
+	return err
+}
+
+// command "githubauthstatus", wshserver.GitHubAuthStatusCommand
+func GitHubAuthStatusCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) (*wshrpc.GitHubAuthStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.GitHubAuthStatusData](w, "githubauthstatus", nil, opts)
+	return resp, err
+}
+
+// command "githubcreatepr", wshserver.GitHubCreatePRCommand
+func GitHubCreatePRCommand(w *wshutil.WshRpc, data wshrpc.CommandGitHubPRCreateData, opts *wshrpc.RpcOpts) (*wshrpc.GitHubPRResponseData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.GitHubPRResponseData](w, "githubcreatepr", data, opts)
+	return resp, err
+}
 

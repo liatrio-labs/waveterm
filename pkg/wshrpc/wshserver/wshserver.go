@@ -25,6 +25,7 @@ import (
 	"github.com/greggcoppen/claudewave/app/pkg/aiusechat/uctypes"
 	"github.com/greggcoppen/claudewave/app/pkg/blockcontroller"
 	"github.com/greggcoppen/claudewave/app/pkg/blocklogger"
+	"github.com/greggcoppen/claudewave/app/pkg/cwgit"
 	"github.com/greggcoppen/claudewave/app/pkg/cwmonitor"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplatform"
 	"github.com/greggcoppen/claudewave/app/pkg/cwworktree"
@@ -1093,6 +1094,137 @@ func (ws *WshServer) PlatformUpdateStatusCommand(ctx context.Context, data wshrp
 
 	client := cwplatform.NewClient(apiKey)
 	return client.UpdateTaskStatus(ctx, data.TaskID, data.Status)
+}
+
+// Git status and diff commands
+
+func (ws *WshServer) GitDirectoryStatusCommand(ctx context.Context, data wshrpc.CommandGitDirectoryStatusData) (*wshrpc.GitDirectoryStatusData, error) {
+	if data.DirPath == "" {
+		return nil, fmt.Errorf("dirpath is required")
+	}
+
+	status, err := cwgit.GetDirectoryGitStatus(data.DirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert cwgit types to wshrpc types
+	files := make(map[string]wshrpc.GitFileStatusData)
+	for path, fileStatus := range status.Files {
+		files[path] = wshrpc.GitFileStatusData{
+			Path:           fileStatus.Path,
+			Status:         fileStatus.Status,
+			IndexStatus:    fileStatus.IndexStatus,
+			WorktreeStatus: fileStatus.WorktreeStatus,
+			IsStaged:       fileStatus.IsStaged,
+			OldPath:        fileStatus.OldPath,
+		}
+	}
+
+	return &wshrpc.GitDirectoryStatusData{
+		RepoRoot: status.RepoRoot,
+		Branch:   status.Branch,
+		Files:    files,
+		Ahead:    status.Ahead,
+		Behind:   status.Behind,
+	}, nil
+}
+
+func (ws *WshServer) GitFileDiffCommand(ctx context.Context, data wshrpc.CommandGitFileDiffData) (*wshrpc.GitFileDiffData, error) {
+	if data.RepoPath == "" {
+		return nil, fmt.Errorf("repopath is required")
+	}
+	if data.FilePath == "" {
+		return nil, fmt.Errorf("filepath is required")
+	}
+
+	diff, err := cwgit.GetFileDiff(data.RepoPath, data.FilePath, data.Staged)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.GitFileDiffData{
+		Path:      diff.Path,
+		Original:  diff.Original,
+		Modified:  diff.Modified,
+		IsNew:     diff.IsNew,
+		IsDeleted: diff.IsDeleted,
+		IsBinary:  diff.IsBinary,
+	}, nil
+}
+
+func (ws *WshServer) GitStageFileCommand(ctx context.Context, data wshrpc.CommandGitStageFileData) error {
+	if data.RepoPath == "" {
+		return fmt.Errorf("repopath is required")
+	}
+	if data.FilePath == "" {
+		return fmt.Errorf("filepath is required")
+	}
+
+	return cwgit.StageFile(data.RepoPath, data.FilePath)
+}
+
+func (ws *WshServer) GitUnstageFileCommand(ctx context.Context, data wshrpc.CommandGitStageFileData) error {
+	if data.RepoPath == "" {
+		return fmt.Errorf("repopath is required")
+	}
+	if data.FilePath == "" {
+		return fmt.Errorf("filepath is required")
+	}
+
+	return cwgit.UnstageFile(data.RepoPath, data.FilePath)
+}
+
+func (ws *WshServer) GitStageAllCommand(ctx context.Context, data wshrpc.CommandGitStageAllData) error {
+	if data.RepoPath == "" {
+		return fmt.Errorf("repopath is required")
+	}
+
+	return cwgit.StageAll(data.RepoPath)
+}
+
+func (ws *WshServer) GitUnstageAllCommand(ctx context.Context, data wshrpc.CommandGitStageAllData) error {
+	if data.RepoPath == "" {
+		return fmt.Errorf("repopath is required")
+	}
+
+	return cwgit.UnstageAll(data.RepoPath)
+}
+
+func (ws *WshServer) GitHubAuthCommand(ctx context.Context, data wshrpc.CommandGitHubAuthData) error {
+	return cwgit.SetGitHubToken(data.Token)
+}
+
+func (ws *WshServer) GitHubAuthStatusCommand(ctx context.Context) (*wshrpc.GitHubAuthStatusData, error) {
+	return &wshrpc.GitHubAuthStatusData{
+		Configured: cwgit.HasGitHubToken(),
+	}, nil
+}
+
+func (ws *WshServer) GitHubCreatePRCommand(ctx context.Context, data wshrpc.CommandGitHubPRCreateData) (*wshrpc.GitHubPRResponseData, error) {
+	if data.RepoPath == "" {
+		return nil, fmt.Errorf("repopath is required")
+	}
+	if data.Title == "" {
+		return nil, fmt.Errorf("title is required")
+	}
+
+	prReq := cwgit.GitHubPRRequest{
+		Title:      data.Title,
+		Body:       data.Body,
+		BaseBranch: data.BaseBranch,
+	}
+
+	resp, err := cwgit.CreatePullRequest(data.RepoPath, prReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.GitHubPRResponseData{
+		Number:  resp.Number,
+		URL:     resp.URL,
+		HTMLURL: resp.HTMLURL,
+	}, nil
 }
 
 func (ws *WshServer) ConnStatusCommand(ctx context.Context) ([]wshrpc.ConnStatus, error) {

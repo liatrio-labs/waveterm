@@ -392,6 +392,51 @@ class RpcApiType {
         return client.wshRpcCall("getwaveairatelimit", null, opts);
     }
 
+    // command "gitdirectorystatus" [call]
+    GitDirectoryStatusCommand(client: WshClient, data: CommandGitDirectoryStatusData, opts?: RpcOpts): Promise<GitDirectoryStatusData> {
+        return client.wshRpcCall("gitdirectorystatus", data, opts);
+    }
+
+    // command "gitfilediff" [call]
+    GitFileDiffCommand(client: WshClient, data: CommandGitFileDiffData, opts?: RpcOpts): Promise<GitFileDiffData> {
+        return client.wshRpcCall("gitfilediff", data, opts);
+    }
+
+    // command "githubauth" [call]
+    GitHubAuthCommand(client: WshClient, data: CommandGitHubAuthData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("githubauth", data, opts);
+    }
+
+    // command "githubauthstatus" [call]
+    GitHubAuthStatusCommand(client: WshClient, opts?: RpcOpts): Promise<GitHubAuthStatusData> {
+        return client.wshRpcCall("githubauthstatus", null, opts);
+    }
+
+    // command "githubcreatepr" [call]
+    GitHubCreatePRCommand(client: WshClient, data: CommandGitHubPRCreateData, opts?: RpcOpts): Promise<GitHubPRResponseData> {
+        return client.wshRpcCall("githubcreatepr", data, opts);
+    }
+
+    // command "gitstageall" [call]
+    GitStageAllCommand(client: WshClient, data: CommandGitStageAllData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("gitstageall", data, opts);
+    }
+
+    // command "gitstagefile" [call]
+    GitStageFileCommand(client: WshClient, data: CommandGitStageFileData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("gitstagefile", data, opts);
+    }
+
+    // command "gitunstageall" [call]
+    GitUnstageAllCommand(client: WshClient, data: CommandGitStageAllData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("gitunstageall", data, opts);
+    }
+
+    // command "gitunstagefile" [call]
+    GitUnstageFileCommand(client: WshClient, data: CommandGitStageFileData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("gitunstagefile", data, opts);
+    }
+
     // command "listallappfiles" [call]
     ListAllAppFilesCommand(client: WshClient, data: CommandListAllAppFilesData, opts?: RpcOpts): Promise<CommandListAllAppFilesRtnData> {
         return client.wshRpcCall("listallappfiles", data, opts);

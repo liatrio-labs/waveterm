@@ -817,8 +817,9 @@ func SetBaseConfigValue(toMerge waveobj.MetaMapType) error {
 				} else {
 					return fmt.Errorf("invalid value type for %s: %T", configKey, val)
 				}
+			} else {
+				m[configKey] = val
 			}
-			m[configKey] = val
 		}
 	}
 	return WriteWaveHomeConfigFile(SettingsFile, m)

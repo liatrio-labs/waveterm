@@ -103,6 +103,17 @@ type WshRpcInterface interface {
 	PlatformUnlinkCommand(ctx context.Context, data CommandPlatformUnlinkData) error
 	PlatformUpdateStatusCommand(ctx context.Context, data CommandPlatformUpdateStatusData) error
 
+	// Liatrio Code git commands
+	GitDirectoryStatusCommand(ctx context.Context, data CommandGitDirectoryStatusData) (*GitDirectoryStatusData, error)
+	GitFileDiffCommand(ctx context.Context, data CommandGitFileDiffData) (*GitFileDiffData, error)
+	GitStageFileCommand(ctx context.Context, data CommandGitStageFileData) error
+	GitUnstageFileCommand(ctx context.Context, data CommandGitStageFileData) error
+	GitStageAllCommand(ctx context.Context, data CommandGitStageAllData) error
+	GitUnstageAllCommand(ctx context.Context, data CommandGitStageAllData) error
+	GitHubAuthCommand(ctx context.Context, data CommandGitHubAuthData) error
+	GitHubAuthStatusCommand(ctx context.Context) (*GitHubAuthStatusData, error)
+	GitHubCreatePRCommand(ctx context.Context, data CommandGitHubPRCreateData) (*GitHubPRResponseData, error)
+
 	BlockInfoCommand(ctx context.Context, blockId string) (*BlockInfoData, error)
 	BlocksListCommand(ctx context.Context, data BlocksListRequest) ([]BlocksListEntry, error)
 	WaveInfoCommand(ctx context.Context) (*WaveInfoData, error)
@@ -962,4 +973,72 @@ type CommandPlatformUnlinkData struct {
 type CommandPlatformUpdateStatusData struct {
 	TaskID string `json:"taskId"`
 	Status string `json:"status"`
+}
+
+// Liatrio Code Git command types
+
+type CommandGitDirectoryStatusData struct {
+	DirPath string `json:"dirpath"`
+}
+
+type GitFileStatusData struct {
+	Path           string `json:"path"`
+	Status         string `json:"status"`
+	IndexStatus    string `json:"indexstatus"`
+	WorktreeStatus string `json:"worktreestatus"`
+	IsStaged       bool   `json:"isstaged"`
+	OldPath        string `json:"oldpath,omitempty"`
+}
+
+type GitDirectoryStatusData struct {
+	RepoRoot string                       `json:"reporoot"`
+	Branch   string                       `json:"branch"`
+	Files    map[string]GitFileStatusData `json:"files"`
+	Ahead    int                          `json:"ahead"`
+	Behind   int                          `json:"behind"`
+}
+
+type CommandGitFileDiffData struct {
+	RepoPath string `json:"repopath"`
+	FilePath string `json:"filepath"`
+	Staged   bool   `json:"staged,omitempty"`
+}
+
+type GitFileDiffData struct {
+	Path      string `json:"path"`
+	Original  string `json:"original"`
+	Modified  string `json:"modified"`
+	IsNew     bool   `json:"isnew"`
+	IsDeleted bool   `json:"isdeleted"`
+	IsBinary  bool   `json:"isbinary"`
+}
+
+type CommandGitStageFileData struct {
+	RepoPath string `json:"repopath"`
+	FilePath string `json:"filepath"`
+}
+
+type CommandGitStageAllData struct {
+	RepoPath string `json:"repopath"`
+}
+
+type CommandGitHubPRCreateData struct {
+	RepoPath   string `json:"repopath"`
+	Title      string `json:"title"`
+	Body       string `json:"body"`
+	BaseBranch string `json:"basebranch,omitempty"`
+}
+
+type GitHubPRResponseData struct {
+	Number  int    `json:"number"`
+	URL     string `json:"url"`
+	HTMLURL string `json:"htmlurl"`
+}
+
+type CommandGitHubAuthData struct {
+	Token string `json:"token"`
+}
+
+type GitHubAuthStatusData struct {
+	Configured bool `json:"configured"`
 }

@@ -243,6 +243,19 @@ const SettingsFloatingWindow = memo(
                 },
             },
             {
+                icon: "list-check",
+                label: "Platform Tasks",
+                onClick: () => {
+                    const blockDef: BlockDef = {
+                        meta: {
+                            view: "platform",
+                        },
+                    };
+                    createBlock(blockDef, false, true);
+                    onClose();
+                },
+            },
+            {
                 icon: "lightbulb",
                 label: "Tips",
                 onClick: () => {
