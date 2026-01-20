@@ -251,10 +251,11 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
     let prevDelta: number;
     let prevDragDirection: string;
 
-    // Update refs when tabIds change
-    useEffect(() => {
+    // Ensure refs array has correct length (synchronous, before render)
+    // This must happen during render, not in useEffect, so refs are available when passed to SessionTab
+    if (tabRefs.current.length !== tabIds.length) {
         tabRefs.current = tabIds.map((_, index) => tabRefs.current[index] || createRef());
-    }, [tabIds]);
+    }
 
     useEffect(() => {
         if (!workspace) {
@@ -265,6 +266,12 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
         const areEqual = strArrayIsEqual(tabIds, newTabIdsArr);
 
         if (!areEqual) {
+            // Detect newly added tabs (present in new array but not in old)
+            const addedTabs = newTabIdsArr.filter(id => !tabIds.includes(id));
+            if (addedTabs.length > 0) {
+                // Set the last added tab as the new tab (for animation)
+                setNewTabId(addedTabs[addedTabs.length - 1]);
+            }
             setTabIds(newTabIdsArr);
         }
     }, [workspace, tabIds]);
@@ -322,7 +329,7 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
 
         // Apply the calculated width and position to all tabs
         tabRefs.current.forEach((ref, index) => {
-            if (ref.current) {
+            if (ref?.current) {
                 if (animate) {
                     ref.current.classList.add("animate");
                 } else {

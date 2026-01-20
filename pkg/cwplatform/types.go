@@ -15,9 +15,22 @@ type User struct {
 	AvatarURL string `json:"avatarUrl,omitempty"`
 }
 
+// Team represents a team on the platform.
+type Team struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug,omitempty"`
+	Description string `json:"description,omitempty"`
+	AvatarURL   string `json:"avatarUrl,omitempty"`
+	BillingPlan string `json:"billingPlan,omitempty"`
+	Role        string `json:"role,omitempty"`
+	JoinedAt    string `json:"joinedAt,omitempty"`
+}
+
 // Project represents a top-level project in the platform hierarchy.
 type Project struct {
 	ID          string    `json:"id"`
+	TeamID      string    `json:"teamId,omitempty"`
 	Name        string    `json:"name"`
 	Description string    `json:"description,omitempty"`
 	CreatedAt   time.Time `json:"createdAt"`
@@ -34,11 +47,24 @@ type Product struct {
 	UpdatedAt   time.Time `json:"updatedAt,omitempty"`
 }
 
-// Spec represents a specification document within a product.
-type Spec struct {
+// PRD represents a Product Requirements Document within a product.
+type PRD struct {
 	ID          string    `json:"id"`
 	ProductID   string    `json:"productId"`
 	Name        string    `json:"name"`
+	Title       string    `json:"title,omitempty"`
+	Description string    `json:"description,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt,omitempty"`
+}
+
+// Spec represents a specification document within a PRD.
+type Spec struct {
+	ID          string    `json:"id"`
+	PRDID       string    `json:"prdId"`
+	Name        string    `json:"name"`
+	Title       string    `json:"title,omitempty"`
 	Content     string    `json:"content,omitempty"`
 	Status      string    `json:"status"`
 	CreatedAt   time.Time `json:"createdAt"`
@@ -47,15 +73,34 @@ type Spec struct {
 
 // Task represents a task derived from a specification.
 type Task struct {
-	ID             string    `json:"id"`
-	SpecID         string    `json:"specId"`
-	Title          string    `json:"title"`
-	Description    string    `json:"description,omitempty"`
-	Status         string    `json:"status"`
-	CheckpointMode bool      `json:"checkpointMode"`
-	SubTasks       []SubTask `json:"subTasks,omitempty"`
-	CreatedAt      time.Time `json:"createdAt"`
-	UpdatedAt      time.Time `json:"updatedAt,omitempty"`
+	ID                  string     `json:"id"`
+	SpecID              string     `json:"specId"`
+	Title               string     `json:"title"`
+	Prompt              string     `json:"prompt,omitempty"`
+	Description         string     `json:"description,omitempty"`
+	Status              string     `json:"status"`
+	Progress            int        `json:"progress,omitempty"`
+	CheckpointMode      bool       `json:"checkpointMode"`
+	Model               string     `json:"model,omitempty"`
+	SelectedAgent       string     `json:"selectedAgent,omitempty"`
+	SelectedModel       string     `json:"selectedModel,omitempty"`
+	RepoURL             string     `json:"repoUrl,omitempty"`
+	BranchName          string     `json:"branchName,omitempty"`
+	PRNumber            int        `json:"prNumber,omitempty"`
+	PRURL               string     `json:"prUrl,omitempty"`
+	SandboxURL          string     `json:"sandboxUrl,omitempty"`
+	SandboxHealthStatus string     `json:"sandboxHealthStatus,omitempty"`
+	SubTasks            []SubTask  `json:"subTasks,omitempty"`
+	Logs                []TaskLog  `json:"logs,omitempty"`
+	CreatedAt           time.Time  `json:"createdAt"`
+	UpdatedAt           time.Time  `json:"updatedAt,omitempty"`
+}
+
+// TaskLog represents a log entry for a task.
+type TaskLog struct {
+	Type      string `json:"type"`
+	Message   string `json:"message"`
+	Timestamp string `json:"timestamp,omitempty"`
 }
 
 // SubTask represents a sub-task within a parent task.
@@ -112,7 +157,7 @@ type TaskAssociation struct {
 
 // GetProjectsParams contains parameters for fetching projects.
 type GetProjectsParams struct {
-	// No parameters needed - returns all accessible projects
+	TeamID string `json:"teamId,omitempty"` // Optional team ID to filter projects
 }
 
 // GetProductsParams contains parameters for fetching products.
@@ -120,9 +165,14 @@ type GetProductsParams struct {
 	ProjectID string `json:"projectId"`
 }
 
+// GetPRDsParams contains parameters for fetching PRDs.
+type GetPRDsParams struct {
+	ProductID string `json:"productId"`
+}
+
 // GetSpecsParams contains parameters for fetching specs.
 type GetSpecsParams struct {
-	ProductID string `json:"productId"`
+	PRDID string `json:"prdId"`
 }
 
 // GetTasksParams contains parameters for fetching tasks.
@@ -159,5 +209,6 @@ type ConnectionStatus struct {
 type HierarchySelection struct {
 	ProjectID string `json:"projectId,omitempty"`
 	ProductID string `json:"productId,omitempty"`
+	PRDID     string `json:"prdId,omitempty"`
 	SpecID    string `json:"specId,omitempty"`
 }

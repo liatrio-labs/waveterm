@@ -79,10 +79,11 @@ const HandoffModal = ({ blockId, sessionId }: HandoffModalProps) => {
             // If we have a terminal block, send the handoff command
             if (activeSession.terminalBlockId) {
                 // Send & command to Claude Code to trigger handoff
-                // This will open claude.ai/code with the session context
+                // Include description to pass context to the web session
+                const taskDescription = description || activeSession.branchName || "Continue current task";
                 await RpcApi.ControllerInputCommand(TabRpcClient, {
                     blockid: activeSession.terminalBlockId,
-                    inputdata64: btoa("&\n"),
+                    inputdata64: btoa(`& ${taskDescription}\n`),
                 });
             }
 

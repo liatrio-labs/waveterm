@@ -482,14 +482,19 @@ class RpcApiType {
         return client.wshRpcCall("platformlink", data, opts);
     }
 
+    // command "platformprds" [call]
+    PlatformPRDsCommand(client: WshClient, data: CommandPlatformPRDsData, opts?: RpcOpts): Promise<PlatformPRDsData> {
+        return client.wshRpcCall("platformprds", data, opts);
+    }
+
     // command "platformproducts" [call]
     PlatformProductsCommand(client: WshClient, data: CommandPlatformProductsData, opts?: RpcOpts): Promise<PlatformProductsData> {
         return client.wshRpcCall("platformproducts", data, opts);
     }
 
     // command "platformprojects" [call]
-    PlatformProjectsCommand(client: WshClient, opts?: RpcOpts): Promise<PlatformProjectsData> {
-        return client.wshRpcCall("platformprojects", null, opts);
+    PlatformProjectsCommand(client: WshClient, data: CommandPlatformProjectsData, opts?: RpcOpts): Promise<PlatformProjectsData> {
+        return client.wshRpcCall("platformprojects", data, opts);
     }
 
     // command "platformspecs" [call]
@@ -510,6 +515,11 @@ class RpcApiType {
     // command "platformtasks" [call]
     PlatformTasksCommand(client: WshClient, data: CommandPlatformTasksData, opts?: RpcOpts): Promise<PlatformTasksData> {
         return client.wshRpcCall("platformtasks", data, opts);
+    }
+
+    // command "platformteams" [call]
+    PlatformTeamsCommand(client: WshClient, opts?: RpcOpts): Promise<PlatformTeamsData> {
+        return client.wshRpcCall("platformteams", null, opts);
     }
 
     // command "platformunlink" [call]

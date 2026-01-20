@@ -317,10 +317,10 @@ const SessionTab = memo(
                 [handleRenameTab, id, onClose, session]
             );
 
-            // Determine display name
+            // Determine display name with fallback for new/loading tabs
             const displayName = session
                 ? truncateBranchName(session.branchName || session.name)
-                : tabData?.name;
+                : tabData?.name || "New Tab";
 
             return (
                 <div

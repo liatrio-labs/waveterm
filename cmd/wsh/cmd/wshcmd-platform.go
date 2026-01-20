@@ -393,7 +393,20 @@ func platformProjectsRun(cmd *cobra.Command, args []string) (rtnErr error) {
 	defer cancel()
 
 	client := cwplatform.NewClient(apiKey)
-	projects, err := client.GetProjects(ctx)
+
+	// First fetch teams to get team context
+	teams, err := client.GetTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("fetching teams: %w", err)
+	}
+
+	// Use the first team's ID if available
+	var teamID string
+	if len(teams) > 0 {
+		teamID = teams[0].ID
+	}
+
+	projects, err := client.GetProjects(ctx, teamID)
 	if err != nil {
 		return fmt.Errorf("fetching projects: %w", err)
 	}

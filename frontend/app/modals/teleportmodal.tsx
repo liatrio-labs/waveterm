@@ -87,11 +87,11 @@ const TeleportModal = ({ blockId, webSessionId }: TeleportModalProps) => {
                 throw new Error("Session not found");
             }
 
-            // If target session has a terminal, send resume command
+            // If target session has a terminal, send teleport command
             if (targetSession.terminalBlockId) {
                 await RpcApi.ControllerInputCommand(TabRpcClient, {
                     blockid: targetSession.terminalBlockId,
-                    inputdata64: btoa("claude --resume\n"),
+                    inputdata64: btoa("/teleport\n"),
                 });
             }
 

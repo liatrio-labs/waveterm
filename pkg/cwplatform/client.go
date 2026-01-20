@@ -144,7 +144,20 @@ func (c *PlatformClient) get(ctx context.Context, path string, result interface{
 		return c.parseError(resp)
 	}
 
-	return json.NewDecoder(resp.Body).Decode(result)
+	// Read body for logging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Log raw response for debugging (truncate if too long)
+	logBody := string(body)
+	if len(logBody) > 2000 {
+		logBody = logBody[:2000] + "..."
+	}
+	fmt.Printf("[Platform] Raw API response for %s: %s\n", path, logBody)
+
+	return json.Unmarshal(body, result)
 }
 
 // post performs a POST request and decodes the JSON response.
@@ -235,7 +248,7 @@ func (c *PlatformClient) parseError(resp *http.Response) error {
 
 // Ping checks if the platform API is reachable.
 func (c *PlatformClient) Ping(ctx context.Context) error {
-	resp, err := c.doRequest(ctx, http.MethodGet, "/api/health", nil)
+	resp, err := c.doRequest(ctx, http.MethodGet, "/api/v1/health", nil)
 	if err != nil {
 		return err
 	}

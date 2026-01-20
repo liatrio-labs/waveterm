@@ -14,6 +14,7 @@ import * as React from "react";
 import { TaskPanel } from "./TaskPanel";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
+import { refreshPlatformData } from "@/app/store/platformatoms";
 
 // ============================================================================
 // View Model
@@ -50,9 +51,9 @@ class PlatformViewModel implements ViewModel {
             {
                 label: "Refresh Tasks",
                 click: async () => {
-                    // Trigger refresh via RPC
+                    // Trigger full platform data refresh using configured teamId
                     try {
-                        await RpcApi.PlatformProjectsCommand(TabRpcClient, {});
+                        await refreshPlatformData();
                     } catch (err) {
                         console.error("[Platform] Refresh failed:", err);
                     }

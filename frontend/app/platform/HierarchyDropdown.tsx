@@ -10,12 +10,16 @@ import {
     platformProductsAtom,
     platformProductsLoadingAtom,
     platformSelectedProductIdAtom,
+    platformPRDsAtom,
+    platformPRDsLoadingAtom,
+    platformSelectedPRDIdAtom,
     platformSpecsAtom,
     platformSpecsLoadingAtom,
     platformSelectedSpecIdAtom,
     platformIsAuthenticatedAtom,
     selectPlatformProject,
     selectPlatformProduct,
+    selectPlatformPRD,
     selectPlatformSpec,
     loadPlatformProjects,
 } from "@/app/store/platformatoms";
@@ -32,6 +36,10 @@ export const HierarchyDropdown: React.FC = () => {
     const products = useAtomValue(platformProductsAtom);
     const productsLoading = useAtomValue(platformProductsLoadingAtom);
     const selectedProductId = useAtomValue(platformSelectedProductIdAtom);
+
+    const prds = useAtomValue(platformPRDsAtom);
+    const prdsLoading = useAtomValue(platformPRDsLoadingAtom);
+    const selectedPRDId = useAtomValue(platformSelectedPRDIdAtom);
 
     const specs = useAtomValue(platformSpecsAtom);
     const specsLoading = useAtomValue(platformSpecsLoadingAtom);
@@ -52,6 +60,11 @@ export const HierarchyDropdown: React.FC = () => {
     const handleProductChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const productId = e.target.value || null;
         selectPlatformProduct(productId);
+    };
+
+    const handlePRDChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const prdId = e.target.value || null;
+        selectPlatformPRD(prdId);
     };
 
     const handleSpecChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -111,6 +124,27 @@ export const HierarchyDropdown: React.FC = () => {
                 {productsLoading && <span className="hierarchy-dropdown__spinner" />}
             </div>
 
+            {/* PRD Selector */}
+            <div className="hierarchy-dropdown__level">
+                <label className="hierarchy-dropdown__label">PRD</label>
+                <select
+                    className="hierarchy-dropdown__select"
+                    value={selectedPRDId ?? ""}
+                    onChange={handlePRDChange}
+                    disabled={!selectedProductId || prdsLoading}
+                >
+                    <option value="">
+                        {prdsLoading ? "Loading..." : !selectedProductId ? "Select product first" : "Select PRD..."}
+                    </option>
+                    {prds.map((prd) => (
+                        <option key={prd.id} value={prd.id}>
+                            {prd.name}
+                        </option>
+                    ))}
+                </select>
+                {prdsLoading && <span className="hierarchy-dropdown__spinner" />}
+            </div>
+
             {/* Spec Selector */}
             <div className="hierarchy-dropdown__level">
                 <label className="hierarchy-dropdown__label">Spec</label>
@@ -118,10 +152,10 @@ export const HierarchyDropdown: React.FC = () => {
                     className="hierarchy-dropdown__select"
                     value={selectedSpecId ?? ""}
                     onChange={handleSpecChange}
-                    disabled={!selectedProductId || specsLoading}
+                    disabled={!selectedPRDId || specsLoading}
                 >
                     <option value="">
-                        {specsLoading ? "Loading..." : !selectedProductId ? "Select product first" : "Select spec..."}
+                        {specsLoading ? "Loading..." : !selectedPRDId ? "Select PRD first" : "Select spec..."}
                     </option>
                     {specs.map((spec) => (
                         <option key={spec.id} value={spec.id}>

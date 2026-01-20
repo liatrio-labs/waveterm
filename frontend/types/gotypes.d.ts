@@ -448,14 +448,24 @@ declare global {
         force?: boolean;
     };
 
+    // wshrpc.CommandPlatformPRDsData
+    type CommandPlatformPRDsData = {
+        productId: string;
+    };
+
     // wshrpc.CommandPlatformProductsData
     type CommandPlatformProductsData = {
         projectId: string;
     };
 
+    // wshrpc.CommandPlatformProjectsData
+    type CommandPlatformProjectsData = {
+        teamId?: string;
+    };
+
     // wshrpc.CommandPlatformSpecsData
     type CommandPlatformSpecsData = {
-        productId: string;
+        prdId: string;
     };
 
     // wshrpc.CommandPlatformTaskDetailData
@@ -1242,6 +1252,20 @@ declare global {
         tabid: string;
     };
 
+    // wshrpc.PlatformPRDData
+    type PlatformPRDData = {
+        id: string;
+        productId: string;
+        name: string;
+        description?: string;
+        status?: string;
+    };
+
+    // wshrpc.PlatformPRDsData
+    type PlatformPRDsData = {
+        prds: PlatformPRDData[];
+    };
+
     // wshrpc.PlatformProductData
     type PlatformProductData = {
         id: string;
@@ -1270,7 +1294,7 @@ declare global {
     // wshrpc.PlatformSpecData
     type PlatformSpecData = {
         id: string;
-        productId: string;
+        prdId: string;
         name: string;
         status: string;
     };
@@ -1305,8 +1329,21 @@ declare global {
         title: string;
         description?: string;
         status: string;
+        progress?: number;
         checkpointMode: boolean;
+        model?: string;
+        selectedAgent?: string;
+        selectedModel?: string;
+        repoUrl?: string;
+        branchName?: string;
+        prNumber?: number;
+        prUrl?: string;
+        sandboxUrl?: string;
+        sandboxHealthStatus?: string;
         subTasks?: PlatformSubTaskData[];
+        logs?: PlatformTaskLogData[];
+        createdAt?: string;
+        updatedAt?: string;
     };
 
     // wshrpc.PlatformTaskDetailData
@@ -1315,9 +1352,28 @@ declare global {
         spec: PlatformSpecData;
     };
 
+    // wshrpc.PlatformTaskLogData
+    type PlatformTaskLogData = {
+        type: string;
+        message: string;
+        timestamp?: string;
+    };
+
     // wshrpc.PlatformTasksData
     type PlatformTasksData = {
         tasks: PlatformTaskData[];
+    };
+
+    // wshrpc.PlatformTeamData
+    type PlatformTeamData = {
+        id: string;
+        name: string;
+        slug?: string;
+    };
+
+    // wshrpc.PlatformTeamsData
+    type PlatformTeamsData = {
+        teams: PlatformTeamData[];
     };
 
     // wshrpc.PlatformUserData
@@ -1535,6 +1591,7 @@ declare global {
         "cw:customtemplates"?: any[];
         "platform:enabled"?: boolean;
         "platform:baseUrl"?: string;
+        "platform:teamId"?: string;
         "platform:displayMode"?: string;
         "platform:pollInterval"?: number;
         "platform:autoInjectContext"?: boolean;

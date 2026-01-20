@@ -344,6 +344,24 @@
         "cw:customtemplates": {
           "items": true,
           "type": "array"
+        },
+        "platform:enabled": {
+          "type": "boolean"
+        },
+        "platform:baseUrl": {
+          "type": "string"
+        },
+        "platform:teamId": {
+          "type": "string"
+        },
+        "platform:displayMode": {
+          "type": "string"
+        },
+        "platform:pollInterval": {
+          "type": "integer"
+        },
+        "platform:autoInjectContext": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

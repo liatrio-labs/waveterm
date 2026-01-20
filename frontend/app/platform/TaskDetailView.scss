@@ -7,6 +7,24 @@
     border-top: 1px solid var(--border-color, #444);
     background: var(--block-bg-color, #1a1a1a);
     max-height: 300px;
+    transition: max-height 0.3s ease;
+
+    &--expanded {
+        max-height: 70vh;
+
+        .task-detail-view__content {
+            overflow-y: auto;
+        }
+
+        .task-detail-view__description {
+            white-space: pre-wrap;
+            max-height: none;
+        }
+
+        .task-detail-view__logs {
+            max-height: 300px;
+        }
+    }
 
     &--loading,
     &--error {
@@ -24,6 +42,12 @@
         border-bottom: 1px solid var(--border-color, #333);
     }
 
+    &__header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
     &__title {
         margin: 0;
         font-size: 14px;
@@ -32,6 +56,23 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        flex: 1;
+    }
+
+    &__expand-btn {
+        background: transparent;
+        border: none;
+        font-size: 12px;
+        color: var(--secondary-text-color, #888);
+        cursor: pointer;
+        padding: 4px 8px;
+        line-height: 1;
+        border-radius: 3px;
+
+        &:hover {
+            color: var(--main-text-color, #fff);
+            background: var(--highlight-bg-color, #333);
+        }
     }
 
     &__close-btn {
@@ -108,6 +149,137 @@
         background: rgba(251, 191, 36, 0.15);
         color: #fbbf24;
         border-radius: 3px;
+    }
+
+    &__model {
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        background: rgba(167, 139, 250, 0.15);
+        color: #a78bfa;
+        border-radius: 3px;
+    }
+
+    &__timestamps {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 12px;
+        font-size: 11px;
+        color: var(--secondary-text-color, #888);
+    }
+
+    &__timestamp {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    &__progress {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    &__progress-bar {
+        flex: 1;
+        height: 6px;
+        background: var(--border-color, #333);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    &__progress-fill {
+        height: 100%;
+        background: var(--accent-color, #4a90d9);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    &__progress-text {
+        font-size: 11px;
+        color: var(--secondary-text-color, #888);
+        min-width: 35px;
+    }
+
+    &__git-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    &__git-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+    }
+
+    &__git-label {
+        color: var(--secondary-text-color, #888);
+        min-width: 50px;
+    }
+
+    &__git-value {
+        font-family: monospace;
+        font-size: 11px;
+        padding: 2px 6px;
+        background: var(--highlight-bg-color, #2a2a2a);
+        border-radius: 3px;
+        color: var(--main-text-color, #ddd);
+    }
+
+    &__git-link {
+        color: var(--accent-color, #4a90d9);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__logs {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    &__log {
+        padding: 4px 0;
+        font-size: 11px;
+        border-bottom: 1px solid var(--border-color, #333);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &--info {
+            color: var(--secondary-text-color, #888);
+        }
+
+        &--error {
+            color: #f87171;
+        }
+
+        &--success {
+            color: #4ade80;
+        }
+
+        &--warning {
+            color: #fbbf24;
+        }
+
+        &--more {
+            color: var(--secondary-text-color, #666);
+            font-style: italic;
+        }
+    }
+
+    &__log-message {
+        display: block;
+        white-space: pre-wrap;
+        word-break: break-word;
     }
 
     &__section {

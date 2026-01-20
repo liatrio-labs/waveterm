@@ -94,8 +94,10 @@ type WshRpcInterface interface {
 
 	// Liatrio Code platform integration commands
 	PlatformStatusCommand(ctx context.Context) (*PlatformStatusData, error)
-	PlatformProjectsCommand(ctx context.Context) (*PlatformProjectsData, error)
+	PlatformTeamsCommand(ctx context.Context) (*PlatformTeamsData, error)
+	PlatformProjectsCommand(ctx context.Context, data CommandPlatformProjectsData) (*PlatformProjectsData, error)
 	PlatformProductsCommand(ctx context.Context, data CommandPlatformProductsData) (*PlatformProductsData, error)
+	PlatformPRDsCommand(ctx context.Context, data CommandPlatformPRDsData) (*PlatformPRDsData, error)
 	PlatformSpecsCommand(ctx context.Context, data CommandPlatformSpecsData) (*PlatformSpecsData, error)
 	PlatformTasksCommand(ctx context.Context, data CommandPlatformTasksData) (*PlatformTasksData, error)
 	PlatformTaskDetailCommand(ctx context.Context, data CommandPlatformTaskDetailData) (*PlatformTaskDetailData, error)
@@ -882,8 +884,22 @@ type PlatformUserData struct {
 	AvatarURL string `json:"avatarUrl,omitempty"`
 }
 
-type CommandPlatformProjectsData struct {
+type CommandPlatformTeamsData struct {
 	// No parameters needed
+}
+
+type PlatformTeamsData struct {
+	Teams []PlatformTeamData `json:"teams"`
+}
+
+type PlatformTeamData struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug,omitempty"`
+}
+
+type CommandPlatformProjectsData struct {
+	TeamID string `json:"teamId,omitempty"` // Optional team filter
 }
 
 type PlatformProjectsData struct {
@@ -911,8 +927,24 @@ type PlatformProductData struct {
 	Description string `json:"description,omitempty"`
 }
 
-type CommandPlatformSpecsData struct {
+type CommandPlatformPRDsData struct {
 	ProductID string `json:"productId"`
+}
+
+type PlatformPRDsData struct {
+	PRDs []PlatformPRDData `json:"prds"`
+}
+
+type PlatformPRDData struct {
+	ID          string `json:"id"`
+	ProductID   string `json:"productId"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Status      string `json:"status,omitempty"`
+}
+
+type CommandPlatformSpecsData struct {
+	PRDID string `json:"prdId"`
 }
 
 type PlatformSpecsData struct {
@@ -920,10 +952,10 @@ type PlatformSpecsData struct {
 }
 
 type PlatformSpecData struct {
-	ID        string `json:"id"`
-	ProductID string `json:"productId"`
-	Name      string `json:"name"`
-	Status    string `json:"status"`
+	ID     string `json:"id"`
+	PRDID  string `json:"prdId"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
 }
 
 type CommandPlatformTasksData struct {
@@ -935,13 +967,32 @@ type PlatformTasksData struct {
 }
 
 type PlatformTaskData struct {
-	ID             string                `json:"id"`
-	SpecID         string                `json:"specId"`
-	Title          string                `json:"title"`
-	Description    string                `json:"description,omitempty"`
-	Status         string                `json:"status"`
-	CheckpointMode bool                  `json:"checkpointMode"`
-	SubTasks       []PlatformSubTaskData `json:"subTasks,omitempty"`
+	ID                  string                `json:"id"`
+	SpecID              string                `json:"specId"`
+	Title               string                `json:"title"`
+	Description         string                `json:"description,omitempty"`
+	Status              string                `json:"status"`
+	Progress            int                   `json:"progress,omitempty"`
+	CheckpointMode      bool                  `json:"checkpointMode"`
+	Model               string                `json:"model,omitempty"`
+	SelectedAgent       string                `json:"selectedAgent,omitempty"`
+	SelectedModel       string                `json:"selectedModel,omitempty"`
+	RepoURL             string                `json:"repoUrl,omitempty"`
+	BranchName          string                `json:"branchName,omitempty"`
+	PRNumber            int                   `json:"prNumber,omitempty"`
+	PRURL               string                `json:"prUrl,omitempty"`
+	SandboxURL          string                `json:"sandboxUrl,omitempty"`
+	SandboxHealthStatus string                `json:"sandboxHealthStatus,omitempty"`
+	SubTasks            []PlatformSubTaskData `json:"subTasks,omitempty"`
+	Logs                []PlatformTaskLogData `json:"logs,omitempty"`
+	CreatedAt           string                `json:"createdAt,omitempty"`
+	UpdatedAt           string                `json:"updatedAt,omitempty"`
+}
+
+type PlatformTaskLogData struct {
+	Type      string `json:"type"`
+	Message   string `json:"message"`
+	Timestamp string `json:"timestamp,omitempty"`
 }
 
 type PlatformSubTaskData struct {

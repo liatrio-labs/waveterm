@@ -6,20 +6,48 @@ package cwplatform
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 )
 
-// GetProjects fetches all projects accessible to the authenticated user.
-func (c *PlatformClient) GetProjects(ctx context.Context) ([]Project, error) {
+// GetTeams fetches all teams accessible to the authenticated user.
+func (c *PlatformClient) GetTeams(ctx context.Context) ([]Team, error) {
 	var response struct {
-		Projects []Project `json:"projects"`
+		Success bool   `json:"success"`
+		Data    []Team `json:"data"`
 	}
 
-	if err := c.get(ctx, "/api/projects", &response); err != nil {
+	log.Printf("[Platform] GetTeams: calling GET %s/api/v1/teams", c.baseURL)
+	if err := c.get(ctx, "/api/v1/teams", &response); err != nil {
+		log.Printf("[Platform] GetTeams: error: %v", err)
+		return nil, fmt.Errorf("failed to get teams: %w", err)
+	}
+
+	log.Printf("[Platform] GetTeams: received %d teams", len(response.Data))
+	return response.Data, nil
+}
+
+// GetProjects fetches all projects accessible to the authenticated user.
+// If teamID is provided, only projects for that team are returned.
+func (c *PlatformClient) GetProjects(ctx context.Context, teamID string) ([]Project, error) {
+	var response struct {
+		Success bool      `json:"success"`
+		Data    []Project `json:"data"`
+	}
+
+	path := "/api/v1/projects"
+	if teamID != "" {
+		path = fmt.Sprintf("/api/v1/projects?teamId=%s", url.QueryEscape(teamID))
+	}
+
+	log.Printf("[Platform] GetProjects: calling GET %s%s", c.baseURL, path)
+	if err := c.get(ctx, path, &response); err != nil {
+		log.Printf("[Platform] GetProjects: error: %v", err)
 		return nil, fmt.Errorf("failed to get projects: %w", err)
 	}
 
-	return response.Projects, nil
+	log.Printf("[Platform] GetProjects: received %d projects", len(response.Data))
+	return response.Data, nil
 }
 
 // GetProject fetches a single project by ID.
@@ -29,7 +57,7 @@ func (c *PlatformClient) GetProject(ctx context.Context, projectID string) (*Pro
 	}
 
 	var project Project
-	path := fmt.Sprintf("/api/projects/%s", url.PathEscape(projectID))
+	path := fmt.Sprintf("/api/v1/projects/%s", url.PathEscape(projectID))
 
 	if err := c.get(ctx, path, &project); err != nil {
 		return nil, fmt.Errorf("failed to get project: %w", err)
@@ -45,16 +73,20 @@ func (c *PlatformClient) GetProducts(ctx context.Context, projectID string) ([]P
 	}
 
 	var response struct {
-		Products []Product `json:"products"`
+		Success bool      `json:"success"`
+		Data    []Product `json:"data"`
 	}
 
-	path := fmt.Sprintf("/api/products?projectId=%s", url.QueryEscape(projectID))
+	path := fmt.Sprintf("/api/v1/products?projectId=%s", url.QueryEscape(projectID))
 
+	log.Printf("[Platform] GetProducts: calling GET %s%s", c.baseURL, path)
 	if err := c.get(ctx, path, &response); err != nil {
+		log.Printf("[Platform] GetProducts: error: %v", err)
 		return nil, fmt.Errorf("failed to get products: %w", err)
 	}
 
-	return response.Products, nil
+	log.Printf("[Platform] GetProducts: received %d products", len(response.Data))
+	return response.Data, nil
 }
 
 // GetProduct fetches a single product by ID.
@@ -64,7 +96,7 @@ func (c *PlatformClient) GetProduct(ctx context.Context, productID string) (*Pro
 	}
 
 	var product Product
-	path := fmt.Sprintf("/api/products/%s", url.PathEscape(productID))
+	path := fmt.Sprintf("/api/v1/products/%s", url.PathEscape(productID))
 
 	if err := c.get(ctx, path, &product); err != nil {
 		return nil, fmt.Errorf("failed to get product: %w", err)
@@ -73,21 +105,48 @@ func (c *PlatformClient) GetProduct(ctx context.Context, productID string) (*Pro
 	return &product, nil
 }
 
-// GetSpecs fetches all specs within a product.
-func (c *PlatformClient) GetSpecs(ctx context.Context, productID string) ([]Spec, error) {
+// GetPRDs fetches all PRDs within a product.
+func (c *PlatformClient) GetPRDs(ctx context.Context, productID string) ([]PRD, error) {
 	if productID == "" {
 		return nil, fmt.Errorf("product ID is required")
 	}
 
 	var response struct {
-		Specs []Spec `json:"specs"`
+		Success bool  `json:"success"`
+		Data    []PRD `json:"data"`
 	}
 
-	path := fmt.Sprintf("/api/specs?productId=%s", url.QueryEscape(productID))
+	path := fmt.Sprintf("/api/v1/prds?productId=%s", url.QueryEscape(productID))
 
+	log.Printf("[Platform] GetPRDs: calling GET %s%s", c.baseURL, path)
 	if err := c.get(ctx, path, &response); err != nil {
+		log.Printf("[Platform] GetPRDs: error: %v", err)
+		return nil, fmt.Errorf("failed to get PRDs: %w", err)
+	}
+
+	log.Printf("[Platform] GetPRDs: received %d PRDs", len(response.Data))
+	return response.Data, nil
+}
+
+// GetSpecs fetches all specs within a PRD.
+func (c *PlatformClient) GetSpecs(ctx context.Context, prdID string) ([]Spec, error) {
+	if prdID == "" {
+		return nil, fmt.Errorf("PRD ID is required")
+	}
+
+	var response struct {
+		Success bool   `json:"success"`
+		Data    []Spec `json:"data"`
+	}
+
+	path := fmt.Sprintf("/api/v1/specs?prdId=%s", url.QueryEscape(prdID))
+
+	log.Printf("[Platform] GetSpecs: calling GET %s%s", c.baseURL, path)
+	if err := c.get(ctx, path, &response); err != nil {
+		log.Printf("[Platform] GetSpecs: error: %v", err)
 		return nil, fmt.Errorf("failed to get specs: %w", err)
 	}
 
-	return response.Specs, nil
+	log.Printf("[Platform] GetSpecs: received %d specs", len(response.Data))
+	return response.Data, nil
 }

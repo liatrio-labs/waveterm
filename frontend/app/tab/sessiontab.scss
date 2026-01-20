@@ -4,11 +4,22 @@
 @import "./tab.scss";
 
 .session-tab {
-    position: relative;
-
     &.has-session {
         .tab-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 6px;
+        }
+
+        // Override absolute positioning from tab.scss for flex layout
+        .name {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            flex: 1;
+            min-width: 0;
         }
     }
 

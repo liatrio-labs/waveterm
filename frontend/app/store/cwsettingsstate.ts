@@ -146,6 +146,7 @@ export const customTemplatesAtom = getSettingsKeyAtom("cw:customtemplates");
 // Platform settings
 export const platformEnabledAtom = getSettingsKeyAtom("platform:enabled");
 export const platformBaseUrlAtom = getSettingsKeyAtom("platform:baseUrl");
+export const platformTeamIdAtom = getSettingsKeyAtom("platform:teamId");
 export const platformDisplayModeAtom = getSettingsKeyAtom("platform:displayMode");
 export const platformPollIntervalAtom = getSettingsKeyAtom("platform:pollInterval");
 export const platformAutoInjectContextAtom = getSettingsKeyAtom("platform:autoInjectContext");
@@ -222,6 +223,7 @@ export async function resetCategoryToDefaults(category: SettingsCategory): Promi
         platform: {
             "platform:enabled": false,
             "platform:baseUrl": "https://agenticteam.dev",
+            "platform:teamId": "",
             "platform:displayMode": "sidebar",
             "platform:pollInterval": 30000,
             "platform:autoInjectContext": true,

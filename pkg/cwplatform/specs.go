@@ -6,6 +6,7 @@ package cwplatform
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 )
 
@@ -15,13 +16,23 @@ func (c *PlatformClient) GetSpec(ctx context.Context, specID string) (*Spec, err
 		return nil, fmt.Errorf("spec ID is required")
 	}
 
-	var spec Spec
-	path := fmt.Sprintf("/api/specs/%s", url.PathEscape(specID))
+	// The API returns data.spec for single spec fetch
+	var response struct {
+		Success bool `json:"success"`
+		Data    struct {
+			Spec Spec `json:"spec"`
+		} `json:"data"`
+	}
+	path := fmt.Sprintf("/api/v1/specs/%s", url.PathEscape(specID))
 
-	if err := c.get(ctx, path, &spec); err != nil {
+	log.Printf("[Platform] GetSpec: calling GET %s%s", c.baseURL, path)
+	if err := c.get(ctx, path, &response); err != nil {
+		log.Printf("[Platform] GetSpec: error: %v", err)
 		return nil, fmt.Errorf("failed to get spec: %w", err)
 	}
 
+	spec := response.Data.Spec
+	log.Printf("[Platform] GetSpec: received spec %s (title=%s)", spec.ID, spec.Title)
 	return &spec, nil
 }
 
@@ -50,9 +61,9 @@ func (c *PlatformClient) GetSpecWithTasks(ctx context.Context, specID string) (*
 	return spec, tasks, nil
 }
 
-// GetSpecsByStatus fetches all specs for a product filtered by status.
-func (c *PlatformClient) GetSpecsByStatus(ctx context.Context, productID string, status string) ([]Spec, error) {
-	specs, err := c.GetSpecs(ctx, productID)
+// GetSpecsByStatus fetches all specs for a PRD filtered by status.
+func (c *PlatformClient) GetSpecsByStatus(ctx context.Context, prdID string, status string) ([]Spec, error) {
+	specs, err := c.GetSpecs(ctx, prdID)
 	if err != nil {
 		return nil, err
 	}

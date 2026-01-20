@@ -114,7 +114,7 @@ func MaskAPIKey(key string) string {
 // GetCurrentUser fetches the authenticated user information from the platform.
 func (c *PlatformClient) GetCurrentUser(ctx context.Context) (*User, error) {
 	var user User
-	if err := c.get(ctx, "/api/me", &user); err != nil {
+	if err := c.get(ctx, "/api/v1/me", &user); err != nil {
 		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
 	return &user, nil

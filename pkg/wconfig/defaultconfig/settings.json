@@ -28,6 +28,7 @@
     "cw:shortcutprofile": "default",
     "platform:enabled": false,
     "platform:baseUrl": "https://agenticteam.dev",
+    "platform:teamId": "",
     "platform:displayMode": "sidebar",
     "platform:pollInterval": 30000,
     "platform:autoInjectContext": true,

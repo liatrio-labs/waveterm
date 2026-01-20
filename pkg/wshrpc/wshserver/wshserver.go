@@ -853,6 +853,7 @@ func (ws *WshServer) ProcessMetricsBatchCommand(ctx context.Context, data wshrpc
 // Platform integration commands
 
 func (ws *WshServer) PlatformStatusCommand(ctx context.Context) (*wshrpc.PlatformStatusData, error) {
+	log.Printf("[Platform] PlatformStatusCommand called")
 	status := &wshrpc.PlatformStatusData{
 		BaseURL: cwplatform.DefaultBaseURL,
 	}
@@ -860,22 +861,26 @@ func (ws *WshServer) PlatformStatusCommand(ctx context.Context) (*wshrpc.Platfor
 	// Check if API key is configured
 	apiKey, err := cwplatform.GetAPIKey()
 	if err != nil || apiKey == "" {
+		log.Printf("[Platform] API key not configured: %v", err)
 		status.APIKeyConfigured = false
 		status.Error = "Not logged in"
 		return status, nil
 	}
+	log.Printf("[Platform] API key found (masked): %s", cwplatform.MaskAPIKey(apiKey))
 	status.APIKeyConfigured = true
 
 	// Try to fetch user info
 	client := cwplatform.NewClient(apiKey)
 	user, err := client.GetCurrentUser(ctx)
 	if err != nil {
+		log.Printf("[Platform] GetCurrentUser failed: %v", err)
 		status.Connected = false
 		status.OfflineMode = true
 		status.Error = err.Error()
 		return status, nil
 	}
 
+	log.Printf("[Platform] User authenticated: %s (%s)", user.Name, user.Email)
 	status.Connected = true
 	status.User = &wshrpc.PlatformUserData{
 		ID:        user.ID,
@@ -887,22 +892,75 @@ func (ws *WshServer) PlatformStatusCommand(ctx context.Context) (*wshrpc.Platfor
 	return status, nil
 }
 
-func (ws *WshServer) PlatformProjectsCommand(ctx context.Context) (*wshrpc.PlatformProjectsData, error) {
+func (ws *WshServer) PlatformTeamsCommand(ctx context.Context) (*wshrpc.PlatformTeamsData, error) {
+	log.Printf("[Platform] PlatformTeamsCommand called")
 	apiKey, err := cwplatform.GetAPIKey()
 	if err != nil {
+		log.Printf("[Platform] GetAPIKey failed: %v", err)
 		return nil, fmt.Errorf("not authenticated: %w", err)
 	}
 
 	client := cwplatform.NewClient(apiKey)
-	projects, err := client.GetProjects(ctx)
+	teams, err := client.GetTeams(ctx)
 	if err != nil {
+		log.Printf("[Platform] GetTeams failed: %v", err)
+		return nil, fmt.Errorf("failed to get teams: %w", err)
+	}
+
+	log.Printf("[Platform] GetTeams returned %d teams", len(teams))
+	result := &wshrpc.PlatformTeamsData{
+		Teams: make([]wshrpc.PlatformTeamData, len(teams)),
+	}
+	for i, t := range teams {
+		log.Printf("[Platform] Team %d: %s (%s)", i, t.Name, t.ID)
+		result.Teams[i] = wshrpc.PlatformTeamData{
+			ID:   t.ID,
+			Name: t.Name,
+			Slug: t.Slug,
+		}
+	}
+
+	return result, nil
+}
+
+func (ws *WshServer) PlatformProjectsCommand(ctx context.Context, data wshrpc.CommandPlatformProjectsData) (*wshrpc.PlatformProjectsData, error) {
+	log.Printf("[Platform] PlatformProjectsCommand called with teamID=%s", data.TeamID)
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		log.Printf("[Platform] GetAPIKey failed: %v", err)
+		return nil, fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+
+	// Use the provided teamID, or fetch first team if not provided
+	teamID := data.TeamID
+	if teamID == "" {
+		log.Printf("[Platform] No teamID provided, fetching teams...")
+		teams, err := client.GetTeams(ctx)
+		if err != nil {
+			log.Printf("[Platform] GetTeams failed: %v", err)
+			return nil, fmt.Errorf("failed to get teams: %w", err)
+		}
+		if len(teams) > 0 {
+			teamID = teams[0].ID
+			log.Printf("[Platform] Using first team: %s (%s)", teams[0].Name, teamID)
+		}
+	}
+
+	log.Printf("[Platform] Calling GetProjects with teamID=%s...", teamID)
+	projects, err := client.GetProjects(ctx, teamID)
+	if err != nil {
+		log.Printf("[Platform] GetProjects failed: %v", err)
 		return nil, err
 	}
 
+	log.Printf("[Platform] GetProjects returned %d projects", len(projects))
 	result := &wshrpc.PlatformProjectsData{
 		Projects: make([]wshrpc.PlatformProjectData, len(projects)),
 	}
 	for i, p := range projects {
+		log.Printf("[Platform] Project %d: %s (%s)", i, p.Name, p.ID)
 		result.Projects[i] = wshrpc.PlatformProjectData{
 			ID:          p.ID,
 			Name:        p.Name,
@@ -944,7 +1002,7 @@ func (ws *WshServer) PlatformProductsCommand(ctx context.Context, data wshrpc.Co
 	return result, nil
 }
 
-func (ws *WshServer) PlatformSpecsCommand(ctx context.Context, data wshrpc.CommandPlatformSpecsData) (*wshrpc.PlatformSpecsData, error) {
+func (ws *WshServer) PlatformPRDsCommand(ctx context.Context, data wshrpc.CommandPlatformPRDsData) (*wshrpc.PlatformPRDsData, error) {
 	if data.ProductID == "" {
 		return nil, fmt.Errorf("productId is required")
 	}
@@ -955,7 +1013,43 @@ func (ws *WshServer) PlatformSpecsCommand(ctx context.Context, data wshrpc.Comma
 	}
 
 	client := cwplatform.NewClient(apiKey)
-	specs, err := client.GetSpecs(ctx, data.ProductID)
+	prds, err := client.GetPRDs(ctx, data.ProductID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &wshrpc.PlatformPRDsData{
+		PRDs: make([]wshrpc.PlatformPRDData, len(prds)),
+	}
+	for i, p := range prds {
+		name := p.Name
+		if name == "" {
+			name = p.Title
+		}
+		result.PRDs[i] = wshrpc.PlatformPRDData{
+			ID:          p.ID,
+			ProductID:   p.ProductID,
+			Name:        name,
+			Description: p.Description,
+			Status:      p.Status,
+		}
+	}
+
+	return result, nil
+}
+
+func (ws *WshServer) PlatformSpecsCommand(ctx context.Context, data wshrpc.CommandPlatformSpecsData) (*wshrpc.PlatformSpecsData, error) {
+	if data.PRDID == "" {
+		return nil, fmt.Errorf("prdId is required")
+	}
+
+	apiKey, err := cwplatform.GetAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("not authenticated: %w", err)
+	}
+
+	client := cwplatform.NewClient(apiKey)
+	specs, err := client.GetSpecs(ctx, data.PRDID)
 	if err != nil {
 		return nil, err
 	}
@@ -964,11 +1058,15 @@ func (ws *WshServer) PlatformSpecsCommand(ctx context.Context, data wshrpc.Comma
 		Specs: make([]wshrpc.PlatformSpecData, len(specs)),
 	}
 	for i, s := range specs {
+		name := s.Name
+		if name == "" {
+			name = s.Title
+		}
 		result.Specs[i] = wshrpc.PlatformSpecData{
-			ID:        s.ID,
-			ProductID: s.ProductID,
-			Name:      s.Name,
-			Status:    s.Status,
+			ID:     s.ID,
+			PRDID:  s.PRDID,
+			Name:   name,
+			Status: s.Status,
 		}
 	}
 
@@ -995,20 +1093,47 @@ func (ws *WshServer) PlatformTasksCommand(ctx context.Context, data wshrpc.Comma
 		Tasks: make([]wshrpc.PlatformTaskData, len(tasks)),
 	}
 	for i, t := range tasks {
-		subTasks := make([]wshrpc.PlatformSubTaskData, len(t.SubTasks))
-		for j, st := range t.SubTasks {
-			subTasks[j] = wshrpc.PlatformSubTaskData{
-				ID:     st.ID,
-				TaskID: st.TaskID,
-				Title:  st.Title,
-				Status: st.Status,
+		// Use sub-tasks from task response if available, otherwise fetch them
+		var subTasks []wshrpc.PlatformSubTaskData
+		if len(t.SubTasks) > 0 {
+			subTasks = make([]wshrpc.PlatformSubTaskData, len(t.SubTasks))
+			for j, st := range t.SubTasks {
+				subTasks[j] = wshrpc.PlatformSubTaskData{
+					ID:     st.ID,
+					TaskID: st.TaskID,
+					Title:  st.Title,
+					Status: st.Status,
+				}
+			}
+		} else {
+			// Fetch sub-tasks from separate endpoint
+			fetchedSubTasks, err := client.GetSubTasks(ctx, t.ID)
+			if err != nil {
+				log.Printf("[Platform] PlatformTasksCommand: failed to get sub-tasks for task %s: %v", t.ID, err)
+			} else {
+				subTasks = make([]wshrpc.PlatformSubTaskData, len(fetchedSubTasks))
+				for j, st := range fetchedSubTasks {
+					subTasks[j] = wshrpc.PlatformSubTaskData{
+						ID:     st.ID,
+						TaskID: st.TaskID,
+						Title:  st.Title,
+						Status: st.Status,
+					}
+				}
 			}
 		}
+
+		// Use Prompt as fallback for Description
+		description := t.Description
+		if description == "" {
+			description = t.Prompt
+		}
+
 		result.Tasks[i] = wshrpc.PlatformTaskData{
 			ID:             t.ID,
 			SpecID:         t.SpecID,
 			Title:          t.Title,
-			Description:    t.Description,
+			Description:    description,
 			Status:         t.Status,
 			CheckpointMode: t.CheckpointMode,
 			SubTasks:       subTasks,
@@ -1034,33 +1159,100 @@ func (ws *WshServer) PlatformTaskDetailCommand(ctx context.Context, data wshrpc.
 		return nil, err
 	}
 
-	subTasks := make([]wshrpc.PlatformSubTaskData, len(task.SubTasks))
-	for i, st := range task.SubTasks {
-		subTasks[i] = wshrpc.PlatformSubTaskData{
-			ID:     st.ID,
-			TaskID: st.TaskID,
-			Title:  st.Title,
-			Status: st.Status,
+	// Fetch sub-tasks separately if not included in task response
+	var subTasks []wshrpc.PlatformSubTaskData
+	if len(task.SubTasks) > 0 {
+		// Use sub-tasks from task response
+		subTasks = make([]wshrpc.PlatformSubTaskData, len(task.SubTasks))
+		for i, st := range task.SubTasks {
+			subTasks[i] = wshrpc.PlatformSubTaskData{
+				ID:     st.ID,
+				TaskID: st.TaskID,
+				Title:  st.Title,
+				Status: st.Status,
+			}
+		}
+	} else {
+		// Fetch sub-tasks from separate endpoint
+		fetchedSubTasks, err := client.GetSubTasks(ctx, data.TaskID)
+		if err != nil {
+			// Log but don't fail - sub-tasks are optional
+			log.Printf("[Platform] PlatformTaskDetailCommand: failed to get sub-tasks: %v", err)
+		} else {
+			subTasks = make([]wshrpc.PlatformSubTaskData, len(fetchedSubTasks))
+			for i, st := range fetchedSubTasks {
+				subTasks[i] = wshrpc.PlatformSubTaskData{
+					ID:     st.ID,
+					TaskID: st.TaskID,
+					Title:  st.Title,
+					Status: st.Status,
+				}
+			}
 		}
 	}
 
-	return &wshrpc.PlatformTaskDetailData{
+	// Use Prompt as fallback for Description
+	description := task.Description
+	if description == "" {
+		description = task.Prompt
+	}
+
+	// Use SelectedModel as fallback for Model
+	model := task.Model
+	if model == "" {
+		model = task.SelectedModel
+	}
+
+	// Convert task logs
+	logs := make([]wshrpc.PlatformTaskLogData, len(task.Logs))
+	for i, l := range task.Logs {
+		logs[i] = wshrpc.PlatformTaskLogData{
+			Type:      l.Type,
+			Message:   l.Message,
+			Timestamp: l.Timestamp,
+		}
+	}
+
+	result := &wshrpc.PlatformTaskDetailData{
 		Task: wshrpc.PlatformTaskData{
-			ID:             task.ID,
-			SpecID:         task.SpecID,
-			Title:          task.Title,
-			Description:    task.Description,
-			Status:         task.Status,
-			CheckpointMode: task.CheckpointMode,
-			SubTasks:       subTasks,
+			ID:                  task.ID,
+			SpecID:              task.SpecID,
+			Title:               task.Title,
+			Description:         description,
+			Status:              task.Status,
+			Progress:            task.Progress,
+			CheckpointMode:      task.CheckpointMode,
+			Model:               model,
+			SelectedAgent:       task.SelectedAgent,
+			SelectedModel:       task.SelectedModel,
+			RepoURL:             task.RepoURL,
+			BranchName:          task.BranchName,
+			PRNumber:            task.PRNumber,
+			PRURL:               task.PRURL,
+			SandboxURL:          task.SandboxURL,
+			SandboxHealthStatus: task.SandboxHealthStatus,
+			SubTasks:            subTasks,
+			Logs:                logs,
+			CreatedAt:           task.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			UpdatedAt:           task.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		},
-		Spec: wshrpc.PlatformSpecData{
-			ID:        spec.ID,
-			ProductID: spec.ProductID,
-			Name:      spec.Name,
-			Status:    spec.Status,
-		},
-	}, nil
+	}
+
+	// Only populate Spec if one was found
+	if spec != nil {
+		specName := spec.Name
+		if specName == "" {
+			specName = spec.Title
+		}
+		result.Spec = wshrpc.PlatformSpecData{
+			ID:     spec.ID,
+			PRDID:  spec.PRDID,
+			Name:   specName,
+			Status: spec.Status,
+		}
+	}
+
+	return result, nil
 }
 
 func (ws *WshServer) PlatformLinkCommand(ctx context.Context, data wshrpc.CommandPlatformLinkData) error {

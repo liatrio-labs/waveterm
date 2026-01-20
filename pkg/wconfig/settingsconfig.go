@@ -188,6 +188,7 @@ type SettingsType struct {
 	// Platform integration settings
 	PlatformEnabled          *bool   `json:"platform:enabled,omitempty"`
 	PlatformBaseUrl          string  `json:"platform:baseUrl,omitempty"`
+	PlatformTeamId           string  `json:"platform:teamId,omitempty"`
 	PlatformDisplayMode      string  `json:"platform:displayMode,omitempty"`
 	PlatformPollInterval     int     `json:"platform:pollInterval,omitempty"`
 	PlatformAutoInjectContext *bool  `json:"platform:autoInjectContext,omitempty"`

@@ -8,6 +8,7 @@
 
 import { atom, PrimitiveAtom } from "jotai";
 import { globalStore } from "./jotaiStore";
+import { atoms } from "./global";
 import { RpcApi } from "./wshclientapi";
 import { TabRpcClient } from "./wshrpcutil";
 
@@ -18,6 +19,7 @@ import { TabRpcClient } from "./wshrpcutil";
 export interface PlatformHierarchySelection {
     projectId: string | null;
     productId: string | null;
+    prdId: string | null;
     specId: string | null;
 }
 
@@ -75,7 +77,22 @@ export const platformProductsLoadingAtom = atom<boolean>(false) as PrimitiveAtom
 export const platformSelectedProductIdAtom = atom<string | null>(null) as PrimitiveAtom<string | null>;
 
 /**
- * Specs for the selected product
+ * PRDs for the selected product
+ */
+export const platformPRDsAtom = atom<PlatformPRDData[]>([]) as PrimitiveAtom<PlatformPRDData[]>;
+
+/**
+ * Loading state for PRDs
+ */
+export const platformPRDsLoadingAtom = atom<boolean>(false) as PrimitiveAtom<boolean>;
+
+/**
+ * Currently selected PRD ID
+ */
+export const platformSelectedPRDIdAtom = atom<string | null>(null) as PrimitiveAtom<string | null>;
+
+/**
+ * Specs for the selected PRD
  */
 export const platformSpecsAtom = atom<PlatformSpecData[]>([]) as PrimitiveAtom<PlatformSpecData[]>;
 
@@ -129,6 +146,7 @@ export const platformTaskDetailLoadingAtom = atom<boolean>(false) as PrimitiveAt
 export const platformLastHierarchyAtom = atom<PlatformHierarchySelection>({
     projectId: null,
     productId: null,
+    prdId: null,
     specId: null,
 }) as PrimitiveAtom<PlatformHierarchySelection>;
 
@@ -154,6 +172,16 @@ export const platformSelectedProductAtom = atom((get) => {
     const selectedId = get(platformSelectedProductIdAtom);
     if (!selectedId) return null;
     return products.find(p => p.id === selectedId) ?? null;
+});
+
+/**
+ * Derived atom: Get selected PRD
+ */
+export const platformSelectedPRDAtom = atom((get) => {
+    const prds = get(platformPRDsAtom);
+    const selectedId = get(platformSelectedPRDIdAtom);
+    if (!selectedId) return null;
+    return prds.find(p => p.id === selectedId) ?? null;
 });
 
 /**
@@ -191,6 +219,7 @@ export const platformIsLoadingAtom = atom((get) => {
     return get(platformStatusLoadingAtom) ||
            get(platformProjectsLoadingAtom) ||
            get(platformProductsLoadingAtom) ||
+           get(platformPRDsLoadingAtom) ||
            get(platformSpecsLoadingAtom) ||
            get(platformTasksLoadingAtom) ||
            get(platformTaskDetailLoadingAtom);
@@ -204,14 +233,16 @@ export const platformIsLoadingAtom = atom((get) => {
  * Load platform connection status
  */
 export async function loadPlatformStatus(): Promise<PlatformStatusData | null> {
+    console.log("[Platform] loadPlatformStatus called");
     globalStore.set(platformStatusLoadingAtom, true);
     try {
         const status = await RpcApi.PlatformStatusCommand(TabRpcClient);
+        console.log("[Platform] Status response:", JSON.stringify(status, null, 2));
         globalStore.set(platformStatusAtom, status);
         globalStore.set(platformOfflineModeAtom, status?.offlineMode ?? false);
         return status;
     } catch (err) {
-        console.error("Failed to load platform status:", err);
+        console.error("[Platform] Failed to load platform status:", err);
         globalStore.set(platformOfflineModeAtom, true);
         return null;
     } finally {
@@ -220,16 +251,44 @@ export async function loadPlatformStatus(): Promise<PlatformStatusData | null> {
 }
 
 /**
- * Load projects from platform
+ * Load teams from platform
  */
-export async function loadPlatformProjects(): Promise<PlatformProjectData[]> {
+export async function loadPlatformTeams(): Promise<PlatformTeamData[]> {
+    console.log("[Platform] loadPlatformTeams called");
+    try {
+        const data = await RpcApi.PlatformTeamsCommand(TabRpcClient);
+        console.log("[Platform] Teams response:", JSON.stringify(data, null, 2));
+        return data.teams ?? [];
+    } catch (err) {
+        console.error("[Platform] Failed to load platform teams:", err);
+        return [];
+    }
+}
+
+/**
+ * Get configured team ID from settings
+ */
+function getConfiguredTeamId(): string {
+    const config = globalStore.get(atoms.fullConfigAtom);
+    return config?.settings?.["platform:teamId"] ?? "";
+}
+
+/**
+ * Load projects from platform
+ * If teamId is not provided, uses the configured team from settings
+ */
+export async function loadPlatformProjects(teamId?: string): Promise<PlatformProjectData[]> {
+    // Use provided teamId or fall back to configured setting
+    const effectiveTeamId = teamId ?? getConfiguredTeamId();
+    console.log("[Platform] loadPlatformProjects called with teamId:", effectiveTeamId);
     globalStore.set(platformProjectsLoadingAtom, true);
     try {
-        const data = await RpcApi.PlatformProjectsCommand(TabRpcClient);
+        const data = await RpcApi.PlatformProjectsCommand(TabRpcClient, { teamId: effectiveTeamId });
+        console.log("[Platform] Projects response:", JSON.stringify(data, null, 2));
         globalStore.set(platformProjectsAtom, data.projects ?? []);
         return data.projects ?? [];
     } catch (err) {
-        console.error("Failed to load platform projects:", err);
+        console.error("[Platform] Failed to load platform projects:", err);
         return [];
     } finally {
         globalStore.set(platformProjectsLoadingAtom, false);
@@ -243,6 +302,8 @@ export async function loadPlatformProducts(projectId: string): Promise<PlatformP
     globalStore.set(platformProductsLoadingAtom, true);
     globalStore.set(platformProductsAtom, []);
     globalStore.set(platformSelectedProductIdAtom, null);
+    globalStore.set(platformPRDsAtom, []);
+    globalStore.set(platformSelectedPRDIdAtom, null);
     globalStore.set(platformSpecsAtom, []);
     globalStore.set(platformSelectedSpecIdAtom, null);
     globalStore.set(platformTasksAtom, []);
@@ -260,16 +321,39 @@ export async function loadPlatformProducts(projectId: string): Promise<PlatformP
 }
 
 /**
- * Load specs for a product
+ * Load PRDs for a product
  */
-export async function loadPlatformSpecs(productId: string): Promise<PlatformSpecData[]> {
+export async function loadPlatformPRDs(productId: string): Promise<PlatformPRDData[]> {
+    globalStore.set(platformPRDsLoadingAtom, true);
+    globalStore.set(platformPRDsAtom, []);
+    globalStore.set(platformSelectedPRDIdAtom, null);
+    globalStore.set(platformSpecsAtom, []);
+    globalStore.set(platformSelectedSpecIdAtom, null);
+    globalStore.set(platformTasksAtom, []);
+
+    try {
+        const data = await RpcApi.PlatformPRDsCommand(TabRpcClient, { productId });
+        globalStore.set(platformPRDsAtom, data.prds ?? []);
+        return data.prds ?? [];
+    } catch (err) {
+        console.error("Failed to load platform PRDs:", err);
+        return [];
+    } finally {
+        globalStore.set(platformPRDsLoadingAtom, false);
+    }
+}
+
+/**
+ * Load specs for a PRD
+ */
+export async function loadPlatformSpecs(prdId: string): Promise<PlatformSpecData[]> {
     globalStore.set(platformSpecsLoadingAtom, true);
     globalStore.set(platformSpecsAtom, []);
     globalStore.set(platformSelectedSpecIdAtom, null);
     globalStore.set(platformTasksAtom, []);
 
     try {
-        const data = await RpcApi.PlatformSpecsCommand(TabRpcClient, { productId });
+        const data = await RpcApi.PlatformSpecsCommand(TabRpcClient, { prdId });
         globalStore.set(platformSpecsAtom, data.specs ?? []);
         return data.specs ?? [];
     } catch (err) {
@@ -329,12 +413,23 @@ export async function selectPlatformProject(projectId: string | null): Promise<v
 }
 
 /**
- * Select a product and load its specs
+ * Select a product and load its PRDs
  */
 export async function selectPlatformProduct(productId: string | null): Promise<void> {
     globalStore.set(platformSelectedProductIdAtom, productId);
     if (productId) {
-        await loadPlatformSpecs(productId);
+        await loadPlatformPRDs(productId);
+        persistHierarchySelection();
+    }
+}
+
+/**
+ * Select a PRD and load its specs
+ */
+export async function selectPlatformPRD(prdId: string | null): Promise<void> {
+    globalStore.set(platformSelectedPRDIdAtom, prdId);
+    if (prdId) {
+        await loadPlatformSpecs(prdId);
         persistHierarchySelection();
     }
 }
@@ -376,6 +471,7 @@ function persistHierarchySelection(): void {
     const selection: PlatformHierarchySelection = {
         projectId: globalStore.get(platformSelectedProjectIdAtom),
         productId: globalStore.get(platformSelectedProductIdAtom),
+        prdId: globalStore.get(platformSelectedPRDIdAtom),
         specId: globalStore.get(platformSelectedSpecIdAtom),
     };
     globalStore.set(platformLastHierarchyAtom, selection);
@@ -403,11 +499,16 @@ export async function restoreHierarchySelection(): Promise<void> {
 
             if (selection.productId) {
                 globalStore.set(platformSelectedProductIdAtom, selection.productId);
-                await loadPlatformSpecs(selection.productId);
+                await loadPlatformPRDs(selection.productId);
 
-                if (selection.specId) {
-                    globalStore.set(platformSelectedSpecIdAtom, selection.specId);
-                    await loadPlatformTasks(selection.specId);
+                if (selection.prdId) {
+                    globalStore.set(platformSelectedPRDIdAtom, selection.prdId);
+                    await loadPlatformSpecs(selection.prdId);
+
+                    if (selection.specId) {
+                        globalStore.set(platformSelectedSpecIdAtom, selection.specId);
+                        await loadPlatformTasks(selection.specId);
+                    }
                 }
             }
         }
@@ -433,11 +534,16 @@ export async function refreshPlatformData(): Promise<void> {
 
         const productId = globalStore.get(platformSelectedProductIdAtom);
         if (productId) {
-            await loadPlatformSpecs(productId);
+            await loadPlatformPRDs(productId);
 
-            const specId = globalStore.get(platformSelectedSpecIdAtom);
-            if (specId) {
-                await loadPlatformTasks(specId);
+            const prdId = globalStore.get(platformSelectedPRDIdAtom);
+            if (prdId) {
+                await loadPlatformSpecs(prdId);
+
+                const specId = globalStore.get(platformSelectedSpecIdAtom);
+                if (specId) {
+                    await loadPlatformTasks(specId);
+                }
             }
         }
     }
@@ -447,10 +553,15 @@ export async function refreshPlatformData(): Promise<void> {
  * Initialize platform state
  */
 export async function initializePlatformState(): Promise<void> {
+    console.log("[Platform] initializePlatformState called");
     await loadPlatformStatus();
 
     const isAuth = globalStore.get(platformIsAuthenticatedAtom);
-    if (!isAuth) return;
+    console.log("[Platform] isAuthenticated:", isAuth);
+    if (!isAuth) {
+        console.log("[Platform] Not authenticated, skipping project load");
+        return;
+    }
 
     await loadPlatformProjects();
     await restoreHierarchySelection();

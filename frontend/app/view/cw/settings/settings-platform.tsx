@@ -8,16 +8,18 @@
 
 import { useAtomValue } from "jotai";
 import * as React from "react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
     platformEnabledAtom,
     platformBaseUrlAtom,
+    platformTeamIdAtom,
     platformDisplayModeAtom,
     platformPollIntervalAtom,
     platformAutoInjectContextAtom,
     setSettingsValue,
 } from "@/app/store/cwsettingsstate";
+import { loadPlatformTeams, loadPlatformProjects } from "@/app/store/platformatoms";
 
 import { SettingToggle, SettingSelect, SettingNumber, SettingText } from "./settings-common";
 
@@ -30,15 +32,50 @@ const DISPLAY_MODE_OPTIONS = [
 export function SettingsPlatform() {
     const platformEnabled = useAtomValue(platformEnabledAtom) ?? false;
     const baseUrl = useAtomValue(platformBaseUrlAtom) ?? "https://agenticteam.dev";
+    const teamId = useAtomValue(platformTeamIdAtom) ?? "";
     const displayMode = useAtomValue(platformDisplayModeAtom) ?? "sidebar";
     const pollInterval = useAtomValue(platformPollIntervalAtom) ?? 30000;
     const autoInjectContext = useAtomValue(platformAutoInjectContextAtom) ?? true;
+
+    const [teams, setTeams] = useState<{ value: string; label: string }[]>([]);
+    const [teamsLoading, setTeamsLoading] = useState(false);
+
+    // Load teams when platform is enabled
+    useEffect(() => {
+        if (platformEnabled) {
+            setTeamsLoading(true);
+            loadPlatformTeams()
+                .then((loadedTeams) => {
+                    const teamOptions = loadedTeams.map((t) => ({
+                        value: t.id,
+                        label: t.name,
+                    }));
+                    setTeams(teamOptions);
+                })
+                .catch((err) => {
+                    console.error("[SettingsPlatform] Failed to load teams:", err);
+                })
+                .finally(() => {
+                    setTeamsLoading(false);
+                });
+        }
+    }, [platformEnabled]);
 
     const handleChange = useCallback(async (key: string, value: any) => {
         try {
             await setSettingsValue(key, value);
         } catch (err) {
             console.error("[SettingsPlatform] Failed to update:", err);
+        }
+    }, []);
+
+    const handleTeamChange = useCallback(async (newTeamId: string) => {
+        try {
+            await setSettingsValue("platform:teamId", newTeamId);
+            // Refresh projects with the new team ID
+            await loadPlatformProjects(newTeamId);
+        } catch (err) {
+            console.error("[SettingsPlatform] Failed to update team:", err);
         }
     }, []);
 
@@ -62,6 +99,17 @@ export function SettingsPlatform() {
                     onChange={(v) => handleChange("platform:baseUrl", v)}
                     disabled={!platformEnabled}
                 />
+
+                {teams.length > 0 && (
+                    <SettingSelect
+                        label="Team"
+                        description="Select the team to load projects from"
+                        value={teamId}
+                        options={teams}
+                        onChange={(v) => handleTeamChange(v)}
+                        disabled={!platformEnabled || teamsLoading}
+                    />
+                )}
 
                 <div className="settings-info">
                     <i className="fa-solid fa-info-circle" />
