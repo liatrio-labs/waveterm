@@ -130,4 +130,6 @@ var (
 	ErrInvalidSessionName  = errors.New("invalid session name")
 	ErrInvalidBranchName   = errors.New("invalid branch name")
 	ErrArchiveNotFound     = errors.New("archived session not found")
+	ErrRebaseInProgress    = errors.New("a rebase is already in progress")
+	ErrRebaseConflict      = errors.New("rebase failed due to conflicts - please resolve manually or abort with 'git rebase --abort'")
 )

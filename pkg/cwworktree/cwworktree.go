@@ -320,6 +320,20 @@ func WorktreeSync(params WorktreeSyncParams) error {
 		return ErrWorktreeNotFound
 	}
 
+	// Check if a rebase is already in progress
+	if isRebaseInProgress(worktreePath) {
+		return ErrRebaseInProgress
+	}
+
+	// Check for uncommitted changes (rebase requires clean working tree)
+	statusOutput, err := ExecuteGitCommand(worktreePath, "status", "--porcelain")
+	if err != nil {
+		return fmt.Errorf("failed to check git status: %w", err)
+	}
+	if statusOutput != "" {
+		return ErrUncommittedChanges
+	}
+
 	// Get main branch
 	mainBranch, err := GetMainBranch(params.ProjectPath)
 	if err != nil {
@@ -332,11 +346,52 @@ func WorktreeSync(params WorktreeSyncParams) error {
 	}
 
 	// Rebase onto main
-	if _, err := ExecuteGitCommand(worktreePath, "rebase", "origin/"+mainBranch); err != nil {
-		return fmt.Errorf("rebase failed: %w", err)
+	output, err := ExecuteGitCommand(worktreePath, "rebase", "origin/"+mainBranch)
+	if err != nil {
+		// Abort the failed rebase to leave the repository in a clean state
+		ExecuteGitCommand(worktreePath, "rebase", "--abort")
+
+		// Check if it was a conflict
+		if strings.Contains(output, "CONFLICT") || strings.Contains(output, "conflict") {
+			return ErrRebaseConflict
+		}
+		return fmt.Errorf("rebase failed: %s", strings.TrimSpace(output))
 	}
 
 	return nil
+}
+
+// isRebaseInProgress checks if a rebase operation is currently in progress
+func isRebaseInProgress(worktreePath string) bool {
+	// Check for rebase-merge directory (interactive rebase)
+	rebaseMerge := filepath.Join(worktreePath, ".git", "rebase-merge")
+	if _, err := os.Stat(rebaseMerge); err == nil {
+		return true
+	}
+
+	// Check for rebase-apply directory (non-interactive rebase)
+	rebaseApply := filepath.Join(worktreePath, ".git", "rebase-apply")
+	if _, err := os.Stat(rebaseApply); err == nil {
+		return true
+	}
+
+	// For worktrees, .git might be a file pointing to the main repo
+	// Check using git rev-parse
+	output, err := ExecuteGitCommand(worktreePath, "rev-parse", "--git-path", "rebase-merge")
+	if err == nil {
+		if _, err := os.Stat(output); err == nil {
+			return true
+		}
+	}
+
+	output, err = ExecuteGitCommand(worktreePath, "rev-parse", "--git-path", "rebase-apply")
+	if err == nil {
+		if _, err := os.Stat(output); err == nil {
+			return true
+		}
+	}
+
+	return false
 }
 
 // WorktreeMerge merges a worktree branch into main
