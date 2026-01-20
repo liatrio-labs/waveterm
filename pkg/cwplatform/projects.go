@@ -15,7 +15,7 @@ func (c *PlatformClient) GetProjects(ctx context.Context) ([]Project, error) {
 		Projects []Project `json:"projects"`
 	}
 
-	if err := c.get(ctx, "/api/projects", &response); err != nil {
+	if err := c.get(ctx, "/api/v1/projects", &response); err != nil {
 		return nil, fmt.Errorf("failed to get projects: %w", err)
 	}
 
@@ -29,7 +29,7 @@ func (c *PlatformClient) GetProject(ctx context.Context, projectID string) (*Pro
 	}
 
 	var project Project
-	path := fmt.Sprintf("/api/projects/%s", url.PathEscape(projectID))
+	path := fmt.Sprintf("/api/v1/projects/%s", url.PathEscape(projectID))
 
 	if err := c.get(ctx, path, &project); err != nil {
 		return nil, fmt.Errorf("failed to get project: %w", err)
@@ -48,7 +48,7 @@ func (c *PlatformClient) GetProducts(ctx context.Context, projectID string) ([]P
 		Products []Product `json:"products"`
 	}
 
-	path := fmt.Sprintf("/api/products?projectId=%s", url.QueryEscape(projectID))
+	path := fmt.Sprintf("/api/v1/products?projectId=%s", url.QueryEscape(projectID))
 
 	if err := c.get(ctx, path, &response); err != nil {
 		return nil, fmt.Errorf("failed to get products: %w", err)
@@ -64,7 +64,7 @@ func (c *PlatformClient) GetProduct(ctx context.Context, productID string) (*Pro
 	}
 
 	var product Product
-	path := fmt.Sprintf("/api/products/%s", url.PathEscape(productID))
+	path := fmt.Sprintf("/api/v1/products/%s", url.PathEscape(productID))
 
 	if err := c.get(ctx, path, &product); err != nil {
 		return nil, fmt.Errorf("failed to get product: %w", err)
@@ -83,7 +83,7 @@ func (c *PlatformClient) GetSpecs(ctx context.Context, productID string) ([]Spec
 		Specs []Spec `json:"specs"`
 	}
 
-	path := fmt.Sprintf("/api/specs?productId=%s", url.QueryEscape(productID))
+	path := fmt.Sprintf("/api/v1/specs?productId=%s", url.QueryEscape(productID))
 
 	if err := c.get(ctx, path, &response); err != nil {
 		return nil, fmt.Errorf("failed to get specs: %w", err)

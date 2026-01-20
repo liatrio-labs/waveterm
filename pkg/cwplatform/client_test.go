@@ -146,7 +146,7 @@ func TestClientJSONParsing(t *testing.T) {
 	client := NewClient("ap_user_test123", WithBaseURL(server.URL))
 
 	var user User
-	err := client.get(context.Background(), "/api/me", &user)
+	err := client.get(context.Background(), "/api/v1/me", &user)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -176,7 +176,7 @@ func TestClientErrorParsing(t *testing.T) {
 	client := NewClient("ap_user_invalid", WithBaseURL(server.URL))
 
 	var result map[string]string
-	err := client.get(context.Background(), "/api/me", &result)
+	err := client.get(context.Background(), "/api/v1/me", &result)
 
 	if err == nil {
 		t.Fatal("expected error for unauthorized request")
@@ -217,7 +217,7 @@ func TestClientContextCancellation(t *testing.T) {
 
 func TestClientPing(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/api/health" {
+		if r.URL.Path == "/api/v1/health" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
@@ -253,7 +253,7 @@ func TestClientPostRequest(t *testing.T) {
 	body := map[string]string{"name": "Test"}
 	var result map[string]string
 
-	err := client.post(context.Background(), "/api/items", body, &result)
+	err := client.post(context.Background(), "/api/v1/items", body, &result)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

@@ -19,7 +19,7 @@ func (c *PlatformClient) GetTasks(ctx context.Context, specID string) ([]Task, e
 		Tasks []Task `json:"tasks"`
 	}
 
-	path := fmt.Sprintf("/api/specs/%s/tasks", url.PathEscape(specID))
+	path := fmt.Sprintf("/api/v1/specs/%s/tasks", url.PathEscape(specID))
 
 	if err := c.get(ctx, path, &response); err != nil {
 		return nil, fmt.Errorf("failed to get tasks: %w", err)
@@ -35,7 +35,7 @@ func (c *PlatformClient) GetTask(ctx context.Context, taskID string) (*Task, err
 	}
 
 	var task Task
-	path := fmt.Sprintf("/api/tasks/%s", url.PathEscape(taskID))
+	path := fmt.Sprintf("/api/v1/tasks/%s", url.PathEscape(taskID))
 
 	if err := c.get(ctx, path, &task); err != nil {
 		return nil, fmt.Errorf("failed to get task: %w", err)
@@ -62,7 +62,7 @@ func (c *PlatformClient) UpdateTaskStatus(ctx context.Context, taskID string, st
 		"status": status,
 	}
 
-	path := fmt.Sprintf("/api/tasks/%s", url.PathEscape(taskID))
+	path := fmt.Sprintf("/api/v1/tasks/%s", url.PathEscape(taskID))
 
 	if err := c.patch(ctx, path, body, nil); err != nil {
 		return fmt.Errorf("failed to update task status: %w", err)
@@ -96,7 +96,7 @@ func (c *PlatformClient) GetSubTasks(ctx context.Context, taskID string) ([]SubT
 		SubTasks []SubTask `json:"subTasks"`
 	}
 
-	path := fmt.Sprintf("/api/tasks/%s/subtasks", url.PathEscape(taskID))
+	path := fmt.Sprintf("/api/v1/tasks/%s/subtasks", url.PathEscape(taskID))
 
 	if err := c.get(ctx, path, &response); err != nil {
 		return nil, fmt.Errorf("failed to get sub-tasks: %w", err)
@@ -118,7 +118,7 @@ func (c *PlatformClient) UpdateSubTaskStatus(ctx context.Context, subTaskID stri
 		"status": status,
 	}
 
-	path := fmt.Sprintf("/api/subtasks/%s", url.PathEscape(subTaskID))
+	path := fmt.Sprintf("/api/v1/subtasks/%s", url.PathEscape(subTaskID))
 
 	if err := c.patch(ctx, path, body, nil); err != nil {
 		return fmt.Errorf("failed to update sub-task status: %w", err)

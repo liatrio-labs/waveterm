@@ -16,7 +16,7 @@ func (c *PlatformClient) GetSpec(ctx context.Context, specID string) (*Spec, err
 	}
 
 	var spec Spec
-	path := fmt.Sprintf("/api/specs/%s", url.PathEscape(specID))
+	path := fmt.Sprintf("/api/v1/specs/%s", url.PathEscape(specID))
 
 	if err := c.get(ctx, path, &spec); err != nil {
 		return nil, fmt.Errorf("failed to get spec: %w", err)
