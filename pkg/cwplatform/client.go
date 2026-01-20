@@ -235,7 +235,7 @@ func (c *PlatformClient) parseError(resp *http.Response) error {
 
 // Ping checks if the platform API is reachable.
 func (c *PlatformClient) Ping(ctx context.Context) error {
-	resp, err := c.doRequest(ctx, http.MethodGet, "/api/v1/health", nil)
+	resp, err := c.doRequest(ctx, http.MethodGet, "/api/health", nil)
 	if err != nil {
 		return err
 	}
