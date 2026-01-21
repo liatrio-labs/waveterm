@@ -230,9 +230,11 @@ const WorkspaceSwitcherItem = ({
             </ExpandableMenuItemGroupTitle>
             <ExpandableMenuItem>
                 <WorkspaceEditor
+                    workspaceId={workspace.oid}
                     title={workspace.name}
                     icon={workspace.icon}
                     color={workspace.color}
+                    currentBg={workspace.meta?.["bg"]}
                     focusInput={isEditing}
                     onTitleChange={(title) => setWorkspace({ ...workspace, name: title })}
                     onColorChange={(color) => setWorkspace({ ...workspace, color })}

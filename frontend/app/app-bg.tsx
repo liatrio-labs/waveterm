@@ -5,7 +5,7 @@ import { PLATFORM, PlatformMacOS } from "@/util/platformutil";
 import { computeBgStyleFromMeta } from "@/util/waveutil";
 import useResizeObserver from "@react-hook/resize-observer";
 import { useAtomValue } from "jotai";
-import { CSSProperties, useCallback, useLayoutEffect, useRef } from "react";
+import { CSSProperties, useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import { debounce } from "throttle-debounce";
 import { atoms, getApi, WOS } from "./store/global";
 import { useWaveObjectValue } from "./store/wos";
@@ -13,8 +13,23 @@ import { useWaveObjectValue } from "./store/wos";
 export function AppBackground() {
     const bgRef = useRef<HTMLDivElement>(null);
     const tabId = useAtomValue(atoms.staticTabId);
+    const workspace = useAtomValue(atoms.workspace);
     const [tabData] = useWaveObjectValue<Tab>(WOS.makeORef("tab", tabId));
-    const style: CSSProperties = computeBgStyleFromMeta(tabData?.meta, 0.5) ?? {};
+
+    // Use tab background if set, otherwise fall back to workspace background
+    const style: CSSProperties = useMemo(() => {
+        const tabBgStyle = computeBgStyleFromMeta(tabData?.meta, 0.5);
+        // If tab has a background set, use it
+        if (tabBgStyle && Object.keys(tabBgStyle).length > 0 && tabBgStyle.background) {
+            return tabBgStyle;
+        }
+        // Otherwise, check for workspace background
+        const workspaceBgStyle = computeBgStyleFromMeta(workspace?.meta, 0.5);
+        if (workspaceBgStyle && Object.keys(workspaceBgStyle).length > 0) {
+            return workspaceBgStyle;
+        }
+        return tabBgStyle ?? {};
+    }, [tabData?.meta, workspace?.meta]);
     const getAvgColor = useCallback(
         debounce(30, () => {
             if (

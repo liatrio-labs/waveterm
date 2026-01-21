@@ -1,9 +1,12 @@
 import { fireAndForget, makeIconClass } from "@/util/util";
 import clsx from "clsx";
+import { useAtomValue } from "jotai";
 import { memo, useEffect, useRef, useState } from "react";
 import { Button } from "../element/button";
 import { Input } from "../element/input";
-import { WorkspaceService } from "../store/services";
+import { atoms, globalStore } from "../store/global";
+import { ObjectService, WorkspaceService } from "../store/services";
+import { makeORef } from "../store/wos";
 import "./workspaceeditor.scss";
 
 interface ColorSelectorProps {
@@ -60,10 +63,50 @@ const IconSelector = memo(({ icons, selectedIcon, onSelect, className }: IconSel
     );
 });
 
+interface BackgroundPreset {
+    key: string;
+    name: string;
+    bg?: string;
+    opacity?: number;
+}
+
+interface BackgroundSelectorProps {
+    presets: BackgroundPreset[];
+    selectedBg?: string;
+    onSelect: (presetKey: string) => void;
+    className?: string;
+}
+
+const BackgroundSelector = memo(({ presets, selectedBg, onSelect, className }: BackgroundSelectorProps) => {
+    return (
+        <div className={clsx("background-selector", className)}>
+            {presets.map((preset) => {
+                const isSelected = selectedBg === preset.bg;
+                const bgStyle: React.CSSProperties = preset.bg
+                    ? { background: preset.bg, opacity: preset.opacity ?? 0.85 }
+                    : {};
+                return (
+                    <div
+                        key={preset.key}
+                        className={clsx("background-item", { selected: isSelected })}
+                        style={bgStyle}
+                        onClick={() => onSelect(preset.key)}
+                        title={preset.name}
+                    >
+                        {!preset.bg && <span className="none-label">None</span>}
+                    </div>
+                );
+            })}
+        </div>
+    );
+});
+
 interface WorkspaceEditorProps {
+    workspaceId: string;
     title: string;
     icon: string;
     color: string;
+    currentBg?: string;
     focusInput: boolean;
     onTitleChange: (newTitle: string) => void;
     onColorChange: (newColor: string) => void;
@@ -71,9 +114,11 @@ interface WorkspaceEditorProps {
     onDeleteWorkspace: () => void;
 }
 const WorkspaceEditorComponent = ({
+    workspaceId,
     title,
     icon,
     color,
+    currentBg,
     focusInput,
     onTitleChange,
     onColorChange,
@@ -81,9 +126,11 @@ const WorkspaceEditorComponent = ({
     onDeleteWorkspace,
 }: WorkspaceEditorProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
+    const fullConfig = useAtomValue(atoms.fullConfigAtom);
 
     const [colors, setColors] = useState<string[]>([]);
     const [icons, setIcons] = useState<string[]>([]);
+    const [bgPresets, setBgPresets] = useState<BackgroundPreset[]>([]);
 
     useEffect(() => {
         fireAndForget(async () => {
@@ -95,11 +142,54 @@ const WorkspaceEditorComponent = ({
     }, []);
 
     useEffect(() => {
+        // Load background presets from config
+        const presets: BackgroundPreset[] = [
+            { key: "default", name: "None", bg: undefined, opacity: undefined },
+        ];
+        const presetKeys: string[] = [];
+        for (const key in fullConfig?.presets ?? {}) {
+            if (key.startsWith("bg@")) {
+                presetKeys.push(key);
+            }
+        }
+        presetKeys.sort((a, b) => {
+            const aOrder = fullConfig.presets[a]["display:order"] ?? 0;
+            const bOrder = fullConfig.presets[b]["display:order"] ?? 0;
+            return aOrder - bOrder;
+        });
+        for (const key of presetKeys) {
+            const preset = fullConfig.presets[key];
+            if (preset) {
+                presets.push({
+                    key,
+                    name: preset["display:name"] ?? key,
+                    bg: preset["bg"],
+                    opacity: preset["bg:opacity"],
+                });
+            }
+        }
+        setBgPresets(presets);
+    }, [fullConfig]);
+
+    useEffect(() => {
         if (focusInput && inputRef.current) {
             inputRef.current.focus();
             inputRef.current.select();
         }
     }, [focusInput]);
+
+    const handleBackgroundSelect = (presetKey: string) => {
+        const oref = makeORef("workspace", workspaceId);
+        if (presetKey === "default") {
+            // Clear background by setting bg:* to true (clears all bg properties)
+            fireAndForget(() => ObjectService.UpdateObjectMeta(oref, { "bg:*": true }));
+        } else {
+            const preset = fullConfig?.presets?.[presetKey];
+            if (preset) {
+                fireAndForget(() => ObjectService.UpdateObjectMeta(oref, preset));
+            }
+        }
+    };
 
     return (
         <div className="workspace-editor">
@@ -113,6 +203,14 @@ const WorkspaceEditorComponent = ({
             />
             <ColorSelector selectedColor={color} colors={colors} onSelect={onColorChange} />
             <IconSelector selectedIcon={icon} icons={icons} onSelect={onIconChange} />
+            <div className="background-section">
+                <div className="section-label">Background</div>
+                <BackgroundSelector
+                    presets={bgPresets}
+                    selectedBg={currentBg}
+                    onSelect={handleBackgroundSelect}
+                />
+            </div>
             <div className="delete-ws-btn-wrapper">
                 <Button className="ghost red text-[12px] bold" onClick={onDeleteWorkspace}>
                     Delete workspace
