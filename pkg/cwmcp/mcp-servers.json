@@ -1,0 +1,215 @@
+{
+  "_comment": "MCP Server Configuration Templates",
+  "_version": "1.0",
+  "servers": [
+    {
+      "name": "browser",
+      "description": "Browser automation and web interaction agent",
+      "category": "development",
+      "dependencies": ["node", "chrome"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-browser"]
+      }
+    },
+    {
+      "name": "chrome-devtools",
+      "description": "Chrome DevTools integration for web debugging",
+      "category": "development",
+      "dependencies": ["chrome", "node"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-chrome-devtools"]
+      }
+    },
+    {
+      "name": "context7",
+      "description": "Context7 library documentation lookup",
+      "category": "documentation",
+      "dependencies": ["node"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@upstash/context7-mcp"]
+      }
+    },
+    {
+      "name": "google-drive",
+      "description": "Google Drive file management and search",
+      "category": "productivity",
+      "dependencies": ["node"],
+      "env_vars": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-google-drive"],
+        "env": {
+          "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+          "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
+          "GOOGLE_REFRESH_TOKEN": "${GOOGLE_REFRESH_TOKEN}"
+        }
+      }
+    },
+    {
+      "name": "gmail",
+      "description": "Gmail email management and search",
+      "category": "productivity",
+      "dependencies": ["node"],
+      "env_vars": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-gmail"],
+        "env": {
+          "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+          "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
+          "GOOGLE_REFRESH_TOKEN": "${GOOGLE_REFRESH_TOKEN}"
+        }
+      }
+    },
+    {
+      "name": "google-calendar",
+      "description": "Google Calendar event management",
+      "category": "productivity",
+      "dependencies": ["node"],
+      "env_vars": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-google-calendar"],
+        "env": {
+          "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+          "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
+          "GOOGLE_REFRESH_TOKEN": "${GOOGLE_REFRESH_TOKEN}"
+        }
+      }
+    },
+    {
+      "name": "hubspot",
+      "description": "HubSpot CRM contacts, deals, and marketing",
+      "category": "crm",
+      "dependencies": ["node"],
+      "env_vars": ["HUBSPOT_ACCESS_TOKEN"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-hubspot"],
+        "env": {
+          "HUBSPOT_ACCESS_TOKEN": "${HUBSPOT_ACCESS_TOKEN}"
+        }
+      }
+    },
+    {
+      "name": "monday",
+      "description": "Monday.com project and task management",
+      "category": "productivity",
+      "dependencies": ["node"],
+      "env_vars": ["MONDAY_API_TOKEN"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-monday"],
+        "env": {
+          "MONDAY_API_TOKEN": "${MONDAY_API_TOKEN}"
+        }
+      }
+    },
+    {
+      "name": "supabase",
+      "description": "Supabase database and auth integration",
+      "category": "backend",
+      "dependencies": ["node"],
+      "env_vars": ["SUPABASE_URL", "SUPABASE_KEY"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-supabase"],
+        "env": {
+          "SUPABASE_URL": "${SUPABASE_URL}",
+          "SUPABASE_KEY": "${SUPABASE_KEY}"
+        }
+      }
+    },
+    {
+      "name": "vercel",
+      "description": "Vercel deployment and project management",
+      "category": "deployment",
+      "dependencies": ["node"],
+      "env_vars": ["VERCEL_TOKEN"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-vercel"],
+        "env": {
+          "VERCEL_TOKEN": "${VERCEL_TOKEN}"
+        }
+      }
+    },
+    {
+      "name": "slack",
+      "description": "Slack workspace integration",
+      "category": "communication",
+      "dependencies": ["node"],
+      "env_vars": ["SLACK_BOT_TOKEN", "SLACK_TEAM_ID"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-slack"],
+        "env": {
+          "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
+          "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
+        }
+      }
+    },
+    {
+      "name": "bigquery",
+      "description": "Google BigQuery data analysis",
+      "category": "data",
+      "dependencies": ["node", "gcloud"],
+      "env_vars": ["GOOGLE_PROJECT_ID"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-bigquery"],
+        "env": {
+          "GOOGLE_PROJECT_ID": "${GOOGLE_PROJECT_ID}"
+        }
+      }
+    },
+    {
+      "name": "sentry",
+      "description": "Sentry error tracking integration",
+      "category": "monitoring",
+      "dependencies": ["node"],
+      "env_vars": ["SENTRY_AUTH_TOKEN", "SENTRY_ORG"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-sentry"],
+        "env": {
+          "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}",
+          "SENTRY_ORG": "${SENTRY_ORG}"
+        }
+      }
+    },
+    {
+      "name": "learning360",
+      "description": "Learning 360 LMS course and training management",
+      "category": "learning",
+      "dependencies": ["node"],
+      "env_vars": ["LEARNING360_API_KEY", "LEARNING360_DOMAIN"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-learning360"],
+        "env": {
+          "LEARNING360_API_KEY": "${LEARNING360_API_KEY}",
+          "LEARNING360_DOMAIN": "${LEARNING360_DOMAIN}"
+        }
+      }
+    },
+    {
+      "name": "formbricks",
+      "description": "Formbricks survey and feedback collection",
+      "category": "feedback",
+      "dependencies": ["node"],
+      "env_vars": ["FORMBRICKS_API_KEY", "FORMBRICKS_HOST"],
+      "config": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-server-formbricks"],
+        "env": {
+          "FORMBRICKS_API_KEY": "${FORMBRICKS_API_KEY}",
+          "FORMBRICKS_HOST": "${FORMBRICKS_HOST}"
+        }
+      }
+    }
+  ]
+}

@@ -84,14 +84,25 @@ func GetRegistryPath() string {
 	return "data/mcp-servers.json"
 }
 
-// LoadTemplates loads the MCP template registry from data/mcp-servers.json
+// LoadTemplates loads the MCP template registry from file or embedded fallback.
+// It first tries to load from the provided path (allowing user overrides),
+// then falls back to the embedded registry bundled in the binary.
 func (m *MCPManager) LoadTemplates(registryPath string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	data, err := os.ReadFile(registryPath)
+	var data []byte
+	var err error
+
+	// Try loading from file first (allows runtime overrides)
+	data, err = os.ReadFile(registryPath)
+
+	// Fall back to embedded registry if file not found
 	if err != nil {
-		return fmt.Errorf("failed to read MCP template registry: %w", err)
+		data = EmbeddedMCPServersJSON
+		if len(data) == 0 {
+			return fmt.Errorf("failed to read MCP template registry: %w (and no embedded fallback)", err)
+		}
 	}
 
 	var registry MCPTemplateRegistry
