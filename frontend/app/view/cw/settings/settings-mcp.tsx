@@ -24,7 +24,7 @@ import { MCPServerFormModal } from "./mcp-server-form";
 import "./settings-mcp.scss";
 
 // Popular templates to show in empty state
-const POPULAR_TEMPLATES = ["supabase", "context7", "chrome-devtools"];
+const POPULAR_TEMPLATES = ["supabase", "context7", "browser", "slack", "hubspot"];
 
 export function SettingsMcp() {
     const fullConfig = useAtomValue(atoms.fullConfigAtom);
