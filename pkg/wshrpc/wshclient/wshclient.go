@@ -668,6 +668,42 @@ func PlatformUpdateStatusCommand(w *wshutil.WshRpc, data wshrpc.CommandPlatformU
 	return err
 }
 
+// command "pluginconfigure", wshserver.PluginConfigureCommand
+func PluginConfigureCommand(w *wshutil.WshRpc, data wshrpc.CommandPluginConfigureData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "pluginconfigure", data, opts)
+	return err
+}
+
+// command "plugindisable", wshserver.PluginDisableCommand
+func PluginDisableCommand(w *wshutil.WshRpc, data wshrpc.CommandPluginDisableData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "plugindisable", data, opts)
+	return err
+}
+
+// command "pluginenable", wshserver.PluginEnableCommand
+func PluginEnableCommand(w *wshutil.WshRpc, data wshrpc.CommandPluginEnableData, opts *wshrpc.RpcOpts) (*wshrpc.InstalledPluginData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.InstalledPluginData](w, "pluginenable", data, opts)
+	return resp, err
+}
+
+// command "plugingetcategories", wshserver.PluginGetCategoriesCommand
+func PluginGetCategoriesCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.PluginCategoryData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.PluginCategoryData](w, "plugingetcategories", nil, opts)
+	return resp, err
+}
+
+// command "pluginlistavailable", wshserver.PluginListAvailableCommand
+func PluginListAvailableCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.PluginData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.PluginData](w, "pluginlistavailable", nil, opts)
+	return resp, err
+}
+
+// command "pluginlistinstalled", wshserver.PluginListInstalledCommand
+func PluginListInstalledCommand(w *wshutil.WshRpc, data wshrpc.CommandPluginListData, opts *wshrpc.RpcOpts) ([]wshrpc.InstalledPluginData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.InstalledPluginData](w, "pluginlistinstalled", data, opts)
+	return resp, err
+}
+
 // command "processmetrics", wshserver.ProcessMetricsCommand
 func ProcessMetricsCommand(w *wshutil.WshRpc, data wshrpc.CommandProcessMetricsData, opts *wshrpc.RpcOpts) (*wshrpc.ProcessMetricsData, error) {
 	resp, err := sendRpcRequestCallHelper[*wshrpc.ProcessMetricsData](w, "processmetrics", data, opts)

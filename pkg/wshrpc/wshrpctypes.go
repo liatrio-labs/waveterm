@@ -211,6 +211,14 @@ type WshRpcInterface interface {
 	// streams
 	StreamDataCommand(ctx context.Context, data CommandStreamData) error
 	StreamDataAckCommand(ctx context.Context, data CommandStreamAckData) error
+
+	// Liatrio Code plugin commands
+	PluginListAvailableCommand(ctx context.Context) ([]PluginData, error)
+	PluginListInstalledCommand(ctx context.Context, data CommandPluginListData) ([]InstalledPluginData, error)
+	PluginEnableCommand(ctx context.Context, data CommandPluginEnableData) (*InstalledPluginData, error)
+	PluginDisableCommand(ctx context.Context, data CommandPluginDisableData) error
+	PluginConfigureCommand(ctx context.Context, data CommandPluginConfigureData) error
+	PluginGetCategoriesCommand(ctx context.Context) ([]PluginCategoryData, error)
 }
 
 // for frontend
@@ -1130,4 +1138,78 @@ type GitHubPRStatusData struct {
 	Title     string `json:"title"`
 	HeadRef   string `json:"headref"`
 	BaseRef   string `json:"baseref"`
+}
+
+// Liatrio Code plugin command types
+type CommandPluginListData struct {
+	ProjectPath string `json:"projectpath,omitempty"`
+}
+
+type CommandPluginEnableData struct {
+	ProjectPath string `json:"projectpath"`
+	PluginID    string `json:"pluginid"`
+}
+
+type CommandPluginDisableData struct {
+	ProjectPath string `json:"projectpath"`
+	PluginID    string `json:"pluginid"`
+}
+
+type CommandPluginConfigureData struct {
+	ProjectPath string                 `json:"projectpath"`
+	PluginID    string                 `json:"pluginid"`
+	Config      map[string]interface{} `json:"config"`
+}
+
+type PluginData struct {
+	ID               string                  `json:"id"`
+	Name             string                  `json:"name"`
+	Description      string                  `json:"description"`
+	Category         string                  `json:"category"`
+	Author           string                  `json:"author"`
+	Source           string                  `json:"source"`
+	Path             string                  `json:"path"`
+	Version          string                  `json:"version,omitempty"`
+	Official         bool                    `json:"official"`
+	Liatrio          bool                    `json:"liatrio,omitempty"`
+	Featured         bool                    `json:"featured,omitempty"`
+	RequiresPlatform bool                    `json:"requiresPlatform,omitempty"`
+	Commands         []string                `json:"commands,omitempty"`
+	Skills           []string                `json:"skills,omitempty"`
+	Agents           []string                `json:"agents,omitempty"`
+	Hooks            []string                `json:"hooks,omitempty"`
+	Tags             []string                `json:"tags,omitempty"`
+	ConfigFields     []PluginConfigFieldData `json:"configFields,omitempty"`
+}
+
+type PluginConfigFieldData struct {
+	Key         string      `json:"key"`
+	Label       string      `json:"label"`
+	Type        string      `json:"type"`
+	Default     interface{} `json:"default,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Required    bool        `json:"required,omitempty"`
+	Options     []string    `json:"options,omitempty"`
+	Min         *float64    `json:"min,omitempty"`
+	Max         *float64    `json:"max,omitempty"`
+}
+
+type InstalledPluginData struct {
+	PluginID    string                 `json:"pluginId"`
+	Enabled     bool                   `json:"enabled"`
+	InstalledAt int64                  `json:"installedAt,omitempty"`
+	Config      map[string]interface{} `json:"config,omitempty"`
+}
+
+type PluginCategoryData struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Icon        string `json:"icon"`
+	Description string `json:"description,omitempty"`
+}
+
+type PluginResultData struct {
+	Success bool       `json:"success"`
+	Message string     `json:"message,omitempty"`
+	Plugin  PluginData `json:"plugin,omitempty"`
 }

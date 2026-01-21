@@ -552,6 +552,36 @@ class RpcApiType {
         return client.wshRpcCall("platformupdatestatus", data, opts);
     }
 
+    // command "pluginconfigure" [call]
+    PluginConfigureCommand(client: WshClient, data: CommandPluginConfigureData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("pluginconfigure", data, opts);
+    }
+
+    // command "plugindisable" [call]
+    PluginDisableCommand(client: WshClient, data: CommandPluginDisableData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("plugindisable", data, opts);
+    }
+
+    // command "pluginenable" [call]
+    PluginEnableCommand(client: WshClient, data: CommandPluginEnableData, opts?: RpcOpts): Promise<InstalledPluginData> {
+        return client.wshRpcCall("pluginenable", data, opts);
+    }
+
+    // command "plugingetcategories" [call]
+    PluginGetCategoriesCommand(client: WshClient, opts?: RpcOpts): Promise<PluginCategoryData[]> {
+        return client.wshRpcCall("plugingetcategories", null, opts);
+    }
+
+    // command "pluginlistavailable" [call]
+    PluginListAvailableCommand(client: WshClient, opts?: RpcOpts): Promise<PluginData[]> {
+        return client.wshRpcCall("pluginlistavailable", null, opts);
+    }
+
+    // command "pluginlistinstalled" [call]
+    PluginListInstalledCommand(client: WshClient, data: CommandPluginListData, opts?: RpcOpts): Promise<InstalledPluginData[]> {
+        return client.wshRpcCall("pluginlistinstalled", data, opts);
+    }
+
     // command "processmetrics" [call]
     ProcessMetricsCommand(client: WshClient, data: CommandProcessMetricsData, opts?: RpcOpts): Promise<ProcessMetricsData> {
         return client.wshRpcCall("processmetrics", data, opts);

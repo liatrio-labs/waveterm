@@ -516,6 +516,30 @@ declare global {
         status: string;
     };
 
+    // wshrpc.CommandPluginConfigureData
+    type CommandPluginConfigureData = {
+        projectpath: string;
+        pluginid: string;
+        config: {[key: string]: any};
+    };
+
+    // wshrpc.CommandPluginDisableData
+    type CommandPluginDisableData = {
+        projectpath: string;
+        pluginid: string;
+    };
+
+    // wshrpc.CommandPluginEnableData
+    type CommandPluginEnableData = {
+        projectpath: string;
+        pluginid: string;
+    };
+
+    // wshrpc.CommandPluginListData
+    type CommandPluginListData = {
+        projectpath?: string;
+    };
+
     // wshrpc.CommandProcessMetricsBatchData
     type CommandProcessMetricsBatchData = {
         pids: number[];
@@ -1096,6 +1120,14 @@ declare global {
         baseref: string;
     };
 
+    // wshrpc.InstalledPluginData
+    type InstalledPluginData = {
+        pluginId: string;
+        enabled: boolean;
+        installedAt?: number;
+        config?: {[key: string]: any};
+    };
+
     // waveobj.LayoutActionData
     type LayoutActionData = {
         actiontype: string;
@@ -1421,6 +1453,49 @@ declare global {
         email: string;
         name: string;
         avatarUrl?: string;
+    };
+
+    // wshrpc.PluginCategoryData
+    type PluginCategoryData = {
+        id: string;
+        name: string;
+        icon: string;
+        description?: string;
+    };
+
+    // wshrpc.PluginConfigFieldData
+    type PluginConfigFieldData = {
+        key: string;
+        label: string;
+        type: string;
+        default?: any;
+        description?: string;
+        required?: boolean;
+        options?: string[];
+        min?: number;
+        max?: number;
+    };
+
+    // wshrpc.PluginData
+    type PluginData = {
+        id: string;
+        name: string;
+        description: string;
+        category: string;
+        author: string;
+        source: string;
+        path: string;
+        version?: string;
+        official: boolean;
+        liatrio?: boolean;
+        featured?: boolean;
+        requiresPlatform?: boolean;
+        commands?: string[];
+        skills?: string[];
+        agents?: string[];
+        hooks?: string[];
+        tags?: string[];
+        configFields?: PluginConfigFieldData[];
     };
 
     // waveobj.Point

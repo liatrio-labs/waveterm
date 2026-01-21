@@ -28,6 +28,7 @@ import (
 	"github.com/greggcoppen/claudewave/app/pkg/cwgit"
 	"github.com/greggcoppen/claudewave/app/pkg/cwmonitor"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplatform"
+	"github.com/greggcoppen/claudewave/app/pkg/cwplugins"
 	"github.com/greggcoppen/claudewave/app/pkg/cwworktree"
 	"github.com/greggcoppen/claudewave/app/pkg/buildercontroller"
 	"github.com/greggcoppen/claudewave/app/pkg/filebackup"
@@ -2354,4 +2355,161 @@ func (ws *WshServer) GetSecretsLinuxStorageBackendCommand(ctx context.Context) (
 		return "", fmt.Errorf("error getting linux storage backend: %w", err)
 	}
 	return backend, nil
+}
+
+// Liatrio Code plugin handlers
+
+func (ws *WshServer) PluginListAvailableCommand(ctx context.Context) ([]wshrpc.PluginData, error) {
+	pm, err := cwplugins.NewPluginManager()
+	if err != nil {
+		return nil, err
+	}
+
+	plugins, err := pm.ListAvailable()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.PluginData
+	for _, p := range plugins {
+		result = append(result, convertPluginToData(p))
+	}
+	return result, nil
+}
+
+func (ws *WshServer) PluginListInstalledCommand(ctx context.Context, data wshrpc.CommandPluginListData) ([]wshrpc.InstalledPluginData, error) {
+	pm, err := cwplugins.NewPluginManager()
+	if err != nil {
+		return nil, err
+	}
+
+	installed, err := pm.ListInstalled(data.ProjectPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.InstalledPluginData
+	for _, inst := range installed {
+		result = append(result, wshrpc.InstalledPluginData{
+			PluginID:    inst.PluginID,
+			Enabled:     inst.Enabled,
+			InstalledAt: inst.InstalledAt,
+			Config:      inst.Config,
+		})
+	}
+	return result, nil
+}
+
+func (ws *WshServer) PluginEnableCommand(ctx context.Context, data wshrpc.CommandPluginEnableData) (*wshrpc.InstalledPluginData, error) {
+	pm, err := cwplugins.NewPluginManager()
+	if err != nil {
+		return nil, err
+	}
+
+	installed, err := pm.EnableWithTimestamp(data.ProjectPath, data.PluginID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.InstalledPluginData{
+		PluginID:    installed.PluginID,
+		Enabled:     installed.Enabled,
+		InstalledAt: installed.InstalledAt,
+		Config:      installed.Config,
+	}, nil
+}
+
+func (ws *WshServer) PluginDisableCommand(ctx context.Context, data wshrpc.CommandPluginDisableData) error {
+	pm, err := cwplugins.NewPluginManager()
+	if err != nil {
+		return err
+	}
+
+	return pm.Disable(data.ProjectPath, data.PluginID)
+}
+
+func (ws *WshServer) PluginConfigureCommand(ctx context.Context, data wshrpc.CommandPluginConfigureData) error {
+	pm, err := cwplugins.NewPluginManager()
+	if err != nil {
+		return err
+	}
+
+	return pm.Configure(data.ProjectPath, data.PluginID, data.Config)
+}
+
+func (ws *WshServer) PluginGetCategoriesCommand(ctx context.Context) ([]wshrpc.PluginCategoryData, error) {
+	pm, err := cwplugins.NewPluginManager()
+	if err != nil {
+		return nil, err
+	}
+
+	// Access categories through registry
+	plugins, err := pm.ListAvailable()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get unique categories from plugins
+	categoryMap := make(map[string]bool)
+	for _, p := range plugins {
+		categoryMap[p.Category] = true
+	}
+
+	// Load registry to get category details
+	registry, err := cwplugins.LoadRegistry()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.PluginCategoryData
+	for _, cat := range registry.Categories {
+		if categoryMap[cat.ID] {
+			result = append(result, wshrpc.PluginCategoryData{
+				ID:          cat.ID,
+				Name:        cat.Name,
+				Icon:        cat.Icon,
+				Description: cat.Description,
+			})
+		}
+	}
+	return result, nil
+}
+
+// convertPluginToData converts a cwplugins.Plugin to wshrpc.PluginData
+func convertPluginToData(p cwplugins.Plugin) wshrpc.PluginData {
+	var configFields []wshrpc.PluginConfigFieldData
+	for _, cf := range p.ConfigFields {
+		configFields = append(configFields, wshrpc.PluginConfigFieldData{
+			Key:         cf.Key,
+			Label:       cf.Label,
+			Type:        cf.Type,
+			Default:     cf.Default,
+			Description: cf.Description,
+			Required:    cf.Required,
+			Options:     cf.Options,
+			Min:         cf.Min,
+			Max:         cf.Max,
+		})
+	}
+
+	return wshrpc.PluginData{
+		ID:               p.ID,
+		Name:             p.Name,
+		Description:      p.Description,
+		Category:         p.Category,
+		Author:           p.Author,
+		Source:           p.Source,
+		Path:             p.Path,
+		Version:          p.Version,
+		Official:         p.Official,
+		Liatrio:          p.Liatrio,
+		Featured:         p.Featured,
+		RequiresPlatform: p.RequiresPlatform,
+		Commands:         p.Commands,
+		Skills:           p.Skills,
+		Agents:           p.Agents,
+		Hooks:            p.Hooks,
+		Tags:             p.Tags,
+		ConfigFields:     configFields,
+	}
 }
