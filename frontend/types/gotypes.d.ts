@@ -245,6 +245,23 @@ declare global {
         value: any;
     };
 
+    // wshrpc.CommandCWSessionStatusData
+    type CommandCWSessionStatusData = {
+        worktreepath: string;
+        sessionname?: string;
+        status: string;
+        hooktype?: string;
+    };
+
+    // wshrpc.CWSessionStatusEvent
+    type CWSessionStatusEvent = {
+        worktreepath: string;
+        sessionname: string;
+        status: string;
+        hooktype?: string;
+        timestamp: number;
+    };
+
     // wshrpc.CommandCaptureBlockScreenshotData
     type CommandCaptureBlockScreenshotData = {
         blockid: string;
@@ -451,6 +468,49 @@ declare global {
         entrycount: number;
         totalentries: number;
         truncated?: boolean;
+    };
+
+    // wshrpc.CommandMCPAddServerData
+    type CommandMCPAddServerData = {
+        projectpath: string;
+        name: string;
+        command: string;
+        args?: string[];
+        env?: {[key: string]: string};
+        template?: string;
+    };
+
+    // wshrpc.CommandMCPGetStatusData
+    type CommandMCPGetStatusData = {
+        projectpath: string;
+        servername: string;
+    };
+
+    // wshrpc.CommandMCPListServersData
+    type CommandMCPListServersData = {
+        projectpath: string;
+    };
+
+    // wshrpc.CommandMCPRemoveServerData
+    type CommandMCPRemoveServerData = {
+        projectpath: string;
+        servername: string;
+    };
+
+    // wshrpc.CommandMCPTestConnectionData
+    type CommandMCPTestConnectionData = {
+        projectpath: string;
+        servername: string;
+    };
+
+    // wshrpc.CommandMCPUpdateServerData
+    type CommandMCPUpdateServerData = {
+        projectpath: string;
+        servername: string;
+        name: string;
+        command: string;
+        args?: string[];
+        env?: {[key: string]: string};
     };
 
     // wshrpc.CommandMakeDraftFromLocalData
@@ -1155,6 +1215,39 @@ declare global {
     type LeafOrderEntry = {
         nodeid: string;
         blockid: string;
+    };
+
+    // wshrpc.MCPServerConfigData
+    type MCPServerConfigData = {
+        command: string;
+        args?: string[];
+        env?: {[key: string]: string};
+    };
+
+    // wshrpc.MCPServerData
+    type MCPServerData = {
+        name: string;
+        config: MCPServerConfigData;
+        enabled: boolean;
+        template?: string;
+    };
+
+    // wshrpc.MCPServerStatusData
+    type MCPServerStatusData = {
+        name: string;
+        connected: boolean;
+        lastConnected?: number;
+        error?: string;
+    };
+
+    // wshrpc.MCPTemplateData
+    type MCPTemplateData = {
+        name: string;
+        description: string;
+        category: string;
+        dependencies?: string[];
+        envVars?: string[];
+        config: MCPServerConfigData;
     };
 
     // waveobj.MetaTSType

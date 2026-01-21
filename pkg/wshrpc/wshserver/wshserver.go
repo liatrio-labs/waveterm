@@ -207,6 +207,25 @@ func (ws *WshServer) ResolveIdsCommand(ctx context.Context, data wshrpc.CommandR
 func (ws *WshServer) CreateBlockCommand(ctx context.Context, data wshrpc.CommandCreateBlockData) (*waveobj.ORef, error) {
 	ctx = waveobj.ContextWithUpdates(ctx)
 	tabId := data.TabId
+
+	// Check if this is a terminal block without cmd:cwd set, and apply workspace default if available
+	if data.BlockDef != nil && data.BlockDef.Meta != nil {
+		viewType, _ := data.BlockDef.Meta["view"].(string)
+		_, hasCwd := data.BlockDef.Meta[waveobj.MetaKey_CmdCwd]
+		if (viewType == "term" || viewType == "preview") && !hasCwd {
+			// Look up workspace to check for default cwd
+			workspaceId, wsErr := wstore.DBFindWorkspaceForTabId(ctx, tabId)
+			if wsErr == nil && workspaceId != "" {
+				workspace, wsErr := wstore.DBGet[*waveobj.Workspace](ctx, workspaceId)
+				if wsErr == nil && workspace != nil && workspace.Meta != nil {
+					if defaultCwd, ok := workspace.Meta["workspace:defaultcwd"].(string); ok && defaultCwd != "" {
+						data.BlockDef.Meta[waveobj.MetaKey_CmdCwd] = defaultCwd
+					}
+				}
+			}
+		}
+	}
+
 	blockData, err := wcore.CreateBlock(ctx, tabId, data.BlockDef, data.RtOpts)
 	if err != nil {
 		return nil, fmt.Errorf("error creating block: %w", err)
@@ -816,6 +835,36 @@ func (ws *WshServer) WebSessionDeleteCommand(ctx context.Context, data wshrpc.Co
 		ProjectPath: data.ProjectPath,
 		SessionID:   data.SessionID,
 	})
+}
+
+// CWSessionStatusCommand handles session status updates from Claude Code hooks
+func (ws *WshServer) CWSessionStatusCommand(ctx context.Context, data wshrpc.CommandCWSessionStatusData) error {
+	// Derive session name from worktree path if not provided
+	sessionName := data.SessionName
+	if sessionName == "" && data.WorktreePath != "" {
+		sessionName = filepath.Base(data.WorktreePath)
+	}
+
+	// Validate status
+	validStatuses := map[string]bool{"idle": true, "running": true, "waiting": true, "error": true}
+	if !validStatuses[data.Status] {
+		return fmt.Errorf("invalid status: %s (must be idle, running, waiting, or error)", data.Status)
+	}
+
+	// Broadcast the session status event to all connected clients
+	event := wps.WaveEvent{
+		Event: wps.Event_CWSessionStatus,
+		Data: wshrpc.CWSessionStatusEvent{
+			WorktreePath: data.WorktreePath,
+			SessionName:  sessionName,
+			Status:       data.Status,
+			HookType:     data.HookType,
+			Timestamp:    time.Now().UnixMilli(),
+		},
+	}
+	wps.Broker.Publish(event)
+
+	return nil
 }
 
 func (ws *WshServer) ProcessMetricsCommand(ctx context.Context, data wshrpc.CommandProcessMetricsData) (*wshrpc.ProcessMetricsData, error) {

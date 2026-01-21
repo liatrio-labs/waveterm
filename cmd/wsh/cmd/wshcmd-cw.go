@@ -47,12 +47,43 @@ var cwConfigGetProjectCmd = &cobra.Command{
 	PreRunE: preRunSetupRpcClient,
 }
 
+// Session commands
+var cwSessionCmd = &cobra.Command{
+	Use:   "session",
+	Short: "Session management commands",
+}
+
+var cwSessionStatusHookType string
+
+var cwSessionStatusCmd = &cobra.Command{
+	Use:   "status <worktree-path> <status>",
+	Short: "Update session status (called by Claude Code hooks)",
+	Long: `Update session status to notify the UI when Claude Code state changes.
+
+Status must be one of: idle, running, waiting, error
+
+This command is typically called by Claude Code hooks to notify the app
+when a session needs attention (e.g., task completed, waiting for input).
+
+Examples:
+  wsh cw session status /path/to/worktree idle --hook-type Stop
+  wsh cw session status /path/to/worktree waiting --hook-type PermissionRequest`,
+	Args:    cobra.ExactArgs(2),
+	RunE:    cwSessionStatusRun,
+	PreRunE: preRunSetupRpcClient,
+}
+
 func init() {
 	rootCmd.AddCommand(cwCmd)
 	cwCmd.AddCommand(cwConfigCmd)
 	cwConfigCmd.AddCommand(cwConfigGetCmd)
 	cwConfigCmd.AddCommand(cwConfigSetCmd)
 	cwConfigCmd.AddCommand(cwConfigGetProjectCmd)
+
+	// Session commands
+	cwCmd.AddCommand(cwSessionCmd)
+	cwSessionStatusCmd.Flags().StringVar(&cwSessionStatusHookType, "hook-type", "", "The hook type that triggered this status update")
+	cwSessionCmd.AddCommand(cwSessionStatusCmd)
 }
 
 func cwConfigGetRun(cmd *cobra.Command, args []string) (rtnErr error) {
@@ -118,5 +149,31 @@ func cwConfigGetProjectRun(cmd *cobra.Command, args []string) (rtnErr error) {
 		return fmt.Errorf("marshaling config: %w", err)
 	}
 	WriteStdout("%s\n", string(jsonBytes))
+	return nil
+}
+
+func cwSessionStatusRun(cmd *cobra.Command, args []string) (rtnErr error) {
+	defer func() {
+		sendActivity("cw:session:status", rtnErr == nil)
+	}()
+
+	worktreePath := args[0]
+	status := args[1]
+
+	// Validate status
+	validStatuses := map[string]bool{"idle": true, "running": true, "waiting": true, "error": true}
+	if !validStatuses[status] {
+		return fmt.Errorf("invalid status: %s (must be idle, running, waiting, or error)", status)
+	}
+
+	commandData := wshrpc.CommandCWSessionStatusData{
+		WorktreePath: worktreePath,
+		Status:       status,
+		HookType:     cwSessionStatusHookType,
+	}
+	err := wshclient.CWSessionStatusCommand(RpcClient, commandData, &wshrpc.RpcOpts{Timeout: 2000})
+	if err != nil {
+		return fmt.Errorf("updating session status: %w", err)
+	}
 	return nil
 }

@@ -10,6 +10,7 @@ import { useEffect, useCallback, useRef } from "react";
 import { globalStore } from "./jotaiStore";
 import { RpcApi } from "./wshclientapi";
 import { TabRpcClient } from "./wshrpcutil";
+import { waveEventSubscribe } from "./wps";
 import { activeTabIdAtom } from "@/app/store/tab-model";
 import * as WOS from "@/app/store/wos";
 import { ObjectService } from "@/app/store/services";
@@ -942,8 +943,34 @@ export function useCWWebSessionActions() {
 // ============================================================================
 
 /**
+ * Subscribe to session status events from Claude Code hooks
+ */
+function subscribeToSessionStatusEvents(): () => void {
+    return waveEventSubscribe({
+        eventType: "cw:sessionstatus",
+        handler: (event: WaveEvent) => {
+            const data = event.data as CWSessionStatusEvent;
+            if (!data) return;
+
+            // Find session by worktree path
+            const sessions = globalStore.get(cwSessionsAtom);
+            const session = sessions.find(s => s.worktreePath === data.worktreepath);
+
+            if (session) {
+                // Mark session as needing attention for completed tasks or waiting states
+                if (data.status === "idle" || data.status === "waiting" || data.status === "error") {
+                    markSessionNeedsAttention(session.id);
+                }
+            }
+        },
+    });
+}
+
+/**
  * Initialize CW state system
  */
 export async function initCWState(): Promise<void> {
     await loadCWConfig();
+    // Subscribe to session status events from Claude Code hooks
+    subscribeToSessionStatusEvents();
 }

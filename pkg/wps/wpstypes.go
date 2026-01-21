@@ -22,6 +22,7 @@ const (
 	Event_WaveAppAppGoUpdated = "waveapp:appgoupdated"
 	Event_TsunamiUpdateMeta   = "tsunami:updatemeta"
 	Event_AIModeConfig        = "waveai:modeconfig"
+	Event_CWSessionStatus     = "cw:sessionstatus"
 )
 
 type WaveEvent struct {

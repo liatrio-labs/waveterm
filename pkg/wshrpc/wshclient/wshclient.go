@@ -173,6 +173,12 @@ func CWConfigSetCommand(w *wshutil.WshRpc, data wshrpc.CommandCWConfigSetData, o
 	return err
 }
 
+// command "cwsessionstatus", wshserver.CWSessionStatusCommand
+func CWSessionStatusCommand(w *wshutil.WshRpc, data wshrpc.CommandCWSessionStatusData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "cwsessionstatus", data, opts)
+	return err
+}
+
 // command "deleteappfile", wshserver.DeleteAppFileCommand
 func DeleteAppFileCommand(w *wshutil.WshRpc, data wshrpc.CommandDeleteAppFileData, opts *wshrpc.RpcOpts) error {
 	_, err := sendRpcRequestCallHelper[any](w, "deleteappfile", data, opts)
@@ -576,6 +582,48 @@ func ListAllEditableAppsCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshr
 func MakeDraftFromLocalCommand(w *wshutil.WshRpc, data wshrpc.CommandMakeDraftFromLocalData, opts *wshrpc.RpcOpts) (*wshrpc.CommandMakeDraftFromLocalRtnData, error) {
 	resp, err := sendRpcRequestCallHelper[*wshrpc.CommandMakeDraftFromLocalRtnData](w, "makedraftfromlocal", data, opts)
 	return resp, err
+}
+
+// command "mcpaddserver", wshserver.MCPAddServerCommand
+func MCPAddServerCommand(w *wshutil.WshRpc, data wshrpc.CommandMCPAddServerData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "mcpaddserver", data, opts)
+	return err
+}
+
+// command "mcpgetstatus", wshserver.MCPGetStatusCommand
+func MCPGetStatusCommand(w *wshutil.WshRpc, data wshrpc.CommandMCPGetStatusData, opts *wshrpc.RpcOpts) (*wshrpc.MCPServerStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.MCPServerStatusData](w, "mcpgetstatus", data, opts)
+	return resp, err
+}
+
+// command "mcplistservers", wshserver.MCPListServersCommand
+func MCPListServersCommand(w *wshutil.WshRpc, data wshrpc.CommandMCPListServersData, opts *wshrpc.RpcOpts) ([]wshrpc.MCPServerData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.MCPServerData](w, "mcplistservers", data, opts)
+	return resp, err
+}
+
+// command "mcplisttemplates", wshserver.MCPListTemplatesCommand
+func MCPListTemplatesCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.MCPTemplateData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.MCPTemplateData](w, "mcplisttemplates", nil, opts)
+	return resp, err
+}
+
+// command "mcpremoveserver", wshserver.MCPRemoveServerCommand
+func MCPRemoveServerCommand(w *wshutil.WshRpc, data wshrpc.CommandMCPRemoveServerData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "mcpremoveserver", data, opts)
+	return err
+}
+
+// command "mcptestconnection", wshserver.MCPTestConnectionCommand
+func MCPTestConnectionCommand(w *wshutil.WshRpc, data wshrpc.CommandMCPTestConnectionData, opts *wshrpc.RpcOpts) (*wshrpc.MCPServerStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.MCPServerStatusData](w, "mcptestconnection", data, opts)
+	return resp, err
+}
+
+// command "mcpupdateserver", wshserver.MCPUpdateServerCommand
+func MCPUpdateServerCommand(w *wshutil.WshRpc, data wshrpc.CommandMCPUpdateServerData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "mcpupdateserver", data, opts)
+	return err
 }
 
 // command "message", wshserver.MessageCommand

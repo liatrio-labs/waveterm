@@ -88,6 +88,9 @@ type WshRpcInterface interface {
 	WebSessionUpdateCommand(ctx context.Context, data CommandWebSessionUpdateData) error
 	WebSessionDeleteCommand(ctx context.Context, data CommandWebSessionDeleteData) error
 
+	// Liatrio Code session status commands (for Claude Code hooks)
+	CWSessionStatusCommand(ctx context.Context, data CommandCWSessionStatusData) error
+
 	// Liatrio Code process monitoring commands
 	ProcessMetricsCommand(ctx context.Context, data CommandProcessMetricsData) (*ProcessMetricsData, error)
 	ProcessMetricsBatchCommand(ctx context.Context, data CommandProcessMetricsBatchData) (map[int32]*ProcessMetricsData, error)
@@ -863,6 +866,23 @@ type WebSessionData struct {
 	OriginBranch     string `json:"originbranch,omitempty"`
 	OriginWorkingDir string `json:"originworkingdir,omitempty"`
 	Status           string `json:"status"` // "active", "completed", "unknown"
+}
+
+// Liatrio Code session status event types
+type CommandCWSessionStatusData struct {
+	WorktreePath string `json:"worktreepath"`           // Path to the worktree
+	SessionName  string `json:"sessionname,omitempty"`  // Optional session name (derived from path if not provided)
+	Status       string `json:"status"`                 // "idle", "running", "waiting", "error"
+	HookType     string `json:"hooktype,omitempty"`     // Original hook type (Stop, PermissionRequest, etc.)
+}
+
+// CWSessionStatusEvent is sent to frontends when session status changes
+type CWSessionStatusEvent struct {
+	WorktreePath string `json:"worktreepath"`
+	SessionName  string `json:"sessionname"`
+	Status       string `json:"status"`
+	HookType     string `json:"hooktype,omitempty"`
+	Timestamp    int64  `json:"timestamp"`
 }
 
 // Liatrio Code process monitoring types
