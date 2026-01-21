@@ -3,7 +3,7 @@
 
 import type { BlockNodeModel } from "@/app/block/blocktypes";
 import type { TabModel } from "@/app/store/tab-model";
-import { getApi } from "@/app/store/global";
+import { getApi, getBlockMetaKeyAtom, getOverrideConfigAtom, useBlockAtom, WOS } from "@/app/store/global";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
 import {
@@ -18,6 +18,7 @@ import {
     deleteSession,
     setActiveSession,
     setProjectPath,
+    setActiveCwBlock,
     loadCWConfig,
     useCWWebSessionActions,
     fetchSessionPRInfo,
@@ -31,6 +32,8 @@ import { globalStore } from "@/app/store/jotaiStore";
 import { atoms } from "@/store/global";
 import { Button } from "@/app/element/button";
 import { PRModal } from "@/app/view/cwgitchanges/components/pr-modal";
+import { computeTheme, DefaultTermTheme } from "@/app/view/term/termutil";
+import { boundNumber } from "@/util/util";
 import clsx from "clsx";
 import * as jotai from "jotai";
 import { atom, useAtom, useAtomValue, useSetAtom, PrimitiveAtom } from "jotai";
@@ -77,6 +80,8 @@ class CwSessionsViewModel implements ViewModel {
     viewIcon: jotai.Atom<string>;
     viewName: jotai.Atom<string>;
     viewText: jotai.Atom<string>;
+    transparencyAtom: jotai.Atom<number>;
+    blockBg: jotai.Atom<{ bg: string } | null>;
 
     constructor(blockId: string, nodeModel: BlockNodeModel, tabModel: TabModel) {
         this.viewType = "cwsessions";
@@ -89,6 +94,25 @@ class CwSessionsViewModel implements ViewModel {
         this.viewName = atom("CW Sessions");
         this.viewText = atom("Claude Code Sessions");
 
+        // Transparency atom for panel background
+        this.transparencyAtom = useBlockAtom(blockId, "cwtransparencyatom", () => {
+            return jotai.atom<number>((get) => {
+                let value = get(getOverrideConfigAtom(blockId, "term:transparency")) ?? 0.5;
+                return boundNumber(value, 0, 1);
+            });
+        });
+
+        // Block background atom based on transparency (uses terminal theme colors)
+        this.blockBg = jotai.atom((get) => {
+            const fullConfig = get(atoms.fullConfigAtom);
+            const transparency = get(this.transparencyAtom);
+            const [_, bgcolor] = computeTheme(fullConfig, DefaultTermTheme, transparency);
+            if (bgcolor != null) {
+                return { bg: bgcolor };
+            }
+            return null;
+        });
+
         // Initialize on construction
         this.initialize();
     }
@@ -96,8 +120,34 @@ class CwSessionsViewModel implements ViewModel {
     async initialize() {
         try {
             await loadCWConfig();
+
+            // Set this block as the active cwsessions block for workspace-scoped settings
+            setActiveCwBlock(this.blockId);
+
+            // Check if workspace has a default path set that's a git repo
+            const workspace = globalStore.get(atoms.workspace);
+            const defaultCwd = workspace?.meta?.["workspace:defaultcwd"];
+            const currentProjectPath = globalStore.get(cwProjectPathAtom);
+
+            // Only auto-connect if no project is currently set and workspace has a default path
+            if (!currentProjectPath && defaultCwd) {
+                try {
+                    // Check if the path is a git repository
+                    const isGitRepo = await RpcApi.RemoteRunBashCommand(TabRpcClient, {
+                        command: "git rev-parse --is-inside-work-tree 2>/dev/null && echo 'true' || echo 'false'",
+                        cwd: defaultCwd,
+                    });
+                    const isRepo = isGitRepo?.stdout?.trim() === "true";
+                    if (isRepo) {
+                        console.log("[CwSessions] Auto-connecting to workspace default path:", defaultCwd);
+                        setProjectPath(defaultCwd);
+                    }
+                } catch (err) {
+                    console.log("[CwSessions] Default path is not a git repo:", err);
+                }
+            }
         } catch (err) {
-            console.error("[CwSessions] Failed to load config:", err);
+            console.error("[CwSessions] Failed to initialize:", err);
         }
     }
 
@@ -106,6 +156,43 @@ class CwSessionsViewModel implements ViewModel {
     }
 
     getSettingsMenuItems(): ContextMenuItem[] {
+        const transparencyMeta = globalStore.get(getBlockMetaKeyAtom(this.blockId, "term:transparency"));
+
+        // Transparency submenu with granular options
+        const transparencyLevels = [
+            { label: "Opaque (0%)", value: 0 },
+            { label: "10%", value: 0.1 },
+            { label: "20%", value: 0.2 },
+            { label: "30%", value: 0.3 },
+            { label: "40%", value: 0.4 },
+            { label: "50%", value: 0.5 },
+            { label: "60%", value: 0.6 },
+            { label: "70%", value: 0.7 },
+            { label: "80%", value: 0.8 },
+            { label: "90%", value: 0.9 },
+        ];
+
+        const transparencySubMenu: ContextMenuItem[] = [
+            {
+                label: transparencyMeta == null ? "✓ Default (50%)" : "Default (50%)",
+                click: () => {
+                    RpcApi.SetMetaCommand(TabRpcClient, {
+                        oref: WOS.makeORef("block", this.blockId),
+                        meta: { "term:transparency": null },
+                    });
+                },
+            },
+            ...transparencyLevels.map(({ label, value }) => ({
+                label: transparencyMeta === value ? `✓ ${label}` : label,
+                click: () => {
+                    RpcApi.SetMetaCommand(TabRpcClient, {
+                        oref: WOS.makeORef("block", this.blockId),
+                        meta: { "term:transparency": value },
+                    });
+                },
+            })),
+        ];
+
         return [
             {
                 label: "Refresh Sessions",
@@ -115,6 +202,11 @@ class CwSessionsViewModel implements ViewModel {
                         loadSessions(projectPath);
                     }
                 },
+            },
+            { type: "separator" },
+            {
+                label: `Transparency${transparencyMeta != null ? ` (${Math.round((transparencyMeta ?? 0.5) * 100)}%)` : ""}`,
+                submenu: transparencySubMenu,
             },
         ];
     }
@@ -1077,8 +1169,5 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
         </div>
     );
 }
-
-// Need to import WOS for the block atom
-import { WOS } from "@/store/global";
 
 export { CwSessionsViewModel };

@@ -18,7 +18,7 @@ import {
     usePluginConfigModal,
     PluginSource,
 } from "@/app/store/cwpluginsstate";
-import { atoms } from "@/app/store/global";
+import { useActiveWorkspaceProjectPath } from "@/app/store/cwstate";
 import { PluginCard } from "./plugin-card";
 import { PluginConfigModal } from "./plugin-config-modal";
 import "./settings-plugins.scss";
@@ -31,8 +31,8 @@ const SOURCE_TABS: { value: PluginSource; label: string }[] = [
 ];
 
 export function SettingsPlugins() {
-    const fullConfig = useAtomValue(atoms.fullConfigAtom);
-    const projectPath = fullConfig?.settings?.["cw:projectpath"] ?? "";
+    // Use workspace-scoped project path from the active cwsessions block
+    const projectPath = useActiveWorkspaceProjectPath() ?? "";
 
     const { plugins, filteredPlugins, featuredPlugins, categories, loading, error, installedCount, refresh } =
         usePlugins(projectPath);

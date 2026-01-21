@@ -20,9 +20,38 @@ import { ObjectService } from "@/app/store/services";
 // ============================================================================
 
 /**
- * Current project path atom
+ * Active cwsessions block ID - tracks which workspace is currently active
+ * This is set when a cwsessions block gains focus or is interacted with
+ */
+export const cwActiveBlockIdAtom = atom<string | null>(null) as PrimitiveAtom<string | null>;
+
+/**
+ * Current project path atom (legacy - used for runtime state)
  */
 export const cwProjectPathAtom = atom<string | null>(null) as PrimitiveAtom<string | null>;
+
+/**
+ * Derived atom: Get project path from active cwsessions block's metadata
+ * This provides workspace-scoped project path for plugins/MCP configuration
+ */
+export const cwActiveWorkspaceProjectPathAtom = atom((get) => {
+    const blockId = get(cwActiveBlockIdAtom);
+    if (!blockId) {
+        // Fallback to global project path if no active block
+        return get(cwProjectPathAtom);
+    }
+
+    // Get block metadata
+    const blockOref = WOS.makeORef("block", blockId);
+    const block = WOS.getObjectValue<Block>(blockOref);
+
+    if (block?.meta?.["cw:projectpath"]) {
+        return block.meta["cw:projectpath"] as string;
+    }
+
+    // Fallback to global project path
+    return get(cwProjectPathAtom);
+});
 
 /**
  * CW configuration atom
@@ -638,6 +667,14 @@ export async function setProjectPath(
     }
 }
 
+/**
+ * Set the active cwsessions block ID
+ * Call this when a cwsessions block gains focus or is interacted with
+ */
+export function setActiveCwBlock(blockId: string | null): void {
+    globalStore.set(cwActiveBlockIdAtom, blockId);
+}
+
 // ============================================================================
 // Web Session Actions
 // ============================================================================
@@ -806,10 +843,18 @@ export function useCWConfig(): CWConfig | null {
 }
 
 /**
- * Hook to access project path
+ * Hook to access project path (legacy - global)
  */
 export function useCWProjectPath(): string | null {
     return useAtomValue(cwProjectPathAtom);
+}
+
+/**
+ * Hook to access the active workspace's project path
+ * This is scoped to the currently active cwsessions block
+ */
+export function useActiveWorkspaceProjectPath(): string | null {
+    return useAtomValue(cwActiveWorkspaceProjectPathAtom);
 }
 
 /**

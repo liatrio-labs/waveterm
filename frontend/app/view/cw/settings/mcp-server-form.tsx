@@ -11,19 +11,18 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { clsx } from "clsx";
-import { useAtomValue } from "jotai";
 import {
     useMCPServerModal,
     useMCPServerActions,
     useMCPServers,
     MCPServerTemplate,
 } from "@/app/store/cwmcpstate";
-import { atoms } from "@/app/store/global";
+import { useActiveWorkspaceProjectPath } from "@/app/store/cwstate";
 import { Modal } from "@/app/modals/modal";
 
 export function MCPServerFormModal() {
-    const fullConfig = useAtomValue(atoms.fullConfigAtom);
-    const projectPath = fullConfig?.settings?.["cw:projectpath"] ?? "";
+    // Use workspace-scoped project path from the active cwsessions block
+    const projectPath = useActiveWorkspaceProjectPath() ?? "";
 
     const { selectedServer, isOpen, mode, close } = useMCPServerModal();
     const { templates } = useMCPServers(projectPath);

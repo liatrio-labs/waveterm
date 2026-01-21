@@ -9,7 +9,6 @@
  */
 
 import * as React from "react";
-import { useAtomValue } from "jotai";
 import { clsx } from "clsx";
 import {
     useMCPServers,
@@ -18,7 +17,7 @@ import {
     MCPServer,
     MCPServerTemplate,
 } from "@/app/store/cwmcpstate";
-import { atoms } from "@/app/store/global";
+import { useActiveWorkspaceProjectPath } from "@/app/store/cwstate";
 import { MCPServerCard } from "./mcp-server-card";
 import { MCPServerFormModal } from "./mcp-server-form";
 import "./settings-mcp.scss";
@@ -27,8 +26,8 @@ import "./settings-mcp.scss";
 const POPULAR_TEMPLATES = ["supabase", "context7", "browser", "slack", "hubspot"];
 
 export function SettingsMcp() {
-    const fullConfig = useAtomValue(atoms.fullConfigAtom);
-    const projectPath = fullConfig?.settings?.["cw:projectpath"] ?? "";
+    // Use workspace-scoped project path from the active cwsessions block
+    const projectPath = useActiveWorkspaceProjectPath() ?? "";
 
     const { servers, templates, loading, error, enabledCount, connectedCount, refresh } =
         useMCPServers(projectPath);
