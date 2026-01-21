@@ -477,6 +477,41 @@ class RpcApiType {
         return client.wshRpcCall("makedraftfromlocal", data, opts);
     }
 
+    // command "mcpaddserver" [call]
+    MCPAddServerCommand(client: WshClient, data: CommandMCPAddServerData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("mcpaddserver", data, opts);
+    }
+
+    // command "mcpgetstatus" [call]
+    MCPGetStatusCommand(client: WshClient, data: CommandMCPGetStatusData, opts?: RpcOpts): Promise<MCPServerStatusData> {
+        return client.wshRpcCall("mcpgetstatus", data, opts);
+    }
+
+    // command "mcplistservers" [call]
+    MCPListServersCommand(client: WshClient, data: CommandMCPListServersData, opts?: RpcOpts): Promise<MCPServerData[]> {
+        return client.wshRpcCall("mcplistservers", data, opts);
+    }
+
+    // command "mcplisttemplates" [call]
+    MCPListTemplatesCommand(client: WshClient, opts?: RpcOpts): Promise<MCPTemplateData[]> {
+        return client.wshRpcCall("mcplisttemplates", null, opts);
+    }
+
+    // command "mcpremoveserver" [call]
+    MCPRemoveServerCommand(client: WshClient, data: CommandMCPRemoveServerData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("mcpremoveserver", data, opts);
+    }
+
+    // command "mcptestconnection" [call]
+    MCPTestConnectionCommand(client: WshClient, data: CommandMCPTestConnectionData, opts?: RpcOpts): Promise<MCPServerStatusData> {
+        return client.wshRpcCall("mcptestconnection", data, opts);
+    }
+
+    // command "mcpupdateserver" [call]
+    MCPUpdateServerCommand(client: WshClient, data: CommandMCPUpdateServerData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("mcpupdateserver", data, opts);
+    }
+
     // command "message" [call]
     MessageCommand(client: WshClient, data: CommandMessageData, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("message", data, opts);
@@ -960,6 +995,36 @@ class RpcApiType {
     // command "wslstatus" [call]
     WslStatusCommand(client: WshClient, opts?: RpcOpts): Promise<ConnStatus[]> {
         return client.wshRpcCall("wslstatus", null, opts);
+    }
+
+    // command "skilllistavailable" [call]
+    SkillListAvailableCommand(client: WshClient, opts?: RpcOpts): Promise<SkillData[]> {
+        return client.wshRpcCall("skilllistavailable", null, opts);
+    }
+
+    // command "skilllistinstalled" [call]
+    SkillListInstalledCommand(client: WshClient, data: CommandSkillListData, opts?: RpcOpts): Promise<InstalledSkillData[]> {
+        return client.wshRpcCall("skilllistinstalled", data, opts);
+    }
+
+    // command "skillinstall" [call]
+    SkillInstallCommand(client: WshClient, data: CommandSkillInstallData, opts?: RpcOpts): Promise<InstalledSkillData> {
+        return client.wshRpcCall("skillinstall", data, opts);
+    }
+
+    // command "skilluninstall" [call]
+    SkillUninstallCommand(client: WshClient, data: CommandSkillUninstallData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("skilluninstall", data, opts);
+    }
+
+    // command "skillsearch" [call]
+    SkillSearchCommand(client: WshClient, data: CommandSkillSearchData, opts?: RpcOpts): Promise<SkillData[]> {
+        return client.wshRpcCall("skillsearch", data, opts);
+    }
+
+    // command "skillgetcategories" [call]
+    SkillGetCategoriesCommand(client: WshClient, opts?: RpcOpts): Promise<SkillCategoryData[]> {
+        return client.wshRpcCall("skillgetcategories", null, opts);
     }
 
 }

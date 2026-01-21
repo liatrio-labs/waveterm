@@ -600,6 +600,28 @@ declare global {
         projectpath?: string;
     };
 
+    // wshrpc.CommandSkillListData
+    type CommandSkillListData = {
+        projectpath?: string;
+    };
+
+    // wshrpc.CommandSkillInstallData
+    type CommandSkillInstallData = {
+        projectpath: string;
+        repo: string;
+    };
+
+    // wshrpc.CommandSkillUninstallData
+    type CommandSkillUninstallData = {
+        projectpath: string;
+        skillid: string;
+    };
+
+    // wshrpc.CommandSkillSearchData
+    type CommandSkillSearchData = {
+        query: string;
+    };
+
     // wshrpc.CommandProcessMetricsBatchData
     type CommandProcessMetricsBatchData = {
         pids: number[];
@@ -1589,6 +1611,36 @@ declare global {
         hooks?: string[];
         tags?: string[];
         configFields?: PluginConfigFieldData[];
+    };
+
+    // wshrpc.SkillData
+    type SkillData = {
+        id: string;
+        name: string;
+        description: string;
+        repo: string;
+        skillPath?: string;
+        category: string;
+        author: string;
+        installs: number;
+        featured: boolean;
+        tags?: string[];
+    };
+
+    // wshrpc.InstalledSkillData
+    type InstalledSkillData = {
+        skillId: string;
+        repo: string;
+        installedAt: number;
+        localPath: string;
+    };
+
+    // wshrpc.SkillCategoryData
+    type SkillCategoryData = {
+        id: string;
+        name: string;
+        icon: string;
+        description?: string;
     };
 
     // waveobj.Point

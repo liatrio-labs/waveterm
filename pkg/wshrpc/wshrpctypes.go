@@ -231,6 +231,14 @@ type WshRpcInterface interface {
 	MCPRemoveServerCommand(ctx context.Context, data CommandMCPRemoveServerData) error
 	MCPGetStatusCommand(ctx context.Context, data CommandMCPGetStatusData) (*MCPServerStatusData, error)
 	MCPTestConnectionCommand(ctx context.Context, data CommandMCPTestConnectionData) (*MCPServerStatusData, error)
+
+	// Liatrio Code skill commands
+	SkillListAvailableCommand(ctx context.Context) ([]SkillData, error)
+	SkillListInstalledCommand(ctx context.Context, data CommandSkillListData) ([]InstalledSkillData, error)
+	SkillInstallCommand(ctx context.Context, data CommandSkillInstallData) (*InstalledSkillData, error)
+	SkillUninstallCommand(ctx context.Context, data CommandSkillUninstallData) error
+	SkillSearchCommand(ctx context.Context, data CommandSkillSearchData) ([]SkillData, error)
+	SkillGetCategoriesCommand(ctx context.Context) ([]SkillCategoryData, error)
 }
 
 // for frontend
@@ -1309,4 +1317,51 @@ type MCPServerStatusData struct {
 	Connected     bool   `json:"connected"`
 	LastConnected int64  `json:"lastConnected,omitempty"`
 	Error         string `json:"error,omitempty"`
+}
+
+// Skill types
+
+type CommandSkillListData struct {
+	ProjectPath string `json:"projectpath,omitempty"`
+}
+
+type CommandSkillInstallData struct {
+	ProjectPath string `json:"projectpath"`
+	Repo        string `json:"repo"`
+}
+
+type CommandSkillUninstallData struct {
+	ProjectPath string `json:"projectpath"`
+	SkillID     string `json:"skillid"`
+}
+
+type CommandSkillSearchData struct {
+	Query string `json:"query"`
+}
+
+type SkillData struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Repo        string   `json:"repo"`
+	SkillPath   string   `json:"skillPath,omitempty"`
+	Category    string   `json:"category"`
+	Author      string   `json:"author"`
+	Installs    int      `json:"installs"`
+	Featured    bool     `json:"featured"`
+	Tags        []string `json:"tags,omitempty"`
+}
+
+type InstalledSkillData struct {
+	SkillID     string `json:"skillId"`
+	Repo        string `json:"repo"`
+	InstalledAt int64  `json:"installedAt"`
+	LocalPath   string `json:"localPath"`
+}
+
+type SkillCategoryData struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Icon        string `json:"icon"`
+	Description string `json:"description,omitempty"`
 }

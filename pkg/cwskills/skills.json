@@ -1,0 +1,302 @@
+{
+  "_comment": "Curated skill registry for skills.sh integration",
+  "_version": "1.0.0",
+  "skills": [
+    {
+      "id": "vercel-react-best-practices",
+      "name": "React Best Practices",
+      "description": "Performance optimization rules for React and Next.js applications including memoization, code splitting, and rendering optimizations",
+      "repo": "vercel-labs/agent-skills",
+      "skillPath": "skills/vercel-react-best-practices",
+      "category": "frontend",
+      "author": "Vercel Labs",
+      "installs": 27400,
+      "featured": true,
+      "tags": ["react", "nextjs", "performance", "optimization"]
+    },
+    {
+      "id": "anthropic-prompt-engineering",
+      "name": "Prompt Engineering",
+      "description": "Best practices for crafting effective prompts for Claude and other LLMs, including structured outputs and chain-of-thought reasoning",
+      "repo": "anthropics/agent-skills",
+      "skillPath": "skills/prompt-engineering",
+      "category": "ai",
+      "author": "Anthropic",
+      "installs": 24100,
+      "featured": true,
+      "tags": ["prompts", "llm", "claude", "ai"]
+    },
+    {
+      "id": "typescript-strict-mode",
+      "name": "TypeScript Strict Mode",
+      "description": "Enforce strict TypeScript patterns including null safety, type guards, and inference optimization",
+      "repo": "microsoft/agent-skills",
+      "skillPath": "skills/typescript-strict",
+      "category": "languages",
+      "author": "Microsoft",
+      "installs": 19800,
+      "featured": true,
+      "tags": ["typescript", "types", "strict", "safety"]
+    },
+    {
+      "id": "golang-best-practices",
+      "name": "Go Best Practices",
+      "description": "Idiomatic Go patterns including error handling, concurrency, interfaces, and testing",
+      "repo": "golang/agent-skills",
+      "skillPath": "skills/go-best-practices",
+      "category": "languages",
+      "author": "Go Team",
+      "installs": 15200,
+      "featured": false,
+      "tags": ["go", "golang", "concurrency", "testing"]
+    },
+    {
+      "id": "python-modern-patterns",
+      "name": "Modern Python",
+      "description": "Modern Python patterns including type hints, async/await, dataclasses, and Python 3.12+ features",
+      "repo": "python/agent-skills",
+      "skillPath": "skills/modern-python",
+      "category": "languages",
+      "author": "Python Foundation",
+      "installs": 18500,
+      "featured": false,
+      "tags": ["python", "typing", "async", "modern"]
+    },
+    {
+      "id": "tailwind-design-system",
+      "name": "Tailwind Design System",
+      "description": "Consistent UI patterns using Tailwind CSS including responsive design, dark mode, and component patterns",
+      "repo": "tailwindlabs/agent-skills",
+      "skillPath": "skills/design-system",
+      "category": "frontend",
+      "author": "Tailwind Labs",
+      "installs": 16700,
+      "featured": false,
+      "tags": ["tailwind", "css", "design", "responsive"]
+    },
+    {
+      "id": "docker-containerization",
+      "name": "Docker Best Practices",
+      "description": "Efficient containerization patterns including multi-stage builds, security hardening, and optimization",
+      "repo": "docker/agent-skills",
+      "skillPath": "skills/docker-best-practices",
+      "category": "devops",
+      "author": "Docker",
+      "installs": 14300,
+      "featured": false,
+      "tags": ["docker", "containers", "devops", "security"]
+    },
+    {
+      "id": "kubernetes-patterns",
+      "name": "Kubernetes Patterns",
+      "description": "Production-ready Kubernetes patterns for deployments, services, and configuration management",
+      "repo": "kubernetes/agent-skills",
+      "skillPath": "skills/k8s-patterns",
+      "category": "devops",
+      "author": "Kubernetes",
+      "installs": 12800,
+      "featured": false,
+      "tags": ["kubernetes", "k8s", "devops", "orchestration"]
+    },
+    {
+      "id": "postgres-optimization",
+      "name": "PostgreSQL Optimization",
+      "description": "Database optimization patterns including indexing strategies, query tuning, and schema design",
+      "repo": "supabase/agent-skills",
+      "skillPath": "skills/postgres-optimization",
+      "category": "database",
+      "author": "Supabase",
+      "installs": 11200,
+      "featured": false,
+      "tags": ["postgres", "sql", "database", "optimization"]
+    },
+    {
+      "id": "security-best-practices",
+      "name": "Security Best Practices",
+      "description": "Application security patterns including input validation, authentication, and OWASP top 10 prevention",
+      "repo": "owasp/agent-skills",
+      "skillPath": "skills/security-best-practices",
+      "category": "security",
+      "author": "OWASP",
+      "installs": 13500,
+      "featured": false,
+      "tags": ["security", "owasp", "authentication", "validation"]
+    },
+    {
+      "id": "api-design-rest",
+      "name": "REST API Design",
+      "description": "RESTful API design patterns including versioning, error handling, and documentation",
+      "repo": "swagger/agent-skills",
+      "skillPath": "skills/rest-api-design",
+      "category": "backend",
+      "author": "SmartBear",
+      "installs": 10800,
+      "featured": false,
+      "tags": ["rest", "api", "design", "openapi"]
+    },
+    {
+      "id": "graphql-patterns",
+      "name": "GraphQL Patterns",
+      "description": "GraphQL schema design, resolvers, and performance optimization patterns",
+      "repo": "graphql/agent-skills",
+      "skillPath": "skills/graphql-patterns",
+      "category": "backend",
+      "author": "GraphQL Foundation",
+      "installs": 9400,
+      "featured": false,
+      "tags": ["graphql", "api", "schema", "resolvers"]
+    },
+    {
+      "id": "testing-patterns",
+      "name": "Testing Patterns",
+      "description": "Comprehensive testing patterns including unit tests, integration tests, and test-driven development",
+      "repo": "testing-library/agent-skills",
+      "skillPath": "skills/testing-patterns",
+      "category": "testing",
+      "author": "Testing Library",
+      "installs": 15600,
+      "featured": false,
+      "tags": ["testing", "tdd", "unit-tests", "integration"]
+    },
+    {
+      "id": "git-workflow",
+      "name": "Git Workflow",
+      "description": "Git best practices including branching strategies, commit conventions, and code review",
+      "repo": "github/agent-skills",
+      "skillPath": "skills/git-workflow",
+      "category": "devops",
+      "author": "GitHub",
+      "installs": 14900,
+      "featured": false,
+      "tags": ["git", "workflow", "branching", "commits"]
+    },
+    {
+      "id": "accessibility-a11y",
+      "name": "Web Accessibility",
+      "description": "WCAG compliance patterns for building accessible web applications",
+      "repo": "a11y/agent-skills",
+      "skillPath": "skills/web-accessibility",
+      "category": "frontend",
+      "author": "A11Y Project",
+      "installs": 8700,
+      "featured": false,
+      "tags": ["accessibility", "a11y", "wcag", "aria"]
+    },
+    {
+      "id": "rust-patterns",
+      "name": "Rust Patterns",
+      "description": "Idiomatic Rust patterns including ownership, lifetimes, and error handling",
+      "repo": "rust-lang/agent-skills",
+      "skillPath": "skills/rust-patterns",
+      "category": "languages",
+      "author": "Rust Foundation",
+      "installs": 11400,
+      "featured": false,
+      "tags": ["rust", "ownership", "memory", "safety"]
+    },
+    {
+      "id": "vue-composition-api",
+      "name": "Vue Composition API",
+      "description": "Vue 3 Composition API patterns for building reactive applications",
+      "repo": "vuejs/agent-skills",
+      "skillPath": "skills/composition-api",
+      "category": "frontend",
+      "author": "Vue.js",
+      "installs": 9200,
+      "featured": false,
+      "tags": ["vue", "composition", "reactive", "frontend"]
+    },
+    {
+      "id": "aws-serverless",
+      "name": "AWS Serverless",
+      "description": "Serverless architecture patterns for AWS Lambda, API Gateway, and DynamoDB",
+      "repo": "aws/agent-skills",
+      "skillPath": "skills/serverless",
+      "category": "cloud",
+      "author": "AWS",
+      "installs": 12100,
+      "featured": false,
+      "tags": ["aws", "serverless", "lambda", "cloud"]
+    },
+    {
+      "id": "monorepo-patterns",
+      "name": "Monorepo Patterns",
+      "description": "Monorepo management with Turborepo, Nx, and workspace optimization",
+      "repo": "vercel/agent-skills",
+      "skillPath": "skills/monorepo",
+      "category": "devops",
+      "author": "Vercel",
+      "installs": 8900,
+      "featured": false,
+      "tags": ["monorepo", "turborepo", "nx", "workspaces"]
+    },
+    {
+      "id": "observability-patterns",
+      "name": "Observability Patterns",
+      "description": "Logging, metrics, and tracing patterns for production systems",
+      "repo": "opentelemetry/agent-skills",
+      "skillPath": "skills/observability",
+      "category": "devops",
+      "author": "OpenTelemetry",
+      "installs": 10500,
+      "featured": false,
+      "tags": ["observability", "logging", "metrics", "tracing"]
+    }
+  ],
+  "categories": [
+    {
+      "id": "frontend",
+      "name": "Frontend",
+      "icon": "fa-laptop-code",
+      "description": "Frontend frameworks and UI patterns"
+    },
+    {
+      "id": "backend",
+      "name": "Backend",
+      "icon": "fa-server",
+      "description": "Backend services and API patterns"
+    },
+    {
+      "id": "languages",
+      "name": "Languages",
+      "icon": "fa-code",
+      "description": "Programming language best practices"
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "icon": "fa-cloud",
+      "description": "DevOps and infrastructure patterns"
+    },
+    {
+      "id": "database",
+      "name": "Database",
+      "icon": "fa-database",
+      "description": "Database design and optimization"
+    },
+    {
+      "id": "security",
+      "name": "Security",
+      "icon": "fa-shield-halved",
+      "description": "Security and compliance patterns"
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "icon": "fa-flask-vial",
+      "description": "Testing and quality assurance"
+    },
+    {
+      "id": "ai",
+      "name": "AI & ML",
+      "icon": "fa-robot",
+      "description": "AI, ML, and LLM patterns"
+    },
+    {
+      "id": "cloud",
+      "name": "Cloud",
+      "icon": "fa-cloud-arrow-up",
+      "description": "Cloud platform patterns"
+    }
+  ]
+}

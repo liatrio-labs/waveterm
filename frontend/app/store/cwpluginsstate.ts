@@ -94,6 +94,11 @@ export const selectedPluginAtom = atom<Plugin | null>(null) as PrimitiveAtom<Plu
 export const pluginConfigModalOpenAtom = atom<boolean>(false) as PrimitiveAtom<boolean>;
 
 /**
+ * Plugin currently being enabled/disabled (for loading indicator)
+ */
+export const pluginInProgressAtom = atom<string | null>(null) as PrimitiveAtom<string | null>;
+
+/**
  * Derived atom: plugins with installation status merged
  */
 export const pluginsWithStatusAtom = atom<PluginWithStatus[]>((get) => {
@@ -233,6 +238,7 @@ export async function fetchPluginCategories(): Promise<void> {
 export async function enablePlugin(projectPath: string, pluginId: string): Promise<boolean> {
     globalStore.set(pluginLoadingAtom, true);
     globalStore.set(pluginErrorAtom, null);
+    globalStore.set(pluginInProgressAtom, pluginId);
 
     try {
         await RpcApi.PluginEnableCommand(TabRpcClient, {
@@ -249,6 +255,7 @@ export async function enablePlugin(projectPath: string, pluginId: string): Promi
         return false;
     } finally {
         globalStore.set(pluginLoadingAtom, false);
+        globalStore.set(pluginInProgressAtom, null);
     }
 }
 
@@ -258,6 +265,7 @@ export async function enablePlugin(projectPath: string, pluginId: string): Promi
 export async function disablePlugin(projectPath: string, pluginId: string): Promise<boolean> {
     globalStore.set(pluginLoadingAtom, true);
     globalStore.set(pluginErrorAtom, null);
+    globalStore.set(pluginInProgressAtom, pluginId);
 
     try {
         await RpcApi.PluginDisableCommand(TabRpcClient, {
@@ -274,6 +282,7 @@ export async function disablePlugin(projectPath: string, pluginId: string): Prom
         return false;
     } finally {
         globalStore.set(pluginLoadingAtom, false);
+        globalStore.set(pluginInProgressAtom, null);
     }
 }
 
@@ -430,6 +439,7 @@ export function usePluginFilter() {
 export function usePluginActions() {
     const projectPath = useAtomValue(pluginProjectPathAtom);
     const loading = useAtomValue(pluginLoadingAtom);
+    const pluginInProgress = useAtomValue(pluginInProgressAtom);
 
     const enable = useCallback(
         async (pluginId: string) => {
@@ -469,6 +479,7 @@ export function usePluginActions() {
         disable,
         configure,
         loading,
+        pluginInProgress,
     };
 }
 

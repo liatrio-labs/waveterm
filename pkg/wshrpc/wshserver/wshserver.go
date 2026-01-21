@@ -30,6 +30,7 @@ import (
 	"github.com/greggcoppen/claudewave/app/pkg/cwmonitor"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplatform"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplugins"
+	"github.com/greggcoppen/claudewave/app/pkg/cwskills"
 	"github.com/greggcoppen/claudewave/app/pkg/cwworktree"
 	"github.com/greggcoppen/claudewave/app/pkg/buildercontroller"
 	"github.com/greggcoppen/claudewave/app/pkg/filebackup"
@@ -2681,5 +2682,125 @@ func convertMCPConfig(c cwmcp.MCPServerConfig) wshrpc.MCPServerConfigData {
 		Command: c.Command,
 		Args:    c.Args,
 		Env:     c.Env,
+	}
+}
+
+// ============================================================================
+// Skill Commands
+// ============================================================================
+
+func (ws *WshServer) SkillListAvailableCommand(ctx context.Context) ([]wshrpc.SkillData, error) {
+	sm, err := cwskills.NewSkillManager()
+	if err != nil {
+		return nil, err
+	}
+
+	skills, err := sm.ListAvailable()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.SkillData
+	for _, s := range skills {
+		result = append(result, convertSkillToData(s))
+	}
+	return result, nil
+}
+
+func (ws *WshServer) SkillListInstalledCommand(ctx context.Context, data wshrpc.CommandSkillListData) ([]wshrpc.InstalledSkillData, error) {
+	sm, err := cwskills.NewSkillManager()
+	if err != nil {
+		return nil, err
+	}
+
+	installed, err := sm.ListInstalled(data.ProjectPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.InstalledSkillData
+	for _, inst := range installed {
+		result = append(result, wshrpc.InstalledSkillData{
+			SkillID:     inst.SkillID,
+			Repo:        inst.Repo,
+			InstalledAt: inst.InstalledAt,
+			LocalPath:   inst.LocalPath,
+		})
+	}
+	return result, nil
+}
+
+func (ws *WshServer) SkillInstallCommand(ctx context.Context, data wshrpc.CommandSkillInstallData) (*wshrpc.InstalledSkillData, error) {
+	sm, err := cwskills.NewSkillManager()
+	if err != nil {
+		return nil, err
+	}
+
+	installed, err := sm.Install(data.ProjectPath, data.Repo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.InstalledSkillData{
+		SkillID:     installed.SkillID,
+		Repo:        installed.Repo,
+		InstalledAt: installed.InstalledAt,
+		LocalPath:   installed.LocalPath,
+	}, nil
+}
+
+func (ws *WshServer) SkillUninstallCommand(ctx context.Context, data wshrpc.CommandSkillUninstallData) error {
+	sm, err := cwskills.NewSkillManager()
+	if err != nil {
+		return err
+	}
+
+	return sm.Uninstall(data.ProjectPath, data.SkillID)
+}
+
+func (ws *WshServer) SkillSearchCommand(ctx context.Context, data wshrpc.CommandSkillSearchData) ([]wshrpc.SkillData, error) {
+	skills, err := cwskills.SearchSkills(data.Query)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.SkillData
+	for _, s := range skills {
+		result = append(result, convertSkillToData(s))
+	}
+	return result, nil
+}
+
+func (ws *WshServer) SkillGetCategoriesCommand(ctx context.Context) ([]wshrpc.SkillCategoryData, error) {
+	categories, err := cwskills.GetCategories()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.SkillCategoryData
+	for _, cat := range categories {
+		result = append(result, wshrpc.SkillCategoryData{
+			ID:          cat.ID,
+			Name:        cat.Name,
+			Icon:        cat.Icon,
+			Description: cat.Description,
+		})
+	}
+	return result, nil
+}
+
+// convertSkillToData converts a cwskills.Skill to wshrpc.SkillData
+func convertSkillToData(s cwskills.Skill) wshrpc.SkillData {
+	return wshrpc.SkillData{
+		ID:          s.ID,
+		Name:        s.Name,
+		Description: s.Description,
+		Repo:        s.Repo,
+		SkillPath:   s.SkillPath,
+		Category:    s.Category,
+		Author:      s.Author,
+		Installs:    s.Installs,
+		Featured:    s.Featured,
+		Tags:        s.Tags,
 	}
 }

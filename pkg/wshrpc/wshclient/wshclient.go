@@ -1199,4 +1199,40 @@ func WslStatusCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.ConnSta
 	return resp, err
 }
 
+// command "skilllistavailable", wshserver.SkillListAvailableCommand
+func SkillListAvailableCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.SkillData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillData](w, "skilllistavailable", nil, opts)
+	return resp, err
+}
+
+// command "skilllistinstalled", wshserver.SkillListInstalledCommand
+func SkillListInstalledCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillListData, opts *wshrpc.RpcOpts) ([]wshrpc.InstalledSkillData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.InstalledSkillData](w, "skilllistinstalled", data, opts)
+	return resp, err
+}
+
+// command "skillinstall", wshserver.SkillInstallCommand
+func SkillInstallCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillInstallData, opts *wshrpc.RpcOpts) (*wshrpc.InstalledSkillData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.InstalledSkillData](w, "skillinstall", data, opts)
+	return resp, err
+}
+
+// command "skilluninstall", wshserver.SkillUninstallCommand
+func SkillUninstallCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillUninstallData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "skilluninstall", data, opts)
+	return err
+}
+
+// command "skillsearch", wshserver.SkillSearchCommand
+func SkillSearchCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillSearchData, opts *wshrpc.RpcOpts) ([]wshrpc.SkillData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillData](w, "skillsearch", data, opts)
+	return resp, err
+}
+
+// command "skillgetcategories", wshserver.SkillGetCategoriesCommand
+func SkillGetCategoriesCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.SkillCategoryData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillCategoryData](w, "skillgetcategories", nil, opts)
+	return resp, err
+}
+
 

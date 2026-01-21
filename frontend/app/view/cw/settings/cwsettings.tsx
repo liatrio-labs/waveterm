@@ -29,8 +29,10 @@ import {
 
 import { SettingsGeneral } from "./settings-general";
 import { SettingsSessions } from "./settings-sessions";
+import { SettingsCodeView } from "./settings-codeview";
 import { SettingsNotifications } from "./settings-notifications";
 import { SettingsPlugins } from "./settings-plugins";
+import { SettingsSkills } from "./settings-skills";
 import { SettingsMcp } from "./settings-mcp";
 import { SettingsShortcuts } from "./settings-shortcuts";
 import { SettingsAppearance } from "./settings-appearance";
@@ -146,10 +148,14 @@ function SettingsContent() {
                 return <SettingsGeneral />;
             case "sessions":
                 return <SettingsSessions />;
+            case "codeview":
+                return <SettingsCodeView />;
             case "notifications":
                 return <SettingsNotifications />;
             case "plugins":
                 return <SettingsPlugins />;
+            case "skills":
+                return <SettingsSkills />;
             case "mcp":
                 return <SettingsMcp />;
             case "shortcuts":

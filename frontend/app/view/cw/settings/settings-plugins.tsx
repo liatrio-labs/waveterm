@@ -37,7 +37,7 @@ export function SettingsPlugins() {
     const { plugins, filteredPlugins, featuredPlugins, categories, loading, error, installedCount, refresh } =
         usePlugins(projectPath);
     const { filter, setSearch, setSource, setCategory, reset } = usePluginFilter();
-    const { enable, disable, loading: actionLoading } = usePluginActions();
+    const { enable, disable, loading: actionLoading, pluginInProgress } = usePluginActions();
     const { open: openConfigModal } = usePluginConfigModal();
 
     const handleEnable = async (pluginId: string) => {
@@ -162,7 +162,8 @@ export function SettingsPlugins() {
                                 onEnable={handleEnable}
                                 onDisable={handleDisable}
                                 onConfigure={handleConfigure}
-                                disabled={actionLoading}
+                                disabled={actionLoading && pluginInProgress !== plugin.id}
+                                isLoading={pluginInProgress === plugin.id}
                             />
                         ))}
                     </div>
@@ -189,7 +190,8 @@ export function SettingsPlugins() {
                                 onEnable={handleEnable}
                                 onDisable={handleDisable}
                                 onConfigure={handleConfigure}
-                                disabled={actionLoading}
+                                disabled={actionLoading && pluginInProgress !== plugin.id}
+                                isLoading={pluginInProgress === plugin.id}
                             />
                         ))}
                     </div>

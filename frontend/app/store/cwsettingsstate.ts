@@ -18,8 +18,10 @@ import { TabRpcClient } from "./wshrpcutil";
 export type SettingsCategory =
     | "general"
     | "sessions"
+    | "codeview"
     | "notifications"
     | "plugins"
+    | "skills"
     | "mcp"
     | "shortcuts"
     | "appearance"
@@ -50,6 +52,12 @@ export const SETTINGS_CATEGORIES: SettingsCategoryInfo[] = [
         description: "Session management and worktree settings",
     },
     {
+        id: "codeview",
+        label: "Code View",
+        icon: "fa-file-code",
+        description: "Code view pane and file opening preferences",
+    },
+    {
         id: "notifications",
         label: "Notifications",
         icon: "fa-bell",
@@ -60,6 +68,12 @@ export const SETTINGS_CATEGORIES: SettingsCategoryInfo[] = [
         label: "Plugins",
         icon: "fa-puzzle-piece",
         description: "Manage installed plugins and discover new ones",
+    },
+    {
+        id: "skills",
+        label: "Skills",
+        icon: "fa-wand-magic-sparkles",
+        description: "Browse and install AI agent skills from skills.sh",
     },
     {
         id: "mcp",
@@ -120,6 +134,8 @@ export const sandboxShowIndicatorAtom = getSettingsKeyAtom("cw:sandboxshowindica
 // Sessions settings
 export const worktreesDirAtom = getSettingsKeyAtom("cw:worktreesdir");
 export const defaultBranchPrefixAtom = getSettingsKeyAtom("cw:defaultbranchprefix");
+
+// Code View settings - accessed directly from fullConfigAtom since it's a custom key
 
 // Notification settings
 export const notificationsEnabledAtom = getSettingsKeyAtom("cw:notificationsenabled");
@@ -203,6 +219,9 @@ export async function resetCategoryToDefaults(category: SettingsCategory): Promi
             "cw:worktreesdir": ".worktrees",
             "cw:defaultbranchprefix": "parallel/",
         },
+        codeview: {
+            "cw:codeview:defaultplacement": "existing",
+        },
         notifications: {
             "cw:notificationsenabled": true,
             "cw:notificationstyle": "rich",
@@ -210,6 +229,7 @@ export async function resetCategoryToDefaults(category: SettingsCategory): Promi
             "cw:donotdisturb": false,
         },
         plugins: {},
+        skills: {},
         mcp: {},
         shortcuts: {
             "cw:shortcutprofile": "default",

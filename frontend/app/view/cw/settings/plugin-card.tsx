@@ -18,13 +18,15 @@ interface PluginCardProps {
     onDisable: (pluginId: string) => void;
     onConfigure: (pluginId: string) => void;
     disabled?: boolean;
+    isLoading?: boolean;
 }
 
-export function PluginCard({ plugin, onEnable, onDisable, onConfigure, disabled }: PluginCardProps) {
+export function PluginCard({ plugin, onEnable, onDisable, onConfigure, disabled, isLoading }: PluginCardProps) {
     const hasConfig = plugin.configFields && plugin.configFields.length > 0;
+    const isThisLoading = isLoading;
 
     const handleToggle = () => {
-        if (disabled) return;
+        if (disabled || isThisLoading) return;
         if (plugin.installed) {
             onDisable(plugin.id);
         } else {
@@ -34,7 +36,7 @@ export function PluginCard({ plugin, onEnable, onDisable, onConfigure, disabled 
 
     const handleConfigure = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!disabled && hasConfig) {
+        if (!disabled && !isThisLoading && hasConfig) {
             onConfigure(plugin.id);
         }
     };
@@ -45,6 +47,7 @@ export function PluginCard({ plugin, onEnable, onDisable, onConfigure, disabled 
                 "plugin-card-installed": plugin.installed,
                 "plugin-card-featured": plugin.featured,
                 "plugin-card-disabled": disabled,
+                "plugin-card-loading": isThisLoading,
             })}
         >
             <div className="plugin-card-header">
@@ -119,7 +122,7 @@ export function PluginCard({ plugin, onEnable, onDisable, onConfigure, disabled 
                         <button
                             className="plugin-action-btn plugin-action-configure"
                             onClick={handleConfigure}
-                            disabled={disabled}
+                            disabled={disabled || isThisLoading}
                             title="Configure"
                         >
                             <i className="fa-solid fa-gear" />
@@ -127,13 +130,19 @@ export function PluginCard({ plugin, onEnable, onDisable, onConfigure, disabled 
                     )}
                     <button
                         className={clsx("plugin-action-btn plugin-action-toggle", {
-                            "plugin-action-enabled": plugin.installed,
+                            "plugin-action-enabled": plugin.installed && !isThisLoading,
+                            "plugin-action-loading": isThisLoading,
                         })}
                         onClick={handleToggle}
-                        disabled={disabled}
-                        title={plugin.installed ? "Disable" : "Enable"}
+                        disabled={disabled || isThisLoading}
+                        title={isThisLoading ? "Working..." : plugin.installed ? "Disable" : "Enable"}
                     >
-                        {plugin.installed ? (
+                        {isThisLoading ? (
+                            <>
+                                <i className="fa-solid fa-spinner fa-spin" />
+                                <span>{plugin.installed ? "Disabling..." : "Enabling..."}</span>
+                            </>
+                        ) : plugin.installed ? (
                             <>
                                 <i className="fa-solid fa-check" />
                                 <span>Enabled</span>
