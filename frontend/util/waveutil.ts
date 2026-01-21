@@ -82,6 +82,10 @@ export function computeBgStyleFromMeta(meta: MetaType, defaultOpacity: number = 
         if (!isBlank(meta?.["bg:blendmode"])) {
             rtn.backgroundBlendMode = meta["bg:blendmode"];
         }
+        // Add background sizing for image backgrounds
+        rtn.backgroundSize = "cover";
+        rtn.backgroundPosition = "center";
+        rtn.backgroundRepeat = "no-repeat";
         return rtn;
     } catch (e) {
         console.error("error processing background", e);

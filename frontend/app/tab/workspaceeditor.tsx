@@ -1,10 +1,10 @@
 import { fireAndForget, makeIconClass } from "@/util/util";
 import clsx from "clsx";
 import { useAtomValue } from "jotai";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../element/button";
 import { Input } from "../element/input";
-import { atoms, globalStore } from "../store/global";
+import { atoms, getApi, globalStore } from "../store/global";
 import { ObjectService, WorkspaceService } from "../store/services";
 import { makeORef } from "../store/wos";
 import "./workspaceeditor.scss";
@@ -108,6 +108,7 @@ interface WorkspaceEditorProps {
     color: string;
     currentBg?: string;
     currentOpacity?: number;
+    currentDefaultCwd?: string;
     focusInput: boolean;
     onTitleChange: (newTitle: string) => void;
     onColorChange: (newColor: string) => void;
@@ -121,6 +122,7 @@ const WorkspaceEditorComponent = ({
     color,
     currentBg,
     currentOpacity,
+    currentDefaultCwd,
     focusInput,
     onTitleChange,
     onColorChange,
@@ -134,6 +136,7 @@ const WorkspaceEditorComponent = ({
     const [icons, setIcons] = useState<string[]>([]);
     const [bgPresets, setBgPresets] = useState<BackgroundPreset[]>([]);
     const [opacity, setOpacity] = useState<number>(currentOpacity ?? 0.5);
+    const [defaultCwd, setDefaultCwd] = useState<string>(currentDefaultCwd ?? "");
 
     useEffect(() => {
         fireAndForget(async () => {
@@ -187,6 +190,39 @@ const WorkspaceEditorComponent = ({
             setOpacity(currentOpacity);
         }
     }, [currentOpacity]);
+
+    // Update local defaultCwd when prop changes
+    useEffect(() => {
+        setDefaultCwd(currentDefaultCwd ?? "");
+    }, [currentDefaultCwd]);
+
+    const handleSelectDefaultCwd = useCallback(async () => {
+        try {
+            const result = await getApi().showOpenDialog({
+                title: "Select Default Terminal Path",
+                properties: ["openDirectory"],
+                buttonLabel: "Select Folder",
+                defaultPath: defaultCwd || undefined,
+            });
+
+            if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
+                return;
+            }
+
+            const selectedPath = result.filePaths[0];
+            setDefaultCwd(selectedPath);
+            const oref = makeORef("workspace", workspaceId);
+            fireAndForget(() => ObjectService.UpdateObjectMeta(oref, { "workspace:defaultcwd": selectedPath }));
+        } catch (e) {
+            console.error("Error selecting folder:", e);
+        }
+    }, [workspaceId, defaultCwd]);
+
+    const handleClearDefaultCwd = useCallback(() => {
+        setDefaultCwd("");
+        const oref = makeORef("workspace", workspaceId);
+        fireAndForget(() => ObjectService.UpdateObjectMeta(oref, { "workspace:defaultcwd": null }));
+    }, [workspaceId]);
 
     const handleBackgroundSelect = (presetKey: string) => {
         const oref = makeORef("workspace", workspaceId);
@@ -246,6 +282,35 @@ const WorkspaceEditorComponent = ({
                         <span className="opacity-value">{Math.round(opacity * 100)}%</span>
                     </div>
                 )}
+            </div>
+            <div className="default-path-section">
+                <div className="section-label">Default Terminal Path</div>
+                <div className="path-selector">
+                    <input
+                        type="text"
+                        className="path-input"
+                        value={defaultCwd}
+                        placeholder="None (use home directory)"
+                        readOnly
+                        title={defaultCwd || "No default path set"}
+                    />
+                    <button
+                        className="path-browse-btn"
+                        onClick={handleSelectDefaultCwd}
+                        title="Browse for folder"
+                    >
+                        <i className="fa-solid fa-folder-open" />
+                    </button>
+                    {defaultCwd && (
+                        <button
+                            className="path-clear-btn"
+                            onClick={handleClearDefaultCwd}
+                            title="Clear default path"
+                        >
+                            <i className="fa-solid fa-times" />
+                        </button>
+                    )}
+                </div>
             </div>
             <div className="delete-ws-btn-wrapper">
                 <Button className="ghost red text-[12px] bold" onClick={onDeleteWorkspace}>

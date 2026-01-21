@@ -1,4 +1,10 @@
 import { createBlock, getApi } from "@/app/store/global";
+import {
+    canOpenInCodeView,
+    openFileInNewCodeView,
+    openFileInExistingCodeView,
+    openFileReplaceWithCodeView,
+} from "@/app/store/cwcodeviewstate";
 import { makeNativeLabel } from "./platformutil";
 import { fireAndForget } from "./util";
 import { formatRemoteUri } from "./waveutil";
@@ -55,6 +61,27 @@ export function addOpenMenuItems(menu: ContextMenuItem[], conn: string, finfo: F
                     await createBlock(blockDef);
                 }),
         });
+
+        // Add "Open in Code View" option for text files and images
+        if (canOpenInCodeView(finfo)) {
+            menu.push({
+                label: "Open in Code View",
+                submenu: [
+                    {
+                        label: "Open in Existing Code View",
+                        click: () => openFileInExistingCodeView(finfo.path, conn),
+                    },
+                    {
+                        label: "New Code View Block",
+                        click: () => openFileInNewCodeView(finfo.path, conn),
+                    },
+                    {
+                        label: "Replace Current Block",
+                        click: () => openFileReplaceWithCodeView(finfo.path, conn),
+                    },
+                ],
+            });
+        }
     }
     // TODO: improve behavior as we add more connection types
     if (!conn?.startsWith("aws:")) {

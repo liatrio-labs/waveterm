@@ -112,5 +112,17 @@
                 "view": "cwgitchanges"
             }
         }
+    },
+    "defwidget@codeview": {
+        "display:order": 2.5,
+        "icon": "file-code",
+        "label": "code",
+        "description": "Code View - multi-tab file editor with VS Code-style tabs",
+        "color": "#8b5cf6",
+        "blockdef": {
+            "meta": {
+                "view": "cwcodeview"
+            }
+        }
     }
 }

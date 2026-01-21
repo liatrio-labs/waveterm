@@ -236,6 +236,7 @@ const WorkspaceSwitcherItem = ({
                     color={workspace.color}
                     currentBg={workspace.meta?.["bg"]}
                     currentOpacity={workspace.meta?.["bg:opacity"]}
+                    currentDefaultCwd={workspace.meta?.["workspace:defaultcwd"]}
                     focusInput={isEditing}
                     onTitleChange={(title) => setWorkspace({ ...workspace, name: title })}
                     onColorChange={(color) => setWorkspace({ ...workspace, color })}

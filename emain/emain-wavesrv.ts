@@ -70,6 +70,16 @@ export function runWaveSrv(handleWSEvent: (evtMsg: WSEventType) => void): Promis
     envCopy[WaveAuthKeyEnv] = AuthKey;
     envCopy[WaveDataHomeVarName] = getWaveDataDir();
     envCopy[WaveConfigHomeVarName] = getWaveConfigDir();
+    // Set wcloud endpoints for dev mode (required by wavesrv in development)
+    if (!envCopy["WCLOUD_ENDPOINT"]) {
+        envCopy["WCLOUD_ENDPOINT"] = "https://api.waveterm.dev/central";
+    }
+    if (!envCopy["WCLOUD_WS_ENDPOINT"]) {
+        envCopy["WCLOUD_WS_ENDPOINT"] = "wss://wsapi.waveterm.dev/";
+    }
+    if (!envCopy["WCLOUD_PING_ENDPOINT"]) {
+        envCopy["WCLOUD_PING_ENDPOINT"] = "https://ping.waveterm.dev/central";
+    }
     const waveSrvCmd = getWaveSrvPath();
     console.log("trying to run local server", waveSrvCmd);
     const proc = child_process.spawn(getWaveSrvPath(), {

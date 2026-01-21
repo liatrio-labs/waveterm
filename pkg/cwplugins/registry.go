@@ -39,14 +39,25 @@ func GetRegistryPath() string {
 	return "data/plugins.json"
 }
 
-// LoadRegistry loads the plugin registry from the data file
+// LoadRegistry loads the plugin registry from file or embedded fallback.
+// It first tries to load from file paths (allowing user overrides),
+// then falls back to the embedded registry bundled in the binary.
 func LoadRegistry() (*PluginRegistry, error) {
 	registryOnce.Do(func() {
+		var data []byte
+		var err error
+
+		// Try loading from file first (allows runtime overrides)
 		registryPath := GetRegistryPath()
-		data, err := os.ReadFile(registryPath)
+		data, err = os.ReadFile(registryPath)
+
+		// Fall back to embedded registry if file not found
 		if err != nil {
-			registryErr = fmt.Errorf("failed to read plugin registry: %w", err)
-			return
+			data = EmbeddedPluginsJSON
+			if len(data) == 0 {
+				registryErr = fmt.Errorf("failed to read plugin registry: %w (and no embedded fallback)", err)
+				return
+			}
 		}
 
 		var registry PluginRegistry
