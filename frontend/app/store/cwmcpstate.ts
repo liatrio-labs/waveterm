@@ -12,6 +12,8 @@
 
 import { atom, PrimitiveAtom, useAtomValue, useSetAtom } from "jotai";
 import { globalStore } from "./jotaiStore";
+import { RpcApi } from "./wshclientapi";
+import { TabRpcClient } from "./wshrpcutil";
 import { useCallback, useEffect } from "react";
 
 // ============================================================================
@@ -143,100 +145,31 @@ export const connectedServerCountAtom = atom((get) => {
 });
 
 // ============================================================================
-// Actions (Placeholder implementations until RPC handlers are added)
+// Actions (RPC-based implementations)
 // ============================================================================
 
 /**
- * Load MCP templates from data/mcp-servers.json
- * TODO: Replace with RPC call when backend is implemented
+ * Load MCP templates from data/mcp-servers.json via RPC
  */
 export async function fetchMCPTemplates(): Promise<void> {
     globalStore.set(mcpLoadingAtom, true);
     globalStore.set(mcpErrorAtom, null);
 
     try {
-        // For now, use a static list. Will be replaced with RPC call.
-        const templates: MCPServerTemplate[] = [
-            {
-                name: "chrome-devtools",
-                description: "Chrome DevTools integration for web debugging",
-                category: "development",
-                dependencies: ["chrome", "node"],
-                config: {
-                    command: "npx",
-                    args: ["-y", "@anthropic/mcp-server-chrome-devtools"],
-                },
+        const rpcTemplates = await RpcApi.MCPListTemplatesCommand(TabRpcClient);
+        // Convert RPC types to frontend types
+        const templates: MCPServerTemplate[] = (rpcTemplates || []).map((t) => ({
+            name: t.name,
+            description: t.description,
+            category: t.category,
+            dependencies: t.dependencies,
+            env_vars: t.envVars,
+            config: {
+                command: t.config.command,
+                args: t.config.args,
+                env: t.config.env,
             },
-            {
-                name: "context7",
-                description: "Context7 library documentation lookup",
-                category: "documentation",
-                dependencies: ["node"],
-                config: {
-                    command: "npx",
-                    args: ["-y", "@anthropic/mcp-server-context7"],
-                },
-            },
-            {
-                name: "supabase",
-                description: "Supabase database and auth integration",
-                category: "backend",
-                dependencies: ["node"],
-                env_vars: ["SUPABASE_URL", "SUPABASE_KEY"],
-                config: {
-                    command: "npx",
-                    args: ["-y", "@anthropic/mcp-server-supabase"],
-                    env: {
-                        SUPABASE_URL: "${SUPABASE_URL}",
-                        SUPABASE_KEY: "${SUPABASE_KEY}",
-                    },
-                },
-            },
-            {
-                name: "vercel",
-                description: "Vercel deployment and project management",
-                category: "deployment",
-                dependencies: ["node"],
-                env_vars: ["VERCEL_TOKEN"],
-                config: {
-                    command: "npx",
-                    args: ["-y", "@anthropic/mcp-server-vercel"],
-                    env: {
-                        VERCEL_TOKEN: "${VERCEL_TOKEN}",
-                    },
-                },
-            },
-            {
-                name: "slack",
-                description: "Slack workspace integration",
-                category: "communication",
-                dependencies: ["node"],
-                env_vars: ["SLACK_BOT_TOKEN", "SLACK_TEAM_ID"],
-                config: {
-                    command: "npx",
-                    args: ["-y", "@anthropic/mcp-server-slack"],
-                    env: {
-                        SLACK_BOT_TOKEN: "${SLACK_BOT_TOKEN}",
-                        SLACK_TEAM_ID: "${SLACK_TEAM_ID}",
-                    },
-                },
-            },
-            {
-                name: "sentry",
-                description: "Sentry error tracking integration",
-                category: "monitoring",
-                dependencies: ["node"],
-                env_vars: ["SENTRY_AUTH_TOKEN", "SENTRY_ORG"],
-                config: {
-                    command: "npx",
-                    args: ["-y", "@anthropic/mcp-server-sentry"],
-                    env: {
-                        SENTRY_AUTH_TOKEN: "${SENTRY_AUTH_TOKEN}",
-                        SENTRY_ORG: "${SENTRY_ORG}",
-                    },
-                },
-            },
-        ];
+        }));
         globalStore.set(mcpTemplatesAtom, templates);
     } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to fetch MCP templates";
@@ -248,8 +181,7 @@ export async function fetchMCPTemplates(): Promise<void> {
 }
 
 /**
- * Fetch configured MCP servers for a project from .mcp.json
- * TODO: Replace with RPC call when backend is implemented
+ * Fetch configured MCP servers for a project from .mcp.json via RPC
  */
 export async function fetchMCPServers(projectPath: string): Promise<void> {
     if (!projectPath) {
@@ -261,9 +193,19 @@ export async function fetchMCPServers(projectPath: string): Promise<void> {
     globalStore.set(mcpErrorAtom, null);
 
     try {
-        // TODO: Replace with RPC call to read .mcp.json
-        // For now, return empty list
-        globalStore.set(mcpServersAtom, []);
+        const rpcServers = await RpcApi.MCPListServersCommand(TabRpcClient, { projectpath: projectPath });
+        // Convert RPC types to frontend types
+        const servers: MCPServer[] = (rpcServers || []).map((s) => ({
+            name: s.name,
+            config: {
+                command: s.config.command,
+                args: s.config.args,
+                env: s.config.env,
+            },
+            enabled: s.enabled,
+            template: s.template,
+        }));
+        globalStore.set(mcpServersAtom, servers);
     } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to fetch MCP servers";
         console.error("[CWMCP] Failed to fetch servers:", err);
@@ -274,8 +216,7 @@ export async function fetchMCPServers(projectPath: string): Promise<void> {
 }
 
 /**
- * Add an MCP server to .mcp.json
- * TODO: Replace with RPC call when backend is implemented
+ * Add an MCP server to .mcp.json via RPC
  */
 export async function addMCPServer(
     projectPath: string,
@@ -285,9 +226,16 @@ export async function addMCPServer(
     globalStore.set(mcpErrorAtom, null);
 
     try {
-        // TODO: Replace with RPC call
-        const current = globalStore.get(mcpServersAtom);
-        globalStore.set(mcpServersAtom, [...current, { ...server, enabled: true }]);
+        await RpcApi.MCPAddServerCommand(TabRpcClient, {
+            projectpath: projectPath,
+            name: server.name,
+            command: server.config.command,
+            args: server.config.args,
+            env: server.config.env,
+            template: server.template,
+        });
+        // Refresh server list
+        await fetchMCPServers(projectPath);
         return true;
     } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to add MCP server";
@@ -300,8 +248,7 @@ export async function addMCPServer(
 }
 
 /**
- * Update an MCP server in .mcp.json
- * TODO: Replace with RPC call when backend is implemented
+ * Update an MCP server in .mcp.json via RPC
  */
 export async function updateMCPServer(
     projectPath: string,
@@ -312,12 +259,24 @@ export async function updateMCPServer(
     globalStore.set(mcpErrorAtom, null);
 
     try {
-        // TODO: Replace with RPC call
+        // Get current server to merge with updates
         const current = globalStore.get(mcpServersAtom);
-        const updated = current.map((s) =>
-            s.name === serverName ? { ...s, ...updates } : s
-        );
-        globalStore.set(mcpServersAtom, updated);
+        const server = current.find((s) => s.name === serverName);
+        if (!server) {
+            throw new Error("Server not found");
+        }
+
+        const merged = { ...server, ...updates };
+        await RpcApi.MCPUpdateServerCommand(TabRpcClient, {
+            projectpath: projectPath,
+            servername: serverName,
+            name: merged.name,
+            command: merged.config.command,
+            args: merged.config.args,
+            env: merged.config.env,
+        });
+        // Refresh server list
+        await fetchMCPServers(projectPath);
         return true;
     } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to update MCP server";
@@ -330,17 +289,19 @@ export async function updateMCPServer(
 }
 
 /**
- * Remove an MCP server from .mcp.json
- * TODO: Replace with RPC call when backend is implemented
+ * Remove an MCP server from .mcp.json via RPC
  */
 export async function removeMCPServer(projectPath: string, serverName: string): Promise<boolean> {
     globalStore.set(mcpLoadingAtom, true);
     globalStore.set(mcpErrorAtom, null);
 
     try {
-        // TODO: Replace with RPC call
-        const current = globalStore.get(mcpServersAtom);
-        globalStore.set(mcpServersAtom, current.filter((s) => s.name !== serverName));
+        await RpcApi.MCPRemoveServerCommand(TabRpcClient, {
+            projectpath: projectPath,
+            servername: serverName,
+        });
+        // Refresh server list
+        await fetchMCPServers(projectPath);
         return true;
     } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to remove MCP server";
@@ -361,6 +322,50 @@ export async function toggleMCPServer(projectPath: string, serverName: string): 
     if (!server) return false;
 
     return updateMCPServer(projectPath, serverName, { enabled: !server.enabled });
+}
+
+/**
+ * Test connection to an MCP server via RPC
+ */
+export async function testMCPConnection(
+    projectPath: string,
+    serverName: string
+): Promise<MCPServerStatus | null> {
+    try {
+        const status = await RpcApi.MCPTestConnectionCommand(TabRpcClient, {
+            projectpath: projectPath,
+            servername: serverName,
+        });
+        if (status) {
+            // Update status in atom
+            const currentStatuses = globalStore.get(mcpServerStatusAtom);
+            const newStatus: MCPServerStatus = {
+                name: status.name,
+                connected: status.connected,
+                lastConnected: status.lastConnected,
+                error: status.error,
+            };
+            const updatedStatuses = currentStatuses.filter((s) => s.name !== serverName);
+            updatedStatuses.push(newStatus);
+            globalStore.set(mcpServerStatusAtom, updatedStatuses);
+            return newStatus;
+        }
+        return null;
+    } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to test connection";
+        console.error("[CWMCP] Failed to test connection:", err);
+        // Update status with error
+        const currentStatuses = globalStore.get(mcpServerStatusAtom);
+        const newStatus: MCPServerStatus = {
+            name: serverName,
+            connected: false,
+            error: message,
+        };
+        const updatedStatuses = currentStatuses.filter((s) => s.name !== serverName);
+        updatedStatuses.push(newStatus);
+        globalStore.set(mcpServerStatusAtom, updatedStatuses);
+        return newStatus;
+    }
 }
 
 /**
@@ -484,11 +489,23 @@ export function useMCPServerActions() {
         [projectPath]
     );
 
+    const testConnection = useCallback(
+        async (serverName: string) => {
+            if (!projectPath) {
+                console.error("[CWMCP] No project path set");
+                return null;
+            }
+            return testMCPConnection(projectPath, serverName);
+        },
+        [projectPath]
+    );
+
     return {
         add,
         update,
         remove,
         toggle,
+        testConnection,
         loading,
     };
 }

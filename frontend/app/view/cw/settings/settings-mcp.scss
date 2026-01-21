@@ -1,0 +1,791 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+// MCP Server Settings Styles
+
+.mcp-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+// Header
+.mcp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .mcp-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--secondary-text-color);
+
+            i {
+                color: var(--accent-color);
+            }
+
+            strong {
+                color: var(--main-text-color);
+            }
+        }
+    }
+
+    .mcp-header-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+}
+
+// Server List
+.mcp-server-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mcp-server-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--panel-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+        border-color: var(--accent-color);
+    }
+
+    .mcp-server-status {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--warning-color);
+
+            &.connected {
+                background: var(--success-color);
+            }
+
+            &.error {
+                background: var(--error-color);
+            }
+        }
+    }
+
+    .mcp-server-info {
+        flex: 1;
+        min-width: 0;
+
+        .mcp-server-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+
+            h4 {
+                margin: 0;
+                font-size: 0.9375rem;
+                font-weight: 600;
+                color: var(--main-text-color);
+            }
+
+            .template-badge {
+                font-size: 0.6875rem;
+                padding: 0.125rem 0.375rem;
+                border-radius: 4px;
+                background: var(--highlight-bg-color);
+                color: var(--secondary-text-color);
+            }
+        }
+
+        .mcp-server-command {
+            font-size: 0.8125rem;
+            color: var(--secondary-text-color);
+            font-family: var(--termfontfamily);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mcp-server-error {
+            font-size: 0.75rem;
+            color: var(--error-color);
+            margin-top: 0.25rem;
+        }
+    }
+
+    .mcp-server-actions {
+        flex-shrink: 0;
+        display: flex;
+        gap: 0.375rem;
+
+        button {
+            padding: 0.375rem 0.625rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--button-bg-color);
+            color: var(--main-text-color);
+            cursor: pointer;
+            font-size: 0.8125rem;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background: var(--button-hover-bg-color);
+            }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            &.test-btn {
+                color: var(--accent-color);
+            }
+
+            &.remove-btn {
+                color: var(--error-color);
+            }
+
+            i {
+                margin-right: 0.25rem;
+            }
+        }
+    }
+}
+
+// Empty State
+.mcp-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    background: var(--panel-bg-color);
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+
+    i {
+        font-size: 3rem;
+        color: var(--secondary-text-color);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.125rem;
+        color: var(--main-text-color);
+    }
+
+    p {
+        margin: 0 0 1.5rem;
+        font-size: 0.875rem;
+        color: var(--secondary-text-color);
+        max-width: 400px;
+    }
+
+    .add-server-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background: var(--accent-color-dark);
+        }
+    }
+}
+
+// Template Suggestions (in empty state)
+.mcp-template-suggestions {
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 500px;
+
+    h4 {
+        font-size: 0.8125rem;
+        color: var(--secondary-text-color);
+        margin: 0 0 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .template-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .template-suggestion {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--highlight-bg-color);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background: var(--button-hover-bg-color);
+        }
+
+        .template-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            i {
+                font-size: 1rem;
+                color: var(--accent-color);
+                margin: 0;
+                opacity: 1;
+            }
+
+            .template-name {
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: var(--main-text-color);
+            }
+        }
+
+        .template-action {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+        }
+    }
+}
+
+// Loading State
+.mcp-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+
+    .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border-color);
+        border-top-color: var(--accent-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+}
+
+// Error State
+.mcp-error {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error-color);
+    border-radius: 6px;
+    color: var(--error-color);
+    font-size: 0.875rem;
+
+    i {
+        flex-shrink: 0;
+    }
+
+    span {
+        flex: 1;
+    }
+
+    button {
+        padding: 0.375rem 0.75rem;
+        background: transparent;
+        border: 1px solid var(--error-color);
+        border-radius: 4px;
+        color: var(--error-color);
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+// Add Server Button (in header)
+.add-server-btn-small {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background: var(--accent-color-dark);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+// Refresh button
+.mcp-refresh-btn {
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: var(--button-bg-color);
+        color: var(--main-text-color);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .fa-spin {
+        animation: spin 1s linear infinite;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// MCP Server Form Modal
+.mcp-server-form-modal {
+    .modal-content {
+        max-width: 600px;
+        width: 90vw;
+    }
+}
+
+.mcp-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+
+    .mcp-form-title {
+        h3 {
+            margin: 0 0 0.25rem;
+            font-size: 1.125rem;
+            color: var(--main-text-color);
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.8125rem;
+            color: var(--secondary-text-color);
+        }
+    }
+
+    .modal-close-btn {
+        padding: 0.5rem;
+        background: transparent;
+        border: none;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        font-size: 1rem;
+
+        &:hover {
+            color: var(--main-text-color);
+        }
+    }
+}
+
+.mcp-form-body {
+    padding: 1.25rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.mcp-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+// Form Fields
+.mcp-form-field {
+    margin-bottom: 1.25rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--main-text-color);
+        margin-bottom: 0.375rem;
+
+        .required {
+            color: var(--error-color);
+            margin-left: 0.125rem;
+        }
+    }
+
+    .field-description {
+        font-size: 0.75rem;
+        color: var(--secondary-text-color);
+        margin-bottom: 0.375rem;
+    }
+
+    input,
+    select {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        background: var(--input-bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--main-text-color);
+        font-size: 0.875rem;
+
+        &:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        &.has-error {
+            border-color: var(--error-color);
+        }
+    }
+
+    .field-error {
+        font-size: 0.75rem;
+        color: var(--error-color);
+        margin-top: 0.25rem;
+    }
+}
+
+// Args array input
+.mcp-args-input {
+    .args-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .arg-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        input {
+            flex: 1;
+        }
+
+        .remove-arg-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--error-color);
+            cursor: pointer;
+            opacity: 0.7;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    .add-arg-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        background: transparent;
+        border: 1px dashed var(--border-color);
+        border-radius: 4px;
+        color: var(--secondary-text-color);
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+    }
+}
+
+// Env vars input
+.mcp-env-input {
+    .env-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .env-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        input {
+            flex: 1;
+        }
+
+        .env-key {
+            flex: 0 0 40%;
+        }
+
+        .env-value {
+            flex: 1;
+        }
+
+        .toggle-visibility-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--secondary-text-color);
+            cursor: pointer;
+
+            &:hover {
+                color: var(--main-text-color);
+            }
+        }
+
+        .remove-env-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--error-color);
+            cursor: pointer;
+            opacity: 0.7;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    .add-env-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        background: transparent;
+        border: 1px dashed var(--border-color);
+        border-radius: 4px;
+        color: var(--secondary-text-color);
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+    }
+}
+
+// Template Gallery
+.mcp-template-gallery {
+    margin-bottom: 1.5rem;
+
+    h4 {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--main-text-color);
+        margin: 0 0 0.75rem;
+    }
+
+    .template-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.75rem;
+    }
+}
+
+.mcp-template-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0.875rem;
+    background: var(--highlight-bg-color);
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: var(--button-bg-color);
+    }
+
+    &.selected {
+        border-color: var(--accent-color);
+        background: rgba(var(--accent-color-rgb), 0.1);
+    }
+
+    .template-card-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--main-text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .template-card-description {
+        font-size: 0.75rem;
+        color: var(--secondary-text-color);
+        line-height: 1.4;
+    }
+
+    .template-card-deps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+
+        .dep-badge {
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            background: var(--panel-bg-color);
+            border-radius: 3px;
+            color: var(--secondary-text-color);
+        }
+    }
+}
+
+// Modal Buttons
+.modal-btn {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.modal-btn-secondary {
+    background: var(--button-bg-color);
+    color: var(--main-text-color);
+
+    &:hover:not(:disabled) {
+        background: var(--button-hover-bg-color);
+    }
+}
+
+.modal-btn-primary {
+    background: var(--accent-color);
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: var(--accent-color-dark);
+    }
+}
+
+.modal-btn-danger {
+    background: var(--error-color);
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: var(--error-color-dark);
+    }
+}
+
+// Test Connection Result
+.test-result {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    margin-top: 1rem;
+
+    &.success {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid var(--success-color);
+        color: var(--success-color);
+    }
+
+    &.error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--error-color);
+        color: var(--error-color);
+    }
+}
+
+// Confirmation Dialog
+.mcp-confirm-dialog {
+    padding: 1.5rem;
+    text-align: center;
+
+    i {
+        font-size: 2.5rem;
+        color: var(--warning-color);
+        margin-bottom: 1rem;
+    }
+
+    h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.125rem;
+        color: var(--main-text-color);
+    }
+
+    p {
+        margin: 0 0 1.5rem;
+        font-size: 0.875rem;
+        color: var(--secondary-text-color);
+    }
+
+    .confirm-actions {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+}

@@ -219,6 +219,15 @@ type WshRpcInterface interface {
 	PluginDisableCommand(ctx context.Context, data CommandPluginDisableData) error
 	PluginConfigureCommand(ctx context.Context, data CommandPluginConfigureData) error
 	PluginGetCategoriesCommand(ctx context.Context) ([]PluginCategoryData, error)
+
+	// Liatrio Code MCP server commands
+	MCPListServersCommand(ctx context.Context, data CommandMCPListServersData) ([]MCPServerData, error)
+	MCPListTemplatesCommand(ctx context.Context) ([]MCPTemplateData, error)
+	MCPAddServerCommand(ctx context.Context, data CommandMCPAddServerData) error
+	MCPUpdateServerCommand(ctx context.Context, data CommandMCPUpdateServerData) error
+	MCPRemoveServerCommand(ctx context.Context, data CommandMCPRemoveServerData) error
+	MCPGetStatusCommand(ctx context.Context, data CommandMCPGetStatusData) (*MCPServerStatusData, error)
+	MCPTestConnectionCommand(ctx context.Context, data CommandMCPTestConnectionData) (*MCPServerStatusData, error)
 }
 
 // for frontend
@@ -1212,4 +1221,72 @@ type PluginResultData struct {
 	Success bool       `json:"success"`
 	Message string     `json:"message,omitempty"`
 	Plugin  PluginData `json:"plugin,omitempty"`
+}
+
+// MCP Server types
+
+type CommandMCPListServersData struct {
+	ProjectPath string `json:"projectpath"`
+}
+
+type CommandMCPAddServerData struct {
+	ProjectPath string            `json:"projectpath"`
+	Name        string            `json:"name"`
+	Command     string            `json:"command"`
+	Args        []string          `json:"args,omitempty"`
+	Env         map[string]string `json:"env,omitempty"`
+	Template    string            `json:"template,omitempty"`
+}
+
+type CommandMCPUpdateServerData struct {
+	ProjectPath string            `json:"projectpath"`
+	ServerName  string            `json:"servername"`
+	Name        string            `json:"name"`
+	Command     string            `json:"command"`
+	Args        []string          `json:"args,omitempty"`
+	Env         map[string]string `json:"env,omitempty"`
+}
+
+type CommandMCPRemoveServerData struct {
+	ProjectPath string `json:"projectpath"`
+	ServerName  string `json:"servername"`
+}
+
+type CommandMCPGetStatusData struct {
+	ProjectPath string `json:"projectpath"`
+	ServerName  string `json:"servername"`
+}
+
+type CommandMCPTestConnectionData struct {
+	ProjectPath string `json:"projectpath"`
+	ServerName  string `json:"servername"`
+}
+
+type MCPServerConfigData struct {
+	Command string            `json:"command"`
+	Args    []string          `json:"args,omitempty"`
+	Env     map[string]string `json:"env,omitempty"`
+}
+
+type MCPServerData struct {
+	Name     string              `json:"name"`
+	Config   MCPServerConfigData `json:"config"`
+	Enabled  bool                `json:"enabled"`
+	Template string              `json:"template,omitempty"`
+}
+
+type MCPTemplateData struct {
+	Name         string              `json:"name"`
+	Description  string              `json:"description"`
+	Category     string              `json:"category"`
+	Dependencies []string            `json:"dependencies,omitempty"`
+	EnvVars      []string            `json:"envVars,omitempty"`
+	Config       MCPServerConfigData `json:"config"`
+}
+
+type MCPServerStatusData struct {
+	Name          string `json:"name"`
+	Connected     bool   `json:"connected"`
+	LastConnected int64  `json:"lastConnected,omitempty"`
+	Error         string `json:"error,omitempty"`
 }

@@ -26,6 +26,7 @@ import (
 	"github.com/greggcoppen/claudewave/app/pkg/blockcontroller"
 	"github.com/greggcoppen/claudewave/app/pkg/blocklogger"
 	"github.com/greggcoppen/claudewave/app/pkg/cwgit"
+	"github.com/greggcoppen/claudewave/app/pkg/cwmcp"
 	"github.com/greggcoppen/claudewave/app/pkg/cwmonitor"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplatform"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplugins"
@@ -2511,5 +2512,125 @@ func convertPluginToData(p cwplugins.Plugin) wshrpc.PluginData {
 		Hooks:            p.Hooks,
 		Tags:             p.Tags,
 		ConfigFields:     configFields,
+	}
+}
+
+// ============================================================================
+// MCP Server Commands
+// ============================================================================
+
+func (ws *WshServer) MCPListServersCommand(ctx context.Context, data wshrpc.CommandMCPListServersData) ([]wshrpc.MCPServerData, error) {
+	manager := cwmcp.GetManager()
+	servers, err := manager.ListServers(data.ProjectPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []wshrpc.MCPServerData
+	for _, s := range servers {
+		result = append(result, wshrpc.MCPServerData{
+			Name:     s.Name,
+			Config:   convertMCPConfig(s.Config),
+			Enabled:  s.Enabled,
+			Template: s.Template,
+		})
+	}
+	return result, nil
+}
+
+func (ws *WshServer) MCPListTemplatesCommand(ctx context.Context) ([]wshrpc.MCPTemplateData, error) {
+	manager := cwmcp.GetManager()
+
+	// Ensure templates are loaded
+	mcpRegistryPath := cwmcp.GetRegistryPath()
+	if err := manager.LoadTemplates(mcpRegistryPath); err != nil {
+		log.Printf("[cwmcp] Warning: failed to load templates: %v", err)
+		// Return empty list instead of error
+		return []wshrpc.MCPTemplateData{}, nil
+	}
+
+	templates := manager.ListTemplates()
+	var result []wshrpc.MCPTemplateData
+	for _, t := range templates {
+		result = append(result, wshrpc.MCPTemplateData{
+			Name:         t.Name,
+			Description:  t.Description,
+			Category:     t.Category,
+			Dependencies: t.Dependencies,
+			EnvVars:      t.EnvVars,
+			Config:       convertMCPConfig(t.Config),
+		})
+	}
+	return result, nil
+}
+
+func (ws *WshServer) MCPAddServerCommand(ctx context.Context, data wshrpc.CommandMCPAddServerData) error {
+	manager := cwmcp.GetManager()
+	server := cwmcp.MCPServer{
+		Name:     data.Name,
+		Template: data.Template,
+		Enabled:  true,
+		Config: cwmcp.MCPServerConfig{
+			Command: data.Command,
+			Args:    data.Args,
+			Env:     data.Env,
+		},
+	}
+	return manager.AddServer(data.ProjectPath, server)
+}
+
+func (ws *WshServer) MCPUpdateServerCommand(ctx context.Context, data wshrpc.CommandMCPUpdateServerData) error {
+	manager := cwmcp.GetManager()
+	server := cwmcp.MCPServer{
+		Name:    data.Name,
+		Enabled: true,
+		Config: cwmcp.MCPServerConfig{
+			Command: data.Command,
+			Args:    data.Args,
+			Env:     data.Env,
+		},
+	}
+	return manager.UpdateServer(data.ProjectPath, data.ServerName, server)
+}
+
+func (ws *WshServer) MCPRemoveServerCommand(ctx context.Context, data wshrpc.CommandMCPRemoveServerData) error {
+	manager := cwmcp.GetManager()
+	return manager.RemoveServer(data.ProjectPath, data.ServerName)
+}
+
+func (ws *WshServer) MCPGetStatusCommand(ctx context.Context, data wshrpc.CommandMCPGetStatusData) (*wshrpc.MCPServerStatusData, error) {
+	manager := cwmcp.GetManager()
+	status, err := manager.GetServerStatus(data.ProjectPath, data.ServerName)
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.MCPServerStatusData{
+		Name:          status.Name,
+		Connected:     status.Connected,
+		LastConnected: status.LastConnected,
+		Error:         status.Error,
+	}, nil
+}
+
+func (ws *WshServer) MCPTestConnectionCommand(ctx context.Context, data wshrpc.CommandMCPTestConnectionData) (*wshrpc.MCPServerStatusData, error) {
+	manager := cwmcp.GetManager()
+	status, err := manager.TestConnection(data.ProjectPath, data.ServerName)
+	if err != nil {
+		return nil, err
+	}
+	return &wshrpc.MCPServerStatusData{
+		Name:          status.Name,
+		Connected:     status.Connected,
+		LastConnected: status.LastConnected,
+		Error:         status.Error,
+	}, nil
+}
+
+// convertMCPConfig converts cwmcp.MCPServerConfig to wshrpc.MCPServerConfigData
+func convertMCPConfig(c cwmcp.MCPServerConfig) wshrpc.MCPServerConfigData {
+	return wshrpc.MCPServerConfigData{
+		Command: c.Command,
+		Args:    c.Args,
+		Env:     c.Env,
 	}
 }
