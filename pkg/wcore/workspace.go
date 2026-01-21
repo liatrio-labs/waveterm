@@ -22,6 +22,7 @@ import (
 )
 
 var WorkspaceColors = [...]string{
+	// Original bright colors
 	"#58C142", // Green (accent)
 	"#00FFDB", // Teal
 	"#429DFF", // Blue
@@ -29,6 +30,21 @@ var WorkspaceColors = [...]string{
 	"#FF453A", // Red
 	"#FF9500", // Orange
 	"#FFE900", // Yellow
+	// Dark tones
+	"#2D5A27", // Forest Green
+	"#1A4D4D", // Deep Teal
+	"#1E3A5F", // Navy Blue
+	"#4A2C6A", // Deep Purple
+	"#6B2B2B", // Burgundy
+	"#8B4513", // Saddle Brown
+	"#5C5C1E", // Olive
+	"#2F4F4F", // Dark Slate
+	"#3D3D3D", // Charcoal
+	"#4B0082", // Indigo
+	"#2E4A3E", // Dark Sage
+	"#4A3728", // Dark Coffee
+	"#3B2F4A", // Plum
+	"#1F3B4D", // Midnight Blue
 }
 
 var WorkspaceIcons = [...]string{

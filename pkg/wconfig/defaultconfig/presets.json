@@ -104,5 +104,141 @@
         "bg:*": true,
         "bg": "linear-gradient(135deg, #00d9d9, #ff55aa, #1e1e2f, #2f3b57, #ff99ff)",
         "bg:opacity": 0.6
+    },
+    "bg@forest-dark": {
+        "display:name": "Forest Dark",
+        "display:order": 4.1,
+        "bg:*": true,
+        "bg": "#2D5A27",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#58C142"
+    },
+    "bg@deep-teal": {
+        "display:name": "Deep Teal",
+        "display:order": 4.2,
+        "bg:*": true,
+        "bg": "#1A4D4D",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#00FFDB"
+    },
+    "bg@navy": {
+        "display:name": "Navy Blue",
+        "display:order": 4.3,
+        "bg:*": true,
+        "bg": "#1E3A5F",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#429DFF"
+    },
+    "bg@deep-purple": {
+        "display:name": "Deep Purple",
+        "display:order": 4.4,
+        "bg:*": true,
+        "bg": "#4A2C6A",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#BF55EC"
+    },
+    "bg@burgundy": {
+        "display:name": "Burgundy",
+        "display:order": 4.5,
+        "bg:*": true,
+        "bg": "#6B2B2B",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#FF453A"
+    },
+    "bg@coffee": {
+        "display:name": "Coffee",
+        "display:order": 4.6,
+        "bg:*": true,
+        "bg": "#4A3728",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#CD853F"
+    },
+    "bg@charcoal": {
+        "display:name": "Charcoal",
+        "display:order": 4.7,
+        "bg:*": true,
+        "bg": "#3D3D3D",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#808080"
+    },
+    "bg@slate": {
+        "display:name": "Dark Slate",
+        "display:order": 4.8,
+        "bg:*": true,
+        "bg": "#2F4F4F",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#708090"
+    },
+    "bg@indigo": {
+        "display:name": "Indigo",
+        "display:order": 4.9,
+        "bg:*": true,
+        "bg": "#4B0082",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#9370DB"
+    },
+    "bg@olive": {
+        "display:name": "Olive",
+        "display:order": 5.0,
+        "bg:*": true,
+        "bg": "#5C5C1E",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#9ACD32"
+    },
+    "bg@midnight": {
+        "display:name": "Midnight",
+        "display:order": 5.1,
+        "bg:*": true,
+        "bg": "#1F3B4D",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#4169E1"
+    },
+    "bg@plum": {
+        "display:name": "Plum",
+        "display:order": 5.2,
+        "bg:*": true,
+        "bg": "#3B2F4A",
+        "bg:opacity": 0.85,
+        "bg:activebordercolor": "#DDA0DD"
+    },
+    "bg@dark-gradient-blue": {
+        "display:name": "Deep Ocean",
+        "display:order": 5.3,
+        "bg:*": true,
+        "bg": "linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #415a77 100%)",
+        "bg:opacity": 0.9,
+        "bg:activebordercolor": "#778da9"
+    },
+    "bg@dark-gradient-green": {
+        "display:name": "Deep Forest",
+        "display:order": 5.4,
+        "bg:*": true,
+        "bg": "linear-gradient(135deg, #1a2e1a 0%, #2d4a2d 50%, #3d5c3d 100%)",
+        "bg:opacity": 0.9,
+        "bg:activebordercolor": "#58C142"
+    },
+    "bg@dark-gradient-purple": {
+        "display:name": "Nebula",
+        "display:order": 5.5,
+        "bg:*": true,
+        "bg": "linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #4a2c6a 100%)",
+        "bg:opacity": 0.9,
+        "bg:activebordercolor": "#BF55EC"
+    },
+    "bg@dark-gradient-red": {
+        "display:name": "Ember Glow",
+        "display:order": 5.6,
+        "bg:*": true,
+        "bg": "linear-gradient(135deg, #1a0a0a 0%, #3d1515 50%, #5c2020 100%)",
+        "bg:opacity": 0.9,
+        "bg:activebordercolor": "#FF453A"
+    },
+    "bg@dark-gradient-neutral": {
+        "display:name": "Graphite",
+        "display:order": 5.7,
+        "bg:*": true,
+        "bg": "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #404040 100%)",
+        "bg:opacity": 0.9,
+        "bg:activebordercolor": "#808080"
     }
 }
