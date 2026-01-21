@@ -107,6 +107,7 @@ interface WorkspaceEditorProps {
     icon: string;
     color: string;
     currentBg?: string;
+    currentOpacity?: number;
     focusInput: boolean;
     onTitleChange: (newTitle: string) => void;
     onColorChange: (newColor: string) => void;
@@ -119,6 +120,7 @@ const WorkspaceEditorComponent = ({
     icon,
     color,
     currentBg,
+    currentOpacity,
     focusInput,
     onTitleChange,
     onColorChange,
@@ -131,6 +133,7 @@ const WorkspaceEditorComponent = ({
     const [colors, setColors] = useState<string[]>([]);
     const [icons, setIcons] = useState<string[]>([]);
     const [bgPresets, setBgPresets] = useState<BackgroundPreset[]>([]);
+    const [opacity, setOpacity] = useState<number>(currentOpacity ?? 0.5);
 
     useEffect(() => {
         fireAndForget(async () => {
@@ -178,6 +181,13 @@ const WorkspaceEditorComponent = ({
         }
     }, [focusInput]);
 
+    // Update local opacity when prop changes
+    useEffect(() => {
+        if (currentOpacity !== undefined) {
+            setOpacity(currentOpacity);
+        }
+    }, [currentOpacity]);
+
     const handleBackgroundSelect = (presetKey: string) => {
         const oref = makeORef("workspace", workspaceId);
         if (presetKey === "default") {
@@ -186,10 +196,21 @@ const WorkspaceEditorComponent = ({
         } else {
             const preset = fullConfig?.presets?.[presetKey];
             if (preset) {
+                // Apply the preset and update local opacity
+                const presetOpacity = preset["bg:opacity"] ?? 0.5;
+                setOpacity(presetOpacity);
                 fireAndForget(() => ObjectService.UpdateObjectMeta(oref, preset));
             }
         }
     };
+
+    const handleOpacityChange = (newOpacity: number) => {
+        setOpacity(newOpacity);
+        const oref = makeORef("workspace", workspaceId);
+        fireAndForget(() => ObjectService.UpdateObjectMeta(oref, { "bg:opacity": newOpacity }));
+    };
+
+    const hasBackground = !!currentBg;
 
     return (
         <div className="workspace-editor">
@@ -210,6 +231,21 @@ const WorkspaceEditorComponent = ({
                     selectedBg={currentBg}
                     onSelect={handleBackgroundSelect}
                 />
+                {hasBackground && (
+                    <div className="opacity-slider-container">
+                        <label className="opacity-label">Opacity</label>
+                        <input
+                            type="range"
+                            min="0.1"
+                            max="1"
+                            step="0.05"
+                            value={opacity}
+                            onChange={(e) => handleOpacityChange(parseFloat(e.target.value))}
+                            className="opacity-slider"
+                        />
+                        <span className="opacity-value">{Math.round(opacity * 100)}%</span>
+                    </div>
+                )}
             </div>
             <div className="delete-ws-btn-wrapper">
                 <Button className="ghost red text-[12px] bold" onClick={onDeleteWorkspace}>

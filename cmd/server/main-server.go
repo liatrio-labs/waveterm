@@ -496,6 +496,16 @@ func main() {
 		log.Printf("error ensuring wave presets dir: %v\n", err)
 		return
 	}
+	err = wavebase.EnsureWaveBackgroundsDir()
+	if err != nil {
+		log.Printf("error ensuring wave backgrounds dir: %v\n", err)
+		return
+	}
+	err = wconfig.EnsureDefaultBackgrounds()
+	if err != nil {
+		log.Printf("error copying default backgrounds: %v\n", err)
+		// Non-fatal, continue
+	}
 	err = wavebase.EnsureWaveCachesDir()
 	if err != nil {
 		log.Printf("error ensuring wave caches dir: %v\n", err)

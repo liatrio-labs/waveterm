@@ -197,6 +197,14 @@ func EnsureWavePresetsDir() error {
 	return CacheEnsureDir(filepath.Join(GetWaveConfigDir(), "presets"), "wavepresets", 0700, "wave presets directory")
 }
 
+func EnsureWaveBackgroundsDir() error {
+	return CacheEnsureDir(filepath.Join(GetWaveConfigDir(), "backgrounds"), "wavebackgrounds", 0700, "wave backgrounds directory")
+}
+
+func GetWaveBackgroundsDir() string {
+	return filepath.Join(GetWaveConfigDir(), "backgrounds")
+}
+
 func resolveWaveCachesDir() string {
 	var cacheDir string
 	appBundle := "waveterm"

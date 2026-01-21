@@ -240,5 +240,82 @@
         "bg": "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #404040 100%)",
         "bg:opacity": 0.9,
         "bg:activebordercolor": "#808080"
+    },
+    "bg@liatrio-1": {
+        "display:name": "Liatrio 1",
+        "display:order": 6.1,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_1.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-2": {
+        "display:name": "Liatrio 2",
+        "display:order": 6.2,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_2.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-3": {
+        "display:name": "Liatrio 3",
+        "display:order": 6.3,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_3.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-4": {
+        "display:name": "Liatrio 4",
+        "display:order": 6.4,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_4.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-5": {
+        "display:name": "Liatrio 5",
+        "display:order": 6.5,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_5.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-6": {
+        "display:name": "Liatrio 6",
+        "display:order": 6.6,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_6.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-7": {
+        "display:name": "Liatrio 7",
+        "display:order": 6.7,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_7.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-8": {
+        "display:name": "Liatrio 8",
+        "display:order": 6.8,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_8.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-9": {
+        "display:name": "Liatrio 9",
+        "display:order": 6.9,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_9.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-10": {
+        "display:name": "Liatrio 10",
+        "display:order": 6.10,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_10.jpeg)",
+        "bg:opacity": 0.4
+    },
+    "bg@liatrio-11": {
+        "display:name": "Liatrio 11",
+        "display:order": 6.11,
+        "bg:*": true,
+        "bg": "url(~/.waveterm/backgrounds/liatrio_bg_11.jpeg)",
+        "bg:opacity": 0.4
     }
 }

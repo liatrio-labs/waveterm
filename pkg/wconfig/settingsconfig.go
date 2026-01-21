@@ -955,3 +955,45 @@ func CountCustomSettings() int {
 
 	return count
 }
+
+// EnsureDefaultBackgrounds copies embedded background images to the user's config directory
+// if they don't already exist. This allows users to use the bundled backgrounds in presets.
+func EnsureDefaultBackgrounds() error {
+	bgDir := wavebase.GetWaveBackgroundsDir()
+
+	// Read background files from embedded FS
+	entries, err := fs.ReadDir(defaultconfig.ConfigFS, "backgrounds")
+	if err != nil {
+		// No backgrounds directory in embedded config, skip
+		return nil
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		srcPath := "backgrounds/" + entry.Name()
+		dstPath := filepath.Join(bgDir, entry.Name())
+
+		// Skip if file already exists
+		if _, err := os.Stat(dstPath); err == nil {
+			continue
+		}
+
+		// Read from embedded FS
+		data, err := fs.ReadFile(defaultconfig.ConfigFS, srcPath)
+		if err != nil {
+			log.Printf("warning: failed to read embedded background %s: %v\n", srcPath, err)
+			continue
+		}
+
+		// Write to user's config directory
+		if err := os.WriteFile(dstPath, data, 0644); err != nil {
+			log.Printf("warning: failed to write background %s: %v\n", dstPath, err)
+			continue
+		}
+		log.Printf("copied default background: %s\n", entry.Name())
+	}
+
+	return nil
+}
