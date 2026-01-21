@@ -8,10 +8,43 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/greggcoppen/claudewave/app/pkg/wavebase"
 )
+
+// serverNameRegex validates server names: alphanumeric, dashes, underscores, 1-64 chars
+var serverNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$`)
+
+// validateProjectPath checks that the project path is valid and safe
+func validateProjectPath(projectPath string) error {
+	if projectPath == "" {
+		return ErrProjectPathRequired
+	}
+
+	// Must be an absolute path
+	if !filepath.IsAbs(projectPath) {
+		return ErrInvalidProjectPath
+	}
+
+	// Check for path traversal attempts
+	cleanPath := filepath.Clean(projectPath)
+	if strings.Contains(cleanPath, "..") {
+		return ErrInvalidProjectPath
+	}
+
+	return nil
+}
+
+// validateServerName checks that the server name is valid and safe
+func validateServerName(name string) error {
+	if !serverNameRegex.MatchString(name) {
+		return ErrInvalidServerName
+	}
+	return nil
+}
 
 // MCPManager handles MCP server configuration operations
 type MCPManager struct {
@@ -102,6 +135,10 @@ func (m *MCPManager) GetTemplate(name string) (*MCPTemplate, error) {
 
 // ListServers returns all configured MCP servers for a project
 func (m *MCPManager) ListServers(projectPath string) ([]MCPServer, error) {
+	if err := validateProjectPath(projectPath); err != nil {
+		return nil, err
+	}
+
 	mcpConfig, err := m.readMCPConfig(projectPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -124,6 +161,13 @@ func (m *MCPManager) ListServers(projectPath string) ([]MCPServer, error) {
 
 // AddServer adds a new MCP server to .mcp.json
 func (m *MCPManager) AddServer(projectPath string, server MCPServer) error {
+	if err := validateProjectPath(projectPath); err != nil {
+		return err
+	}
+	if err := validateServerName(server.Name); err != nil {
+		return err
+	}
+
 	mcpConfig, err := m.readMCPConfig(projectPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -149,6 +193,16 @@ func (m *MCPManager) AddServer(projectPath string, server MCPServer) error {
 
 // UpdateServer updates an existing MCP server in .mcp.json
 func (m *MCPManager) UpdateServer(projectPath, serverName string, server MCPServer) error {
+	if err := validateProjectPath(projectPath); err != nil {
+		return err
+	}
+	if err := validateServerName(serverName); err != nil {
+		return err
+	}
+	if err := validateServerName(server.Name); err != nil {
+		return err
+	}
+
 	mcpConfig, err := m.readMCPConfig(projectPath)
 	if err != nil {
 		return err
@@ -172,6 +226,13 @@ func (m *MCPManager) UpdateServer(projectPath, serverName string, server MCPServ
 
 // RemoveServer removes an MCP server from .mcp.json
 func (m *MCPManager) RemoveServer(projectPath, serverName string) error {
+	if err := validateProjectPath(projectPath); err != nil {
+		return err
+	}
+	if err := validateServerName(serverName); err != nil {
+		return err
+	}
+
 	mcpConfig, err := m.readMCPConfig(projectPath)
 	if err != nil {
 		return err
@@ -192,6 +253,13 @@ func (m *MCPManager) RemoveServer(projectPath, serverName string) error {
 // Note: This is a placeholder - actual connection testing would require
 // spawning the process and checking if it responds to MCP protocol
 func (m *MCPManager) GetServerStatus(projectPath, serverName string) (*MCPServerStatus, error) {
+	if err := validateProjectPath(projectPath); err != nil {
+		return nil, err
+	}
+	if err := validateServerName(serverName); err != nil {
+		return nil, err
+	}
+
 	mcpConfig, err := m.readMCPConfig(projectPath)
 	if err != nil {
 		return nil, err
@@ -213,6 +281,13 @@ func (m *MCPManager) GetServerStatus(projectPath, serverName string) (*MCPServer
 // Note: This is a placeholder - actual implementation would spawn the process
 // and verify it responds to MCP protocol handshake
 func (m *MCPManager) TestConnection(projectPath, serverName string) (*MCPServerStatus, error) {
+	if err := validateProjectPath(projectPath); err != nil {
+		return nil, err
+	}
+	if err := validateServerName(serverName); err != nil {
+		return nil, err
+	}
+
 	mcpConfig, err := m.readMCPConfig(projectPath)
 	if err != nil {
 		return nil, err
@@ -264,7 +339,8 @@ func (m *MCPManager) writeMCPConfig(projectPath string, config *MCPConfigFile) e
 		return fmt.Errorf("failed to marshal MCP config: %w", err)
 	}
 
-	if err := os.WriteFile(mcpPath, data, 0644); err != nil {
+	// Use 0600 permissions as .mcp.json may contain sensitive env vars (API keys, tokens)
+	if err := os.WriteFile(mcpPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write .mcp.json: %w", err)
 	}
 

@@ -16,6 +16,9 @@ var (
 	ErrServerAlreadyExists = errors.New("MCP server already exists")
 	ErrInvalidConfig       = errors.New("invalid MCP server configuration")
 	ErrTemplateNotFound    = errors.New("MCP template not found")
+	ErrProjectPathRequired = errors.New("project path is required")
+	ErrInvalidProjectPath  = errors.New("invalid project path")
+	ErrInvalidServerName   = errors.New("invalid server name: must be alphanumeric with dashes or underscores")
 )
 
 // MCPServerConfig represents the configuration for an MCP server
