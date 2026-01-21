@@ -64,6 +64,11 @@ export const cwPollingEnabledAtom = atom<boolean>(true) as PrimitiveAtom<boolean
 export const cwLastPollAtom = atom<number>(0) as PrimitiveAtom<number>;
 
 /**
+ * Track sessions that need attention (completed but user hasn't viewed)
+ */
+export const cwSessionNeedsAttentionAtom = atom<Set<string>>(new Set()) as PrimitiveAtom<Set<string>>;
+
+/**
  * PR info by worktree path
  */
 export interface SessionPRInfo {
@@ -85,6 +90,28 @@ export const cwSessionPRsAtom = atom<Map<string, SessionPRInfo>>(new Map()) as P
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Mark a session as needing attention
+ */
+export function markSessionNeedsAttention(sessionId: string): void {
+    const current = globalStore.get(cwSessionNeedsAttentionAtom);
+    const updated = new Set(current);
+    updated.add(sessionId);
+    globalStore.set(cwSessionNeedsAttentionAtom, updated);
+}
+
+/**
+ * Clear attention state for a session (e.g., when user clicks the tab)
+ */
+export function clearSessionAttention(sessionId: string): void {
+    const current = globalStore.get(cwSessionNeedsAttentionAtom);
+    if (current.has(sessionId)) {
+        const updated = new Set(current);
+        updated.delete(sessionId);
+        globalStore.set(cwSessionNeedsAttentionAtom, updated);
+    }
+}
 
 /**
  * Generate a unique session ID
@@ -469,6 +496,9 @@ export async function deleteSession(projectPath: string, sessionId: string, forc
         if (activeId === sessionId) {
             globalStore.set(cwActiveSessionIdAtom, null);
         }
+
+        // Clear attention state for deleted session
+        clearSessionAttention(sessionId);
 
         return true;
     } catch (err) {

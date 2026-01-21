@@ -3,6 +3,7 @@
 
 import { atom, PrimitiveAtom } from "jotai";
 import { globalStore } from "@/app/store/jotaiStore";
+import { markSessionNeedsAttention } from "./cwstate";
 
 // ============================================================================
 // Types
@@ -244,6 +245,15 @@ export function logSessionStatusChange(sessionId: string, sessionName: string, o
         message,
         details,
     });
+
+    // Mark session as needing attention when:
+    // - Transitioning from running to any other state (task completed)
+    // - Transitioning to waiting or error (needs user input/has problem)
+    const transitionedFromRunning = oldStatus === "running" && newStatus !== "running";
+    const needsUserAttention = newStatus === "waiting" || newStatus === "error";
+    if (transitionedFromRunning || needsUserAttention) {
+        markSessionNeedsAttention(sessionId);
+    }
 }
 
 // ============================================================================

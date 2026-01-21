@@ -46,6 +46,16 @@
         flex-shrink: 0;
     }
 
+    .attention-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--accent-color, #007aff);
+        margin-left: 4px;
+        flex-shrink: 0;
+        animation: attention-pulse 1.5s ease-in-out infinite;
+    }
+
     .session-tooltip {
         position: absolute;
         top: calc(100% + 8px);
@@ -119,6 +129,17 @@
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes attention-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(0.9);
     }
 }
 

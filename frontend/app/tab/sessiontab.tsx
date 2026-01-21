@@ -1,7 +1,7 @@
 // Copyright 2025, Liatrio
 // SPDX-License-Identifier: Apache-2.0
 
-import { cwSessionsAtom } from "@/app/store/cwstate";
+import { cwSessionsAtom, cwSessionNeedsAttentionAtom, clearSessionAttention } from "@/app/store/cwstate";
 import { atoms, globalStore, refocusNode } from "@/app/store/global";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
@@ -147,6 +147,10 @@ const SessionTab = memo(
             const [showTooltip, setShowTooltip] = useState(false);
             const session = useSessionForTab(id);
 
+            // Check if this tab needs attention (only on inactive tabs)
+            const attentionSet = useAtomValue(cwSessionNeedsAttentionAtom);
+            const needsAttention = session && !active && attentionSet.has(session.id);
+
             const editableRef = useRef<HTMLDivElement>(null);
             const editableTimeoutRef = useRef<NodeJS.Timeout>(null);
             const loadedRef = useRef(false);
@@ -260,6 +264,14 @@ const SessionTab = memo(
                 setShowTooltip(false);
             }, []);
 
+            // Clear attention when tab is selected
+            const handleTabSelect = useCallback(() => {
+                if (session) {
+                    clearSessionAttention(session.id);
+                }
+                onSelect();
+            }, [session, onSelect]);
+
             const handleContextMenu = useCallback(
                 (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
                     e.preventDefault();
@@ -331,9 +343,10 @@ const SessionTab = memo(
                         "before-active": isBeforeActive,
                         "new-tab": isNew,
                         "has-session": !!session,
+                        "needs-attention": needsAttention,
                     })}
                     onMouseDown={onDragStart}
-                    onClick={onSelect}
+                    onClick={handleTabSelect}
                     onContextMenu={handleContextMenu}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
@@ -353,6 +366,7 @@ const SessionTab = memo(
                             {displayName}
                         </div>
                         {session && <UncommittedBadge count={session.uncommittedCount || 0} />}
+                        {needsAttention && <div className="attention-dot" title="Needs attention" />}
                         <Button
                             className="ghost grey close"
                             onClick={onClose}
