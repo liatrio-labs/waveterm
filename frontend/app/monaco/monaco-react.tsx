@@ -56,11 +56,23 @@ export function MonacoCodeEditor({
             onChange?.(model.getValue());
         });
 
+        // Watch for container resize and re-layout the editor
+        const resizeObserver = new ResizeObserver(() => {
+            // Use requestAnimationFrame to batch layout calls
+            requestAnimationFrame(() => {
+                if (editorRef.current) {
+                    editorRef.current.layout();
+                }
+            });
+        });
+        resizeObserver.observe(el);
+
         if (onMount) {
             onUnmountRef.current = onMount(editor, monaco);
         }
 
         return () => {
+            resizeObserver.disconnect();
             sub.dispose();
             if (onUnmountRef.current) onUnmountRef.current();
             editor.dispose();
@@ -136,7 +148,18 @@ export function MonacoDiffViewer({ original, modified, language, path, options }
 
         diff.setModel({ original: originalModel, modified: modifiedModel });
 
+        // Watch for container resize and re-layout the editor
+        const resizeObserver = new ResizeObserver(() => {
+            requestAnimationFrame(() => {
+                if (diffRef.current) {
+                    diffRef.current.layout();
+                }
+            });
+        });
+        resizeObserver.observe(el);
+
         return () => {
+            resizeObserver.disconnect();
             diff.dispose();
             originalModel.dispose();
             modifiedModel.dispose();
