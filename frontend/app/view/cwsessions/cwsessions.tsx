@@ -25,6 +25,7 @@ import {
     mergeSessionPR,
     pushSessionBranch,
     syncSessionFromMain,
+    linkTerminalBlockToSession,
     SessionPRInfo,
 } from "@/app/store/cwstate";
 import { modalsModel } from "@/app/store/modalmodel";
@@ -123,6 +124,17 @@ class CwSessionsViewModel implements ViewModel {
 
             // Set this block as the active cwsessions block for workspace-scoped settings
             setActiveCwBlock(this.blockId);
+
+            // First check if the block itself has a project path set (from welcomescreen)
+            const blockOref = WOS.makeORef("block", this.blockId);
+            const block = WOS.getObjectValue<Block>(blockOref);
+            const blockProjectPath = block?.meta?.["cw:projectpath"] as string | undefined;
+
+            if (blockProjectPath) {
+                console.log("[CwSessions] Using project path from block metadata:", blockProjectPath);
+                await setProjectPath(blockProjectPath);
+                return;
+            }
 
             // Check if workspace has a default path set that's a git repo
             const workspace = globalStore.get(atoms.workspace);
@@ -805,7 +817,7 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
             console.log("[CwSessions] Opening terminal for:", session.worktreePath);
 
             // Create a single terminal block with frame metadata showing session info
-            await RpcApi.CreateBlockCommand(TabRpcClient, {
+            const oref = await RpcApi.CreateBlockCommand(TabRpcClient, {
                 tabid: model.tabModel.tabId,
                 blockdef: {
                     meta: {
@@ -818,6 +830,10 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
                 },
                 magnified: false,
             });
+
+            // Link the terminal block to the session for handoff detection
+            const blockId = oref.startsWith("block:") ? oref.slice(6) : oref;
+            linkTerminalBlockToSession(session.id, blockId);
         } catch (err) {
             console.error("[CwSessions] Failed to open terminal:", err);
             setError("Failed to open terminal");
@@ -845,6 +861,9 @@ function CwSessionsView({ model, blockRef }: ViewComponentProps<CwSessionsViewMo
 
             // Extract block ID from ORef (format: "block:uuid")
             const blockId = oref.startsWith("block:") ? oref.slice(6) : oref;
+
+            // Link the terminal block to the session for handoff detection
+            linkTerminalBlockToSession(session.id, blockId);
 
             // Launch Claude Code with --dangerously-skip-permissions
             // Retry with increasing delays to wait for controller initialization

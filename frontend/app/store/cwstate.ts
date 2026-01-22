@@ -144,6 +144,33 @@ export function clearSessionAttention(sessionId: string): void {
 }
 
 /**
+ * Link a terminal block to a session
+ * This allows the handoff modal to find the session associated with a terminal
+ */
+export function linkTerminalBlockToSession(sessionId: string, blockId: string): void {
+    const sessions = globalStore.get(cwSessionsAtom);
+    const updatedSessions = sessions.map(s => {
+        if (s.id === sessionId) {
+            return { ...s, terminalBlockId: blockId };
+        }
+        return s;
+    });
+    globalStore.set(cwSessionsAtom, updatedSessions);
+}
+
+/**
+ * Find a session by worktree path
+ */
+export function findSessionByWorktreePath(worktreePath: string): CWSession | null {
+    const sessions = globalStore.get(cwSessionsAtom);
+    const normalizedPath = worktreePath.replace(/\/+$/, '');
+    return sessions.find(s => {
+        const normalizedWorktree = s.worktreePath?.replace(/\/+$/, '');
+        return normalizedWorktree === normalizedPath;
+    }) ?? null;
+}
+
+/**
  * Generate a unique session ID
  */
 function generateSessionId(): string {

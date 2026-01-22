@@ -4,11 +4,11 @@
 import { Modal } from "@/app/modals/modal";
 import { modalsModel } from "@/store/modalmodel";
 import { cwSessionsAtom, cwProjectPathAtom, useCWWebSessionActions } from "@/store/cwstate";
-import { globalStore } from "@/store/global";
+import { globalStore, WOS } from "@/store/global";
 import { RpcApi } from "@/store/wshclientapi";
 import { TabRpcClient } from "@/store/wshrpcutil";
 import * as jotai from "jotai";
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 
 import "./handoffmodal.scss";
 
@@ -26,22 +26,48 @@ interface HandoffModalProps {
 const HandoffModal = ({ blockId, sessionId }: HandoffModalProps) => {
     const [description, setDescription] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [blockCwd, setBlockCwd] = useState<string | null>(null);
     const sessions = jotai.useAtomValue(cwSessionsAtom);
     const projectPath = jotai.useAtomValue(cwProjectPathAtom);
     const webSessionActions = useCWWebSessionActions();
+
+    // Get the terminal's working directory from block metadata
+    useEffect(() => {
+        if (blockId) {
+            const blockOref = WOS.makeORef("block", blockId);
+            const block = WOS.getObjectValue<Block>(blockOref);
+            if (block?.meta?.["cmd:cwd"]) {
+                setBlockCwd(block.meta["cmd:cwd"] as string);
+            }
+        }
+    }, [blockId]);
 
     // Find the session associated with this block or use provided sessionId
     const activeSession = useMemo(() => {
         if (sessionId) {
             return sessions.find(s => s.id === sessionId);
         }
-        // If we have a blockId, try to find associated session
+        // If we have a blockId, try to find associated session by terminalBlockId
         if (blockId) {
-            return sessions.find(s => s.terminalBlockId === blockId);
+            const byBlockId = sessions.find(s => s.terminalBlockId === blockId);
+            if (byBlockId) return byBlockId;
+        }
+        // Try to match by terminal's working directory to session's worktreePath
+        if (blockCwd) {
+            // Normalize paths for comparison (remove trailing slashes)
+            const normalizedCwd = blockCwd.replace(/\/+$/, '');
+            const byPath = sessions.find(s => {
+                const normalizedWorktree = s.worktreePath?.replace(/\/+$/, '');
+                return normalizedWorktree && (
+                    normalizedCwd === normalizedWorktree ||
+                    normalizedCwd.startsWith(normalizedWorktree + '/')
+                );
+            });
+            if (byPath) return byPath;
         }
         // Fall back to first available session
         return sessions.length > 0 ? sessions[0] : null;
-    }, [sessions, blockId, sessionId]);
+    }, [sessions, blockId, sessionId, blockCwd]);
 
     // Extract session number from session name (e.g., "session-2" -> 2)
     const sessionNumber = useMemo(() => {
