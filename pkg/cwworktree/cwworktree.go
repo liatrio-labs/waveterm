@@ -447,13 +447,9 @@ func WorktreeRename(params WorktreeRenameParams) error {
 		return err
 	}
 
-	if params.NewBranchName == "" {
-		return ErrInvalidBranchName
-	}
-
-	// Validate branch name (simple check)
-	if matched, _ := regexp.MatchString(`^[a-zA-Z0-9/_-]+$`, params.NewBranchName); !matched {
-		return ErrInvalidBranchName
+	// Security: Use consistent branch name validation
+	if err := validateBranchName(params.NewBranchName); err != nil {
+		return err
 	}
 
 	config, err := wconfig.GetCWConfig()

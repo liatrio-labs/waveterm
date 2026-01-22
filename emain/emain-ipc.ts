@@ -219,9 +219,31 @@ export function initIpcHandlers() {
     });
 
     electron.ipcMain.on("download", (event, payload) => {
-        const baseName = encodeURIComponent(path.basename(payload.filePath));
+        // Security: Validate the file path
+        if (!payload || typeof payload.filePath !== "string" || payload.filePath.length === 0) {
+            console.error("Invalid file path provided to download");
+            return;
+        }
+
+        let filePath = payload.filePath;
+
+        // Expand home directory safely
+        if (filePath.startsWith("~")) {
+            filePath = path.join(electronApp.getPath("home"), filePath.slice(1));
+        }
+
+        // Security: Normalize path and check for traversal
+        const normalizedPath = path.normalize(filePath);
+
+        // Reject paths that try to escape via ..
+        if (normalizedPath.includes("..")) {
+            console.error("Path traversal attempt detected in download");
+            return;
+        }
+
+        const baseName = encodeURIComponent(path.basename(normalizedPath));
         const streamingUrl =
-            getWebServerEndpoint() + "/wave/stream-file/" + baseName + "?path=" + encodeURIComponent(payload.filePath);
+            getWebServerEndpoint() + "/wave/stream-file/" + baseName + "?path=" + encodeURIComponent(normalizedPath);
         event.sender.downloadURL(streamingUrl);
     });
 
@@ -368,7 +390,35 @@ export function initIpcHandlers() {
 
     electron.ipcMain.on("quicklook", (event, filePath: string) => {
         if (unamePlatform !== "darwin") return;
-        child_process.execFile("/usr/bin/qlmanage", ["-p", filePath], (error, stdout, stderr) => {
+
+        // Security: Validate and normalize the file path
+        if (typeof filePath !== "string" || filePath.length === 0) {
+            console.error("Invalid file path provided to quicklook");
+            return;
+        }
+
+        // Expand home directory safely
+        let normalizedPath = filePath;
+        if (normalizedPath.startsWith("~")) {
+            normalizedPath = path.join(electronApp.getPath("home"), normalizedPath.slice(1));
+        }
+
+        // Security: Normalize path and check for traversal
+        normalizedPath = path.normalize(normalizedPath);
+
+        // Reject paths that try to escape via ..
+        if (normalizedPath.includes("..")) {
+            console.error("Path traversal attempt detected in quicklook");
+            return;
+        }
+
+        // Security: Ensure the path is absolute after normalization
+        if (!path.isAbsolute(normalizedPath)) {
+            console.error("quicklook requires an absolute path");
+            return;
+        }
+
+        child_process.execFile("/usr/bin/qlmanage", ["-p", normalizedPath], (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error opening Quick Look: ${error}`);
             }

@@ -144,18 +144,11 @@ func (c *PlatformClient) get(ctx context.Context, path string, result interface{
 		return c.parseError(resp)
 	}
 
-	// Read body for logging
+	// Read body for decoding
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read response body: %w", err)
 	}
-
-	// Log raw response for debugging (truncate if too long)
-	logBody := string(body)
-	if len(logBody) > 2000 {
-		logBody = logBody[:2000] + "..."
-	}
-	fmt.Printf("[Platform] Raw API response for %s: %s\n", path, logBody)
 
 	return json.Unmarshal(body, result)
 }
