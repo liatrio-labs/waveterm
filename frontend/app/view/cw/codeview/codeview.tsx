@@ -598,9 +598,10 @@ function CodeViewBlock({ blockId, blockRef, contentRef, model }: CodeViewBlockPr
                 />
             )}
 
-            {/* Toolbar (shows save button when dirty, markdown controls for md files) */}
+            {/* Toolbar (shows save button when dirty, markdown controls for md files, minimap toggle) */}
             {viewType === "text" && filePath && (
                 <CodeViewToolbar
+                    blockId={blockId}
                     filePath={filePath}
                     isMarkdown={isMarkdown}
                     markdownMode={markdownMode}
@@ -610,6 +611,7 @@ function CodeViewBlock({ blockId, blockRef, contentRef, model }: CodeViewBlockPr
                     onToggleToc={handleToggleToc}
                     isDirty={activeTab?.isDirty}
                     onSave={handleSave}
+                    showEditor={!isMarkdown || markdownMode === "raw"}
                 />
             )}
 

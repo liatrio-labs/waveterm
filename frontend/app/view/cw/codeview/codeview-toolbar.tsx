@@ -11,12 +11,16 @@ import * as React from "react";
 import { useCallback } from "react";
 
 import type { MarkdownViewMode } from "@/app/store/cwcodeviewstate";
+import { useOverrideConfigAtom, WOS } from "@/app/store/global";
+import { ObjectService } from "@/app/store/services";
+import { fireAndForget } from "@/util/util";
 
 // ============================================================================
 // Types
 // ============================================================================
 
 export interface CodeViewToolbarProps {
+    blockId: string;
     filePath: string;
     isMarkdown: boolean;
     markdownMode: MarkdownViewMode;
@@ -26,6 +30,7 @@ export interface CodeViewToolbarProps {
     onToggleToc?: () => void;
     isDirty?: boolean;
     onSave?: () => void;
+    showEditor?: boolean;
 }
 
 // ============================================================================
@@ -33,6 +38,7 @@ export interface CodeViewToolbarProps {
 // ============================================================================
 
 export function CodeViewToolbar({
+    blockId,
     filePath,
     isMarkdown,
     markdownMode,
@@ -42,7 +48,11 @@ export function CodeViewToolbar({
     onToggleToc,
     isDirty,
     onSave,
+    showEditor = true,
 }: CodeViewToolbarProps) {
+    // Get current minimap state from block config
+    const minimapEnabled = useOverrideConfigAtom(blockId, "editor:minimapenabled") ?? false;
+
     const handleToggleClick = useCallback(
         (e: React.MouseEvent) => {
             e.preventDefault();
@@ -70,9 +80,24 @@ export function CodeViewToolbar({
         [onSave]
     );
 
-    // Show toolbar if there's something to display (markdown controls or save button)
+    const handleMinimapToggle = useCallback(
+        (e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fireAndForget(async () => {
+                const oref = WOS.makeORef("block", blockId);
+                await ObjectService.UpdateObjectMeta(oref, {
+                    "editor:minimapenabled": !minimapEnabled,
+                });
+            });
+        },
+        [blockId, minimapEnabled]
+    );
+
+    // Show toolbar if there's something to display (markdown controls, save button, or minimap toggle)
     const showSaveButton = isDirty && !isReadOnly && onSave;
-    if (!isMarkdown && !showSaveButton) {
+    const showMinimapToggle = showEditor && (!isMarkdown || markdownMode === "raw");
+    if (!isMarkdown && !showSaveButton && !showMinimapToggle) {
         return null;
     }
 
@@ -105,6 +130,18 @@ export function CodeViewToolbar({
                 )}
             </div>
             <div className="codeview-toolbar-right">
+                {/* Minimap toggle - only show for editor view (non-markdown or raw markdown) */}
+                {showMinimapToggle && (
+                    <button
+                        className={clsx("codeview-toolbar-button", {
+                            active: minimapEnabled,
+                        })}
+                        onClick={handleMinimapToggle}
+                        title={minimapEnabled ? "Hide minimap" : "Show minimap"}
+                    >
+                        <i className="fa-solid fa-map" />
+                    </button>
+                )}
                 {/* Markdown toggle - only show for markdown files */}
                 {isMarkdown && (
                     <button
