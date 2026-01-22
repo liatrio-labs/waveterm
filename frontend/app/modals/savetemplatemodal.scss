@@ -122,6 +122,39 @@
                         }
                     }
                 }
+
+                &.form-group-checkbox {
+                    margin-top: 4px;
+                    padding-top: 12px;
+                    border-top: 1px solid var(--border-color);
+
+                    .checkbox-label {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+
+                        input[type="checkbox"] {
+                            width: 16px;
+                            height: 16px;
+                            cursor: pointer;
+                            accent-color: var(--accent-color);
+                        }
+
+                        .checkbox-text {
+                            font-size: 14px;
+                            font-weight: 500;
+                            color: var(--main-text-color);
+                        }
+                    }
+
+                    .form-help {
+                        display: block;
+                        margin-top: 4px;
+                        font-size: 12px;
+                        color: var(--secondary-text-color);
+                    }
+                }
             }
         }
     }

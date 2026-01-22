@@ -6,6 +6,19 @@
  * Each template defines a block configuration that can be applied to new session tabs.
  */
 
+/**
+ * Content captured from a block for template serialization
+ */
+export interface CWBlockContent {
+    contentType: "terminal" | "web" | "preview";
+    data64?: string; // base64-encoded content (gzip compressed)
+    compressed?: boolean; // true if gzip compressed
+    size?: number; // original size in bytes
+    truncated?: boolean; // true if content was truncated
+    url?: string; // for web blocks - current URL
+    filePath?: string; // for preview blocks
+}
+
 export interface CWLayoutTemplate {
     id: string;
     name: string;
@@ -13,6 +26,9 @@ export interface CWLayoutTemplate {
     icon: string;
     thumbnail?: string;
     layout: CWLayoutNode;
+    hasContent?: boolean; // quick indicator for UI
+    contentVersion?: number; // format versioning (start at 1)
+    totalContentSize?: number; // total bytes of content
 }
 
 export interface CWLayoutNode {
@@ -22,6 +38,7 @@ export interface CWLayoutNode {
     blockType?: string; // For blocks: the view type (term, preview, etc.)
     blockMeta?: Record<string, any>; // Additional block metadata
     children?: CWLayoutNode[];
+    content?: CWBlockContent; // optional block content for saving terminal output, etc.
 }
 
 /**
@@ -235,6 +252,7 @@ interface BlockCreationInstruction {
     blockDef: BlockDef;
     splitAction?: "splitright" | "splitdown" | "splitleft" | "splitup";
     relativeTo?: number; // Index of block to split from
+    content?: CWBlockContent; // Content to restore after block creation
 }
 
 /**
@@ -253,6 +271,7 @@ interface CollectedBlock {
     columnIndex: number; // Which column this block belongs to (for horizontal ordering)
     rowIndex: number; // Position within column (0 = top/primary, 1+ = stacked below)
     splitAction?: "splitright" | "splitdown";
+    content?: CWBlockContent; // Content to restore after block creation
 }
 
 /**
@@ -293,6 +312,7 @@ function collectBlocksFromTree(
                 blockDef: { meta },
                 columnIndex: columnStart,
                 rowIndex: rowOffset,
+                content: node.content, // Pass through content for restoration
             }],
             columnCount: 1,
         };
@@ -361,6 +381,7 @@ function flattenLayoutNode(
         const block = blocks[i];
         const instruction: BlockCreationInstruction = {
             blockDef: block.blockDef,
+            content: block.content, // Pass through content for restoration
         };
 
         if (i > 0) {
@@ -398,6 +419,14 @@ function flattenLayoutNode(
 export interface CWSessionInfo {
     name: string;
     branchName: string;
+}
+
+/**
+ * Options for capturing a layout as a template
+ */
+export interface CaptureLayoutOptions {
+    includeContent?: boolean;
+    maxTerminalLines?: number;
 }
 
 /**
@@ -479,6 +508,20 @@ export async function applyLayoutTemplate(
             // Track the first terminal block for auto-start
             if (!firstTermBlockId && instruction.blockDef.meta?.view === "term") {
                 firstTermBlockId = blockId;
+            }
+
+            // Restore content if present
+            if (instruction.content) {
+                try {
+                    const { restoreBlockContent } = await import("./cwtemplate-content");
+                    // Small delay to ensure block is initialized
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await restoreBlockContent(blockId, instruction.content);
+                    console.log(`[applyLayoutTemplate] Restored content to block ${blockId}`);
+                } catch (contentErr) {
+                    console.warn(`[applyLayoutTemplate] Failed to restore content to block ${blockId}:`, contentErr);
+                    // Don't throw - content restoration failure shouldn't prevent layout application
+                }
             }
         } catch (err) {
             console.error(`[applyLayoutTemplate] Failed to create block ${i}:`, err);
@@ -625,6 +668,18 @@ export async function applyTemplateToExistingTab(
         // Extract block ID from ORef (format: "block:uuid")
         firstBlockId = oref.startsWith("block:") ? oref.slice(6) : oref;
         console.log("[applyTemplateToExistingTab] Created first block:", firstBlockId);
+
+        // Restore content for first block if present
+        if (firstInstruction.content) {
+            try {
+                const { restoreBlockContent } = await import("./cwtemplate-content");
+                await new Promise(resolve => setTimeout(resolve, 100));
+                await restoreBlockContent(firstBlockId, firstInstruction.content);
+                console.log(`[applyTemplateToExistingTab] Restored content to first block ${firstBlockId}`);
+            } catch (contentErr) {
+                console.warn(`[applyTemplateToExistingTab] Failed to restore content to first block:`, contentErr);
+            }
+        }
     } catch (err) {
         console.error("[applyTemplateToExistingTab] Failed to create first block:", err);
         throw err;
@@ -672,6 +727,18 @@ export async function applyTemplateToExistingTab(
             // Extract block ID from ORef (format: "block:uuid")
             const blockId = oref.startsWith("block:") ? oref.slice(6) : oref;
             createdBlockIds.push(blockId);
+
+            // Restore content if present
+            if (instruction.content) {
+                try {
+                    const { restoreBlockContent } = await import("./cwtemplate-content");
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await restoreBlockContent(blockId, instruction.content);
+                    console.log(`[applyTemplateToExistingTab] Restored content to block ${blockId}`);
+                } catch (contentErr) {
+                    console.warn(`[applyTemplateToExistingTab] Failed to restore content to block ${blockId}:`, contentErr);
+                }
+            }
         } catch (err) {
             console.error(`[applyTemplateToExistingTab] Failed to create block ${i}:`, err);
             throw err;
@@ -696,13 +763,15 @@ export function generateTemplateId(): string {
  * @param name - Template name
  * @param description - Template description
  * @param icon - Icon name (FontAwesome)
+ * @param options - Optional capture options including content capture
  * @returns A CWLayoutTemplate representing the current layout
  */
 export async function captureCurrentLayoutAsTemplate(
     tabId: string,
     name: string,
     description: string,
-    icon: string
+    icon: string,
+    options: CaptureLayoutOptions = {}
 ): Promise<CWLayoutTemplate> {
     const { RpcApi } = await import("@/app/store/wshclientapi");
     const { TabRpcClient } = await import("@/app/store/wshrpcutil");
@@ -769,17 +838,219 @@ export async function captureCurrentLayoutAsTemplate(
     console.log("[captureLayout] Block meta map:", Array.from(blockMetaMap.entries()));
 
     // Convert the Wave layout tree to our CWLayoutNode format
-    const layout = convertLayoutNodeToCWLayout(layoutState.rootnode, blockMetaMap);
+    // If includeContent is true, capture content for each block
+    const layout = await convertLayoutNodeToCWLayoutAsync(
+        layoutState.rootnode,
+        blockMetaMap,
+        options.includeContent ?? false,
+        options.maxTerminalLines
+    );
 
     console.log("[captureLayout] Converted CWLayout:", JSON.stringify(layout, null, 2));
 
-    return {
+    // Calculate total content size if content was captured
+    let totalContentSize = 0;
+    let hasContent = false;
+
+    if (options.includeContent) {
+        const { calculateTotalContentSize } = await import("./cwtemplate-content");
+        const contents = collectContentsFromLayout(layout);
+        totalContentSize = calculateTotalContentSize(contents);
+        hasContent = contents.some((c) => c != null);
+    }
+
+    const template: CWLayoutTemplate = {
         id: generateTemplateId(),
         name,
         description,
         icon,
         layout,
     };
+
+    // Add content metadata if content was captured
+    if (options.includeContent) {
+        template.hasContent = hasContent;
+        template.contentVersion = 1;
+        template.totalContentSize = totalContentSize;
+    }
+
+    return template;
+}
+
+/**
+ * Recursively collect all content objects from a layout tree
+ */
+function collectContentsFromLayout(node: CWLayoutNode): (CWBlockContent | null | undefined)[] {
+    const contents: (CWBlockContent | null | undefined)[] = [];
+
+    if (node.type === "block") {
+        contents.push(node.content);
+    } else if (node.children) {
+        for (const child of node.children) {
+            contents.push(...collectContentsFromLayout(child));
+        }
+    }
+
+    return contents;
+}
+
+/**
+ * Convert a Wave LayoutNode tree to a CWLayoutNode tree (async version with content capture)
+ * This preserves the actual split structure including vertical stacks
+ * Note: Go JSON serialization uses lowercase property names (flexdirection, not flexDirection)
+ */
+async function convertLayoutNodeToCWLayoutAsync(
+    node: any,
+    blockMetaMap: Map<string, any>,
+    includeContent: boolean,
+    maxTerminalLines?: number
+): Promise<CWLayoutNode> {
+    // Leaf node - has data with blockId (Go uses lowercase: blockid)
+    const blockId = node.data?.blockid || node.data?.blockId;
+    if (blockId) {
+        const meta = blockMetaMap.get(blockId);
+        return blockMetaToLayoutNodeAsync(blockId, meta, includeContent, maxTerminalLines);
+    }
+
+    // Split node - has children
+    if (node.children && node.children.length > 0) {
+        // Determine direction from flexDirection (Go uses lowercase: flexdirection)
+        // Row = horizontal split, Column = vertical split (stack)
+        const flexDir = node.flexdirection || node.flexDirection;
+        const isHorizontal = flexDir === "row";
+
+        if (node.children.length === 1) {
+            // Single child - recurse into it
+            return convertLayoutNodeToCWLayoutAsync(node.children[0], blockMetaMap, includeContent, maxTerminalLines);
+        }
+
+        if (node.children.length === 2) {
+            // Binary split - calculate ratio from sizes
+            const totalSize = node.children[0].size + node.children[1].size;
+            const ratio = node.children[0].size / totalSize;
+
+            const [child1, child2] = await Promise.all([
+                convertLayoutNodeToCWLayoutAsync(node.children[0], blockMetaMap, includeContent, maxTerminalLines),
+                convertLayoutNodeToCWLayoutAsync(node.children[1], blockMetaMap, includeContent, maxTerminalLines),
+            ]);
+
+            return {
+                type: "split",
+                direction: isHorizontal ? "horizontal" : "vertical",
+                ratio: ratio,
+                children: [child1, child2],
+            };
+        }
+
+        // More than 2 children - create nested binary splits
+        return buildNestedSplitsAsync(node.children, isHorizontal, blockMetaMap, includeContent, maxTerminalLines);
+    }
+
+    // Fallback to terminal block
+    return { type: "block", blockType: "term" };
+}
+
+/**
+ * Build nested binary splits from an array of children (async version)
+ */
+async function buildNestedSplitsAsync(
+    children: any[],
+    isHorizontal: boolean,
+    blockMetaMap: Map<string, any>,
+    includeContent: boolean,
+    maxTerminalLines?: number
+): Promise<CWLayoutNode> {
+    if (children.length === 0) {
+        return { type: "block", blockType: "term" };
+    }
+
+    if (children.length === 1) {
+        return convertLayoutNodeToCWLayoutAsync(children[0], blockMetaMap, includeContent, maxTerminalLines);
+    }
+
+    if (children.length === 2) {
+        const totalSize = children[0].size + children[1].size;
+        const ratio = children[0].size / totalSize;
+
+        const [child1, child2] = await Promise.all([
+            convertLayoutNodeToCWLayoutAsync(children[0], blockMetaMap, includeContent, maxTerminalLines),
+            convertLayoutNodeToCWLayoutAsync(children[1], blockMetaMap, includeContent, maxTerminalLines),
+        ]);
+
+        return {
+            type: "split",
+            direction: isHorizontal ? "horizontal" : "vertical",
+            ratio: ratio,
+            children: [child1, child2],
+        };
+    }
+
+    // For 3+ children, create a nested structure
+    const firstChild = children[0];
+    const restChildren = children.slice(1);
+
+    const totalSize = children.reduce((sum, c) => sum + c.size, 0);
+    const firstRatio = firstChild.size / totalSize;
+
+    const [convertedFirst, convertedRest] = await Promise.all([
+        convertLayoutNodeToCWLayoutAsync(firstChild, blockMetaMap, includeContent, maxTerminalLines),
+        buildNestedSplitsAsync(restChildren, isHorizontal, blockMetaMap, includeContent, maxTerminalLines),
+    ]);
+
+    return {
+        type: "split",
+        direction: isHorizontal ? "horizontal" : "vertical",
+        ratio: firstRatio,
+        children: [convertedFirst, convertedRest],
+    };
+}
+
+/**
+ * Convert block metadata to a CWLayoutNode (async version with content capture)
+ */
+async function blockMetaToLayoutNodeAsync(
+    blockId: string,
+    meta: any,
+    includeContent: boolean,
+    maxTerminalLines?: number
+): Promise<CWLayoutNode> {
+    const viewType = meta?.view || "term";
+    const node: CWLayoutNode = {
+        type: "block",
+        blockType: viewType,
+    };
+
+    // Preserve relevant metadata
+    const blockMeta: Record<string, any> = {};
+
+    // For file browser, preserve the path type but not the actual path
+    if (viewType === "preview" && meta?.["file:path"]) {
+        blockMeta["file:path"] = ".";
+    }
+
+    // For web blocks, preserve the URL
+    if (viewType === "web" && meta?.url) {
+        blockMeta.url = meta.url;
+    }
+
+    if (Object.keys(blockMeta).length > 0) {
+        node.blockMeta = blockMeta;
+    }
+
+    // Capture content if requested
+    if (includeContent) {
+        try {
+            const { captureBlockContent } = await import("./cwtemplate-content");
+            const content = await captureBlockContent(blockId, viewType, meta, { maxTerminalLines });
+            if (content) {
+                node.content = content;
+            }
+        } catch (err) {
+            console.warn(`[blockMetaToLayoutNodeAsync] Failed to capture content for block ${blockId}:`, err);
+        }
+    }
+
+    return node;
 }
 
 /**

@@ -12,8 +12,9 @@ import clsx from "clsx";
 import { Modal } from "@/app/modals/modal";
 import { Button } from "@/app/element/button";
 import { modalsModel } from "@/app/store/modalmodel";
-import { CWLayoutTemplate, CW_LAYOUT_TEMPLATES } from "@/app/workspace/cwtemplates";
+import { CWLayoutTemplate, CW_LAYOUT_TEMPLATES, generateTemplateId } from "@/app/workspace/cwtemplates";
 import { customTemplatesAtom, saveCustomTemplates, getCustomTemplates } from "@/app/store/cwsettingsstate";
+import { formatBytes } from "@/app/workspace/cwtemplate-content";
 
 import "./templatemanagermodal.scss";
 
@@ -106,7 +107,7 @@ const TemplateManagerModal = ({ onTemplateSelected }: TemplateManagerModalProps)
         try {
             const duplicated: CWLayoutTemplate = {
                 ...template,
-                id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                id: generateTemplateId(),
                 name: `${template.name} (Copy)`,
             };
 
@@ -116,6 +117,69 @@ const TemplateManagerModal = ({ onTemplateSelected }: TemplateManagerModalProps)
         } catch (err) {
             console.error("[TemplateManager] Failed to duplicate template:", err);
             setError("Failed to duplicate template");
+        } finally {
+            setActionInProgress(null);
+        }
+    }, [customTemplates]);
+
+    const handleExport = useCallback((template: CWLayoutTemplate) => {
+        try {
+            const exportData = {
+                version: "1.0",
+                exportedAt: new Date().toISOString(),
+                template,
+            };
+            const json = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([json], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${template.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}-template.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            console.log("[TemplateManager] Exported template:", template.id);
+        } catch (err) {
+            console.error("[TemplateManager] Failed to export template:", err);
+            setError("Failed to export template");
+        }
+    }, []);
+
+    const handleStripContent = useCallback(async (template: CWLayoutTemplate) => {
+        if (!template.hasContent) return;
+
+        setActionInProgress(template.id);
+        setError(null);
+
+        try {
+            // Create a copy without content
+            const stripContentFromLayout = (node: any): any => {
+                const { content, ...rest } = node;
+                if (rest.children) {
+                    rest.children = rest.children.map(stripContentFromLayout);
+                }
+                return rest;
+            };
+
+            const strippedTemplate: CWLayoutTemplate = {
+                ...template,
+                id: generateTemplateId(),
+                name: `${template.name} (No Content)`,
+                layout: stripContentFromLayout(template.layout),
+                hasContent: false,
+                contentVersion: undefined,
+                totalContentSize: undefined,
+            };
+
+            const updatedTemplates = [...customTemplates, strippedTemplate];
+            await saveCustomTemplates(updatedTemplates);
+            setCustomTemplates(updatedTemplates);
+        } catch (err) {
+            console.error("[TemplateManager] Failed to strip content:", err);
+            setError("Failed to create content-free copy");
         } finally {
             setActionInProgress(null);
         }
@@ -194,7 +258,18 @@ const TemplateManagerModal = ({ onTemplateSelected }: TemplateManagerModalProps)
                                 ) : (
                                     <>
                                         <div className="template-info">
-                                            <span className="template-name">{template.name}</span>
+                                            <div className="template-name-row">
+                                                <span className="template-name">{template.name}</span>
+                                                {template.hasContent && (
+                                                    <span
+                                                        className="content-badge"
+                                                        title={`Includes content (${formatBytes(template.totalContentSize ?? 0)})`}
+                                                    >
+                                                        <i className="fa-solid fa-file-lines" />
+                                                        {formatBytes(template.totalContentSize ?? 0)}
+                                                    </span>
+                                                )}
+                                            </div>
                                             {template.description && (
                                                 <span className="template-description">
                                                     {template.description}
@@ -219,6 +294,24 @@ const TemplateManagerModal = ({ onTemplateSelected }: TemplateManagerModalProps)
                                             >
                                                 <i className="fa-solid fa-copy" />
                                             </button>
+                                            <button
+                                                className="action-btn"
+                                                onClick={() => handleExport(template)}
+                                                disabled={actionInProgress !== null}
+                                                title="Export as JSON"
+                                            >
+                                                <i className="fa-solid fa-download" />
+                                            </button>
+                                            {template.hasContent && (
+                                                <button
+                                                    className="action-btn"
+                                                    onClick={() => handleStripContent(template)}
+                                                    disabled={actionInProgress !== null}
+                                                    title="Create copy without content"
+                                                >
+                                                    <i className="fa-solid fa-eraser" />
+                                                </button>
+                                            )}
                                             <button
                                                 className="action-btn danger"
                                                 onClick={() => handleDelete(template.id)}

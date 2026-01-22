@@ -12,6 +12,7 @@ import { modalsModel } from "@/app/store/modalmodel";
 import { atoms, globalStore } from "@/store/global";
 import { captureCurrentLayoutAsTemplate, CWLayoutTemplate } from "@/app/workspace/cwtemplates";
 import { saveCustomTemplates, getCustomTemplates } from "@/app/store/cwsettingsstate";
+import { formatBytes, MAX_TOTAL_CONTENT } from "@/app/workspace/cwtemplate-content";
 
 import "./savetemplatemodal.scss";
 
@@ -35,8 +36,10 @@ const SaveTemplateModal = ({ tabId, onSaved }: SaveTemplateModalProps) => {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [icon, setIcon] = useState("columns");
+    const [includeContent, setIncludeContent] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [contentSizeInfo, setContentSizeInfo] = useState<string | null>(null);
 
     // Get current tab ID if not provided
     const effectiveTabId = tabId ?? globalStore.get(atoms.staticTabId);
@@ -53,15 +56,26 @@ const SaveTemplateModal = ({ tabId, onSaved }: SaveTemplateModalProps) => {
 
         setSaving(true);
         setError(null);
+        setContentSizeInfo(null);
 
         try {
-            // Capture current layout
+            // Capture current layout with optional content
             const template = await captureCurrentLayoutAsTemplate(
                 effectiveTabId,
                 name.trim(),
                 description.trim(),
-                icon
+                icon,
+                { includeContent }
             );
+
+            // Check content size limit
+            if (template.totalContentSize && template.totalContentSize > MAX_TOTAL_CONTENT) {
+                setError(
+                    `Content size (${formatBytes(template.totalContentSize)}) exceeds the ${formatBytes(MAX_TOTAL_CONTENT)} limit. Try capturing less terminal output.`
+                );
+                setSaving(false);
+                return;
+            }
 
             // Get existing custom templates and add the new one
             const existingTemplates = getCustomTemplates();
@@ -71,6 +85,9 @@ const SaveTemplateModal = ({ tabId, onSaved }: SaveTemplateModalProps) => {
             await saveCustomTemplates(updatedTemplates);
 
             console.log("[SaveTemplateModal] Saved template:", template.id);
+            if (template.hasContent) {
+                console.log("[SaveTemplateModal] Content size:", formatBytes(template.totalContentSize ?? 0));
+            }
 
             // Call callback if provided
             if (onSaved) {
@@ -85,7 +102,7 @@ const SaveTemplateModal = ({ tabId, onSaved }: SaveTemplateModalProps) => {
         } finally {
             setSaving(false);
         }
-    }, [name, description, icon, effectiveTabId, onSaved]);
+    }, [name, description, icon, includeContent, effectiveTabId, onSaved]);
 
     return (
         <Modal
@@ -155,6 +172,23 @@ const SaveTemplateModal = ({ tabId, onSaved }: SaveTemplateModalProps) => {
                                 </button>
                             ))}
                         </div>
+                    </div>
+
+                    <div className="form-group form-group-checkbox">
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={includeContent}
+                                onChange={(e) => setIncludeContent(e.target.checked)}
+                                disabled={saving}
+                            />
+                            <span className="checkbox-text">
+                                Include block content
+                            </span>
+                        </label>
+                        <span className="form-help">
+                            Save terminal output and current URLs with the template (max {formatBytes(MAX_TOTAL_CONTENT)})
+                        </span>
                     </div>
                 </div>
             </div>

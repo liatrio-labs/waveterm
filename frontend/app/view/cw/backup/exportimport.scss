@@ -25,6 +25,32 @@
             font-size: 12px;
         }
     }
+
+    .import-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border-radius: 6px;
+        font-size: 13px;
+
+        i {
+            flex-shrink: 0;
+        }
+
+        &.success {
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+            color: #34c759;
+        }
+
+        &.error {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff3b30;
+        }
+    }
 }
 
 .export-import-actions {

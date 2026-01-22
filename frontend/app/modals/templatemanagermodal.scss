@@ -118,6 +118,12 @@
                     flex-direction: column;
                     gap: 2px;
 
+                    .template-name-row {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
                     .template-name {
                         font-size: 14px;
                         font-weight: 500;
@@ -125,6 +131,23 @@
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .content-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 4px;
+                        padding: 2px 6px;
+                        background: rgba(var(--accent-color-rgb), 0.15);
+                        border-radius: 4px;
+                        font-size: 10px;
+                        color: var(--accent-color);
+                        white-space: nowrap;
+                        flex-shrink: 0;
+
+                        i {
+                            font-size: 9px;
+                        }
                     }
 
                     .template-description {

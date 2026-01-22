@@ -12,6 +12,9 @@ import { useState, useCallback } from "react";
 
 import { Button } from "@/app/element/button";
 import { getApi } from "@/app/store/global";
+import { CWLayoutTemplate, generateTemplateId } from "@/app/workspace/cwtemplates";
+import { getCustomTemplates, saveCustomTemplates } from "@/app/store/cwsettingsstate";
+import { formatBytes } from "@/app/workspace/cwtemplate-content";
 
 import "./exportimport.scss";
 
@@ -212,11 +215,122 @@ function ImportSection() {
     );
 }
 
+function TemplatesSection() {
+    const [isImporting, setIsImporting] = useState(false);
+    const [importStatus, setImportStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+    const handleImportTemplate = useCallback(async () => {
+        setImportStatus(null);
+        setIsImporting(true);
+
+        try {
+            const result = await getApi().showOpenDialog({
+                title: "Import Template",
+                filters: [{ name: "JSON Files", extensions: ["json"] }],
+                properties: ["openFile"],
+            });
+
+            if (result.canceled || result.filePaths.length === 0) {
+                setIsImporting(false);
+                return;
+            }
+
+            const filePath = result.filePaths[0];
+
+            // Read the file
+            const { RpcApi } = await import("@/app/store/wshclientapi");
+            const { TabRpcClient } = await import("@/app/store/wshrpcutil");
+
+            const fileData = await RpcApi.FileReadCommand(TabRpcClient, {
+                info: { path: filePath },
+            });
+
+            if (!fileData.data64) {
+                throw new Error("Failed to read file content");
+            }
+
+            // Decode and parse
+            const jsonText = atob(fileData.data64);
+            const imported = JSON.parse(jsonText);
+
+            // Validate structure
+            if (!imported.template || !imported.template.id || !imported.template.name || !imported.template.layout) {
+                throw new Error("Invalid template file format");
+            }
+
+            const template = imported.template as CWLayoutTemplate;
+
+            // Generate new ID to avoid conflicts
+            const newTemplate: CWLayoutTemplate = {
+                ...template,
+                id: generateTemplateId(),
+            };
+
+            // Add to custom templates
+            const existingTemplates = getCustomTemplates();
+            const updatedTemplates = [...existingTemplates, newTemplate];
+            await saveCustomTemplates(updatedTemplates);
+
+            const sizeInfo = newTemplate.hasContent ? ` (${formatBytes(newTemplate.totalContentSize ?? 0)} content)` : "";
+            setImportStatus({
+                type: "success",
+                message: `Imported "${newTemplate.name}"${sizeInfo}`,
+            });
+
+            console.log("[Import] Imported template:", newTemplate.id);
+        } catch (err) {
+            console.error("[Import] Failed to import template:", err);
+            setImportStatus({
+                type: "error",
+                message: err instanceof Error ? err.message : "Failed to import template",
+            });
+        } finally {
+            setIsImporting(false);
+        }
+    }, []);
+
+    return (
+        <div className="export-import-section">
+            <h4>
+                <i className="fa-solid fa-layer-group" />
+                Templates
+            </h4>
+
+            {importStatus && (
+                <div className={clsx("import-status", importStatus.type)}>
+                    <i className={`fa-solid fa-${importStatus.type === "success" ? "check-circle" : "exclamation-triangle"}`} />
+                    {importStatus.message}
+                </div>
+            )}
+
+            <div className="export-import-actions">
+                <div className="export-import-action">
+                    <div className="export-import-action-info">
+                        <span className="export-import-action-title">Import Template</span>
+                        <span className="export-import-action-desc">
+                            Import a layout template from a JSON file (use Template Manager to export)
+                        </span>
+                    </div>
+                    <Button
+                        className="ghost"
+                        onClick={handleImportTemplate}
+                        disabled={isImporting}
+                    >
+                        <i className="fa-solid fa-file-import" />
+                        {isImporting ? "Importing..." : "Import Template"}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function ExportImportPanel() {
     return (
         <div className="export-import-panel">
             <ExportSection />
             <ImportSection />
+            <TemplatesSection />
         </div>
     );
 }
