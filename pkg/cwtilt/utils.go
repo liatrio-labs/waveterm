@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 
@@ -285,6 +287,68 @@ func CheckRequiredPorts(config PortConfig) error {
 			return fmt.Errorf("%w: %s port %d is in use", ErrPortInUse, name, port)
 		}
 	}
+
+	return nil
+}
+
+// KillExistingTiltProcesses finds and kills any running tilt processes
+// This is useful when a previous tilt instance didn't clean up properly
+func KillExistingTiltProcesses() error {
+	var cmd *exec.Cmd
+
+	switch runtime.GOOS {
+	case "darwin", "linux":
+		// Use pkill to find and kill tilt processes
+		cmd = exec.Command("pkill", "-9", "-f", "tilt")
+	case "windows":
+		// Use taskkill on Windows
+		cmd = exec.Command("taskkill", "/F", "/IM", "tilt.exe")
+	default:
+		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
+
+	// Run the command - ignore errors since process may not exist
+	_ = cmd.Run()
+
+	// Also try to run tilt down in common locations
+	if tiltPath, err := GetTiltPath(); err == nil {
+		downCmd := exec.Command(tiltPath, "down")
+		// Set a short timeout for tilt down
+		_ = downCmd.Run()
+	}
+
+	// Wait a moment for ports to be released
+	time.Sleep(500 * time.Millisecond)
+
+	return nil
+}
+
+// StopExistingTiltAndCleanup attempts to gracefully stop any existing Tilt instance
+// and clean up resources before starting a new one
+func StopExistingTiltAndCleanup(workDir string) error {
+	// First try graceful shutdown via tilt down
+	if tiltPath, err := GetTiltPath(); err == nil {
+		downCmd := exec.Command(tiltPath, "down")
+		if workDir != "" {
+			downCmd.Dir = workDir
+		}
+		// Give it a reasonable timeout
+		if err := downCmd.Run(); err != nil {
+			// Log but don't fail - we'll try harder methods next
+			fmt.Printf("[cwtilt] tilt down returned: %v\n", err)
+		}
+	}
+
+	// Wait a moment
+	time.Sleep(500 * time.Millisecond)
+
+	// If ports are still in use, force kill
+	if err := KillExistingTiltProcesses(); err != nil {
+		return fmt.Errorf("failed to kill existing tilt processes: %w", err)
+	}
+
+	// Wait for ports to be released
+	time.Sleep(1 * time.Second)
 
 	return nil
 }

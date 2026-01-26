@@ -318,8 +318,19 @@ func (m *TiltManager) Start(ctx context.Context) error {
 
 	// Check if Tilt UI port is available (most common conflict)
 	if !checkPortAvailable(m.portConfig.TiltUI) {
-		log.Printf("[cwtilt] Tilt UI port %d is already in use", m.portConfig.TiltUI)
-		return fmt.Errorf("%w: Tilt UI port %d is already in use (is another Tilt instance running?)", ErrPortInUse, m.portConfig.TiltUI)
+		log.Printf("[cwtilt] Tilt UI port %d is already in use, attempting to stop existing instance", m.portConfig.TiltUI)
+
+		// Try to stop existing tilt instance and clean up
+		if err := StopExistingTiltAndCleanup(m.workDir); err != nil {
+			log.Printf("[cwtilt] Warning: cleanup returned error: %v", err)
+		}
+
+		// Check again after cleanup
+		if !checkPortAvailable(m.portConfig.TiltUI) {
+			log.Printf("[cwtilt] Tilt UI port %d is still in use after cleanup attempt", m.portConfig.TiltUI)
+			return fmt.Errorf("%w: Tilt UI port %d is already in use (cleanup failed - try manually stopping tilt)", ErrPortInUse, m.portConfig.TiltUI)
+		}
+		log.Printf("[cwtilt] Successfully cleaned up existing Tilt instance")
 	}
 
 	m.setStatus(TiltStatusStarting)
