@@ -128,6 +128,30 @@ func MakeBlockShortDesc(block *waveobj.Block) string {
 			return fmt.Sprintf("wave config editor for %q", file)
 		}
 		return "wave config editor"
+	case "cwsessions":
+		// Liatrio Wave sessions manager - shows parallel Claude Code sessions
+		if projectPath, hasPath := block.Meta["cw:projectpath"].(string); hasPath && projectPath != "" {
+			return fmt.Sprintf("Liatrio Wave session manager for project %q - manages parallel Claude Code sessions with git worktree isolation", projectPath)
+		}
+		return "Liatrio Wave session manager - manages parallel Claude Code sessions with git worktree isolation"
+	case "cwgitchanges":
+		// Git changes viewer for a directory
+		if dirPath, hasPath := block.Meta["dirpath"].(string); hasPath && dirPath != "" {
+			return fmt.Sprintf("git changes widget viewing %q - shows staged/unstaged changes and diffs", dirPath)
+		}
+		return "git changes widget - shows staged/unstaged changes and diffs"
+	case "cwcodeview":
+		// Multi-tab code editor
+		if file, hasFile := block.Meta["file"].(string); hasFile && file != "" {
+			connection, hasConnection := block.Meta["connection"].(string)
+			if hasConnection && connection != "" {
+				return fmt.Sprintf("code editor viewing %q on %q - multi-tab editor with markdown preview support", file, connection)
+			}
+			return fmt.Sprintf("code editor viewing %q - multi-tab editor with markdown preview support", file)
+		}
+		return "code editor - multi-tab editor with markdown preview support"
+	case "cwsettings":
+		return "Liatrio Wave settings panel - configures sessions, plugins, MCP servers, and application preferences"
 	default:
 		return fmt.Sprintf("unknown widget with type %q", viewType)
 	}
