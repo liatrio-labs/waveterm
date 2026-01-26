@@ -11,6 +11,39 @@
     gap: 16px;
 }
 
+// Add Server Button (positioned at top right of MCP Servers pane)
+.add-server-btn-corner {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    z-index: 10;
+
+    i {
+        font-size: 10px;
+    }
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
 // ============================================================================
 // Header Section
 // ============================================================================
@@ -390,6 +423,55 @@
     &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+}
+
+// Server Management Section (always visible)
+.tilt-server-management {
+    position: relative;
+    background: var(--block-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 16px;
+
+    .server-section-header {
+        margin-bottom: 12px;
+    }
+}
+
+.servers-stopped-message,
+.servers-empty-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+
+    i {
+        font-size: 14px;
+        color: var(--accent-color);
+    }
+}
+
+.servers-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+
+    .loading-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border-color);
+        border-top-color: var(--accent-color);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
     }
 }
 

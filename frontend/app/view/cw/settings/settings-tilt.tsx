@@ -517,6 +517,59 @@ export function SettingsTilt() {
             {/* API Keys & Secrets Section - Always visible for setup before starting */}
             <EnvRequirementsSection hubStatus={status} />
 
+            {/* Server Management Section - Always visible */}
+            <div className="tilt-server-management">
+                <button
+                    className="add-server-btn-corner"
+                    onClick={openAdd}
+                    disabled={loading || isTransitioning}
+                >
+                    <i className="fa-solid fa-plus" />
+                    Add Server
+                </button>
+                <div className="server-section-header">
+                    <h3>MCP Servers</h3>
+                </div>
+
+                {/* Server Grid when running */}
+                {isRunning && servers.length > 0 && (
+                    <div className="hub-server-grid">
+                        {servers.map((server) => (
+                            <MCPHubServerCard
+                                key={server.name}
+                                server={server}
+                                onToggle={(enabled) => handleToggleServer(server.name, enabled)}
+                                onEdit={() => handleEditServer(server.name)}
+                                disabled={loading || isTransitioning}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* Message when stopped */}
+                {isStopped && (
+                    <div className="servers-stopped-message">
+                        <i className="fa-solid fa-info-circle" />
+                        <span>Start the Hub to see server status. You can add or configure servers now.</span>
+                    </div>
+                )}
+
+                {/* Loading state */}
+                {loading && !isStopped && servers.length === 0 && (
+                    <div className="servers-loading">
+                        <div className="loading-spinner" />
+                        <span>Loading servers...</span>
+                    </div>
+                )}
+
+                {/* Empty state when running */}
+                {isRunning && servers.length === 0 && !loading && (
+                    <div className="servers-empty-message">
+                        <span>No MCP servers configured yet. Click "Add Server" to get started.</span>
+                    </div>
+                )}
+            </div>
+
             {/* Description when stopped */}
             {isStopped && !loading && (
                 <div className="tilt-description">
@@ -536,55 +589,6 @@ export function SettingsTilt() {
                             <code>brew install caddy</code>
                         </div>
                     </div>
-                </div>
-            )}
-
-            {/* Loading state */}
-            {loading && servers.length === 0 && !isStopped && (
-                <div className="tilt-loading">
-                    <div className="loading-spinner" />
-                    <span>Loading MCP servers...</span>
-                </div>
-            )}
-
-            {/* Server Grid */}
-            {isRunning && servers.length > 0 && (
-                <div className="tilt-server-section">
-                    <div className="server-section-header">
-                        <h3>MCP Servers</h3>
-                        <button
-                            className="add-server-btn"
-                            onClick={openAdd}
-                            disabled={loading || isTransitioning}
-                        >
-                            <i className="fa-solid fa-plus" />
-                            Add Server
-                        </button>
-                    </div>
-                    <div className="hub-server-grid">
-                        {servers.map((server) => (
-                            <MCPHubServerCard
-                                key={server.name}
-                                server={server}
-                                onToggle={(enabled) => handleToggleServer(server.name, enabled)}
-                                onEdit={() => handleEditServer(server.name)}
-                                disabled={loading || isTransitioning}
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Empty state when running but no servers */}
-            {isRunning && servers.length === 0 && !loading && (
-                <div className="tilt-empty-servers">
-                    <i className="fa-solid fa-server" />
-                    <h4>No MCP Servers</h4>
-                    <p>Add your first MCP server to the Hub.</p>
-                    <button className="add-server-btn-large" onClick={openAdd}>
-                        <i className="fa-solid fa-plus" />
-                        Add MCP Server
-                    </button>
                 </div>
             )}
 

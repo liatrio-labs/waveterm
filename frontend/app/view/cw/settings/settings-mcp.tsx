@@ -58,6 +58,14 @@ export function SettingsMcp() {
 
     return (
         <div className="settings-category mcp-settings">
+            {/* Add Server button - top right corner */}
+            {servers.length > 0 && (
+                <button className="add-server-btn-corner" onClick={openAdd} disabled={actionLoading}>
+                    <i className="fa-solid fa-plus" />
+                    Add Server
+                </button>
+            )}
+
             {/* Header with stats */}
             <div className="mcp-header">
                 <div className="mcp-stats">
@@ -78,12 +86,6 @@ export function SettingsMcp() {
                     <button className="mcp-refresh-btn" onClick={refresh} disabled={loading}>
                         <i className={clsx("fa-solid fa-sync", { "fa-spin": loading })} />
                     </button>
-                    {servers.length > 0 && (
-                        <button className="add-server-btn-small" onClick={openAdd} disabled={actionLoading}>
-                            <i className="fa-solid fa-plus" />
-                            Add Server
-                        </button>
-                    )}
                 </div>
             </div>
 
