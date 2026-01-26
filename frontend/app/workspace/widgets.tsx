@@ -231,7 +231,20 @@ const SettingsFloatingWindow = memo(
         const menuItems = [
             {
                 icon: "gear",
-                label: "Settings",
+                label: "Liatrio Wave Settings",
+                onClick: () => {
+                    const blockDef: BlockDef = {
+                        meta: {
+                            view: "cwsettings",
+                        },
+                    };
+                    createBlock(blockDef, false, true);
+                    onClose();
+                },
+            },
+            {
+                icon: "sliders",
+                label: "Wave Settings",
                 onClick: () => {
                     const blockDef: BlockDef = {
                         meta: {

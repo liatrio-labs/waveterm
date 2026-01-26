@@ -168,36 +168,6 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
     const [tabIds, setTabIds] = useState<string[]>([]);
     const [dragStartPositions, setDragStartPositions] = useState<number[]>([]);
 
-    const handleToggleSettings = useCallback(() => {
-        const layoutModel = getLayoutModelForStaticTab();
-        if (!layoutModel) return;
-
-        const leafs = globalStore.get(layoutModel.leafs) as any[];
-        if (!leafs) return;
-
-        // Find existing settings block
-        for (const leaf of leafs) {
-            const blockId = leaf?.data?.blockId;
-            if (!blockId) continue;
-
-            const blockAtom = WOS.getWaveObjectAtom<Block>(WOS.makeORef("block", blockId));
-            const blockData = globalStore.get(blockAtom);
-
-            if (blockData?.meta?.view === "cwsettings") {
-                // Settings block exists, close it
-                fireAndForget(() => layoutModel.closeNode(leaf.id));
-                return;
-            }
-        }
-
-        // No settings block found, create one
-        createBlock({
-            meta: {
-                view: "cwsettings",
-            },
-        });
-    }, []);
-
     const [draggingTab, setDraggingTab] = useState<string>();
     const [tabsLoaded, setTabsLoaded] = useState({});
     const [newTabId, setNewTabId] = useState<string | null>(null);
@@ -744,13 +714,6 @@ const TabBar = memo(({ workspace }: TabBarProps) => {
             <div className="tab-bar-right">
                 <SandboxToggle />
                 <TemplateQuickMenu onApplyTemplate={handleApplyTemplate} />
-                <Button
-                    className="ghost"
-                    onClick={handleToggleSettings}
-                    title="Settings (⌘,)"
-                >
-                    <i className="fa-solid fa-gear" />
-                </Button>
                 <UpdateStatusBanner ref={updateStatusBannerRef} />
                 <ConfigErrorIcon buttonRef={configErrorButtonRef} />
                 <div
