@@ -28,6 +28,7 @@ import (
 	"github.com/greggcoppen/claudewave/app/pkg/cwgit"
 	"github.com/greggcoppen/claudewave/app/pkg/cwmcp"
 	"github.com/greggcoppen/claudewave/app/pkg/cwmonitor"
+	"github.com/greggcoppen/claudewave/app/pkg/cwtilt"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplatform"
 	"github.com/greggcoppen/claudewave/app/pkg/cwplugins"
 	"github.com/greggcoppen/claudewave/app/pkg/cwskills"
@@ -605,7 +606,7 @@ func (ws *WshServer) GetWaveAIModeConfigCommand(ctx context.Context) (wconfig.AI
 	return wconfig.AIModeConfigUpdate{Configs: resolvedConfigs}, nil
 }
 
-// Liatrio Code config handlers
+// Liatrio Wave config handlers
 func (ws *WshServer) CWConfigGetCommand(ctx context.Context) (*wconfig.CWConfigType, error) {
 	return wconfig.GetCWConfig()
 }
@@ -618,7 +619,7 @@ func (ws *WshServer) CWConfigGetProjectCommand(ctx context.Context, data wshrpc.
 	return wconfig.GetProjectCWConfig(data.ProjectPath)
 }
 
-// Liatrio Code worktree handlers
+// Liatrio Wave worktree handlers
 func (ws *WshServer) WorktreeCreateCommand(ctx context.Context, data wshrpc.CommandWorktreeCreateData) (*wshrpc.WorktreeInfoData, error) {
 	info, err := cwworktree.WorktreeCreate(cwworktree.WorktreeCreateParams{
 		ProjectPath: data.ProjectPath,
@@ -2230,6 +2231,10 @@ func (ws *WshServer) WaveAIGetToolDiffCommand(ctx context.Context, data wshrpc.C
 	}, nil
 }
 
+func (ws *WshServer) TestAIConnectionCommand(ctx context.Context, data wshrpc.CommandTestAIConnectionData) (*wshrpc.CommandTestAIConnectionRtnData, error) {
+	return testAIConnection(ctx, data)
+}
+
 var wshActivityRe = regexp.MustCompile(`^[a-z:#]+$`)
 
 func (ws *WshServer) WshActivityCommand(ctx context.Context, data map[string]int) error {
@@ -2408,7 +2413,7 @@ func (ws *WshServer) GetSecretsLinuxStorageBackendCommand(ctx context.Context) (
 	return backend, nil
 }
 
-// Liatrio Code plugin handlers
+// Liatrio Wave plugin handlers
 
 func (ws *WshServer) PluginListAvailableCommand(ctx context.Context) ([]wshrpc.PluginData, error) {
 	pm, err := cwplugins.NewPluginManager()
@@ -2683,6 +2688,298 @@ func convertMCPConfig(c cwmcp.MCPServerConfig) wshrpc.MCPServerConfigData {
 		Args:    c.Args,
 		Env:     c.Env,
 	}
+}
+
+// ============================================================================
+// Tilt Hub Commands
+// ============================================================================
+
+func (ws *WshServer) TiltStartCommand(ctx context.Context) error {
+	manager := cwtilt.GetTiltManager()
+	err := manager.Start(ctx)
+	if err != nil {
+		log.Printf("[TiltStartCommand] Failed to start MCP Hub: %v", err)
+	}
+	return err
+}
+
+func (ws *WshServer) TiltStopCommand(ctx context.Context) error {
+	manager := cwtilt.GetTiltManager()
+	return manager.Stop(ctx)
+}
+
+func (ws *WshServer) TiltRestartCommand(ctx context.Context) error {
+	manager := cwtilt.GetTiltManager()
+	return manager.Restart(ctx)
+}
+
+func (ws *WshServer) TiltStatusCommand(ctx context.Context) (*wshrpc.TiltHubStatusData, error) {
+	manager := cwtilt.GetTiltManager()
+	hubStatus := manager.GetHubStatus()
+
+	// Convert MCPEndpoints to TiltMCPServerData
+	var mcpServers []wshrpc.TiltMCPServerData
+	for _, ep := range hubStatus.MCPServers {
+		mcpServers = append(mcpServers, wshrpc.TiltMCPServerData{
+			Name:        ep.Name,
+			Type:        ep.Type,
+			URL:         ep.URL,
+			Port:        ep.Port,
+			Status:      ep.Status,
+			Description: ep.Description,
+			LastChecked: ep.LastChecked.Unix(),
+			Error:       ep.Error,
+		})
+	}
+
+	return &wshrpc.TiltHubStatusData{
+		Status:       string(hubStatus.Status),
+		MCPServers:   mcpServers,
+		TiltUIURL:    hubStatus.TiltUIURL,
+		InspectorURL: hubStatus.InspectorURL,
+		HubIndexURL:  hubStatus.HubIndexURL,
+		Error:        hubStatus.Error,
+		StartedAt:    hubStatus.StartedAt.Unix(),
+	}, nil
+}
+
+func (ws *WshServer) TiltToggleMCPCommand(ctx context.Context, data wshrpc.CommandTiltToggleMCPData) error {
+	manager := cwtilt.GetTiltManager()
+	return manager.ToggleMCPServer(data.ServerName, data.Enabled)
+}
+
+func (ws *WshServer) TiltGetLogsCommand(ctx context.Context, data wshrpc.CommandTiltGetLogsData) ([]string, error) {
+	manager := cwtilt.GetTiltManager()
+	limit := data.Limit
+	if limit <= 0 {
+		limit = 100
+	}
+	return manager.GetLogs(limit), nil
+}
+
+func (ws *WshServer) TiltInitWorkspaceCommand(ctx context.Context) error {
+	manager := cwtilt.GetTiltManager()
+	return manager.InitWorkspace()
+}
+
+func (ws *WshServer) TiltGetEnvVarsCommand(ctx context.Context) (*wshrpc.TiltEnvVarsData, error) {
+	manager := cwtilt.GetTiltManager()
+	status, err := manager.GetEnvVarsStatus()
+	if err != nil {
+		return nil, err
+	}
+
+	envVars := make([]wshrpc.TiltEnvVarStatusData, len(status))
+	for i, s := range status {
+		envVars[i] = wshrpc.TiltEnvVarStatusData{
+			Key:        s.Key,
+			IsSecret:   s.IsSecret,
+			SecretName: s.SecretName,
+			SecretSet:  s.SecretSet,
+			HasValue:   s.SecretSet || (!s.IsSecret && s.Key != ""),
+		}
+	}
+
+	return &wshrpc.TiltEnvVarsData{EnvVars: envVars}, nil
+}
+
+func (ws *WshServer) TiltSetEnvVarCommand(ctx context.Context, data wshrpc.CommandTiltSetEnvVarData) error {
+	manager := cwtilt.GetTiltManager()
+	return manager.UpdateEnvVar(data.Key, data.Value)
+}
+
+func (ws *WshServer) TiltSetEnvVarFromSecretCommand(ctx context.Context, data wshrpc.CommandTiltSetEnvVarFromSecretData) error {
+	manager := cwtilt.GetTiltManager()
+	return manager.SetEnvVarFromSecret(data.Key, data.SecretName)
+}
+
+func (ws *WshServer) TiltGetEnvRequirementsCommand(ctx context.Context) ([]wshrpc.TiltEnvRequirementData, error) {
+	manager := cwtilt.GetTiltManager()
+	requirements, err := manager.GetEnvVarRequirements()
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]wshrpc.TiltEnvRequirementData, len(requirements))
+	for i, r := range requirements {
+		result[i] = wshrpc.TiltEnvRequirementData{
+			Key:        r.Key,
+			IsSet:      r.IsSet,
+			IsSecret:   r.IsSecret,
+			SecretName: r.SecretName,
+			SecretSet:  r.SecretSet,
+			UsedBy:     r.UsedBy,
+		}
+	}
+
+	return result, nil
+}
+
+// ============================================================================
+// Tilt Hub MCP Server CRUD Commands
+// ============================================================================
+
+func (ws *WshServer) TiltAddMCPServerCommand(ctx context.Context, data wshrpc.CommandTiltAddMCPServerData) error {
+	manager := cwtilt.GetTiltManager()
+
+	// Convert RPC data to internal config
+	serverConfig := cwtilt.MCPServerConfig{
+		Enabled:         data.Config.Enabled,
+		Port:            data.Config.Port,
+		MCPCommand:      data.Config.MCPCommand,
+		Description:     data.Config.Description,
+		EnvVars:         data.Config.EnvVars,
+		HealthEndpoint:  data.Config.HealthEndpoint,
+		SupergatewayCmd: data.Config.SupergatewayCmd,
+		ServeDir:        data.Config.ServeDir,
+		Labels:          data.Config.Labels,
+	}
+
+	return manager.AddMCPServer(data.Name, serverConfig)
+}
+
+func (ws *WshServer) TiltUpdateMCPServerCommand(ctx context.Context, data wshrpc.CommandTiltUpdateMCPServerData) error {
+	manager := cwtilt.GetTiltManager()
+
+	// Convert RPC data to internal config
+	serverConfig := cwtilt.MCPServerConfig{
+		Enabled:         data.Config.Enabled,
+		Port:            data.Config.Port,
+		MCPCommand:      data.Config.MCPCommand,
+		Description:     data.Config.Description,
+		EnvVars:         data.Config.EnvVars,
+		HealthEndpoint:  data.Config.HealthEndpoint,
+		SupergatewayCmd: data.Config.SupergatewayCmd,
+		ServeDir:        data.Config.ServeDir,
+		Labels:          data.Config.Labels,
+	}
+
+	return manager.UpdateMCPServer(data.Name, serverConfig)
+}
+
+func (ws *WshServer) TiltRemoveMCPServerCommand(ctx context.Context, data wshrpc.CommandTiltRemoveMCPServerData) error {
+	manager := cwtilt.GetTiltManager()
+	return manager.RemoveMCPServer(data.Name)
+}
+
+func (ws *WshServer) TiltGetMCPServerCommand(ctx context.Context, data wshrpc.CommandTiltGetMCPServerData) (*wshrpc.TiltMCPServerConfigData, error) {
+	manager := cwtilt.GetTiltManager()
+	config, err := manager.GetMCPServerConfig(data.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.TiltMCPServerConfigData{
+		Enabled:         config.Enabled,
+		Port:            config.Port,
+		MCPCommand:      config.MCPCommand,
+		Description:     config.Description,
+		EnvVars:         config.EnvVars,
+		HealthEndpoint:  config.HealthEndpoint,
+		SupergatewayCmd: config.SupergatewayCmd,
+		ServeDir:        config.ServeDir,
+		Labels:          config.Labels,
+	}, nil
+}
+
+func (ws *WshServer) TiltListMCPServersCommand(ctx context.Context) (map[string]wshrpc.TiltMCPServerConfigData, error) {
+	manager := cwtilt.GetTiltManager()
+	servers, err := manager.ListMCPServers()
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]wshrpc.TiltMCPServerConfigData)
+	for name, config := range servers {
+		result[name] = wshrpc.TiltMCPServerConfigData{
+			Enabled:         config.Enabled,
+			Port:            config.Port,
+			MCPCommand:      config.MCPCommand,
+			Description:     config.Description,
+			EnvVars:         config.EnvVars,
+			HealthEndpoint:  config.HealthEndpoint,
+			SupergatewayCmd: config.SupergatewayCmd,
+			ServeDir:        config.ServeDir,
+			Labels:          config.Labels,
+		}
+	}
+
+	return result, nil
+}
+
+// ============================================================================
+// Session MCP Commands
+// ============================================================================
+
+func (ws *WshServer) SessionMCPGenerateCommand(ctx context.Context, data wshrpc.CommandSessionMCPGenerateData) (*wshrpc.SessionMCPConfigData, error) {
+	config, err := cwmcp.GenerateSessionMCPConfig(cwmcp.SessionMCPConfig{
+		Servers:     data.Servers,
+		UseHub:      data.UseHub,
+		ProjectPath: data.ProjectPath,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to RPC data type
+	mcpServers := make(map[string]wshrpc.SessionMCPServerConfigData)
+	for name, cfg := range config.MCPServers {
+		mcpServers[name] = wshrpc.SessionMCPServerConfigData{
+			Type:    cfg.Type,
+			Command: cfg.Command,
+			Args:    cfg.Args,
+			URL:     cfg.URL,
+			Env:     cfg.Env,
+		}
+	}
+
+	return &wshrpc.SessionMCPConfigData{
+		MCPServers: mcpServers,
+	}, nil
+}
+
+func (ws *WshServer) SessionMCPUpdateToHubCommand(ctx context.Context, data wshrpc.CommandSessionMCPPathData) error {
+	return cwmcp.UpdateSessionMCPToHub(data.SessionPath)
+}
+
+func (ws *WshServer) SessionMCPUpdateToLocalCommand(ctx context.Context, data wshrpc.CommandSessionMCPPathData) error {
+	return cwmcp.UpdateSessionMCPToLocal(data.SessionPath)
+}
+
+func (ws *WshServer) SessionMCPGetAvailableCommand(ctx context.Context) ([]wshrpc.MCPServerInfoData, error) {
+	servers := cwmcp.GetAvailableMCPServers()
+
+	var result []wshrpc.MCPServerInfoData
+	for _, s := range servers {
+		result = append(result, wshrpc.MCPServerInfoData{
+			Name:        s.Name,
+			Source:      s.Source,
+			Available:   s.Available,
+			Description: s.Description,
+			Category:    s.Category,
+		})
+	}
+
+	return result, nil
+}
+
+func (ws *WshServer) SessionMCPResolveCommand(ctx context.Context, data wshrpc.CommandSessionMCPResolveData) (*wshrpc.ResolvedEndpointData, error) {
+	resolver := cwmcp.GetResolver()
+	endpoint, err := resolver.ResolveEndpoint(data.ServerName, data.ProjectPath, data.ForceStdio)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.ResolvedEndpointData{
+		Name:         endpoint.Name,
+		Type:         string(endpoint.Type),
+		URL:          endpoint.URL,
+		Command:      endpoint.Command,
+		Args:         endpoint.Args,
+		Env:          endpoint.Env,
+		ViaHub:       endpoint.ViaHub,
+		HubServerURL: endpoint.HubServerURL,
+	}, nil
 }
 
 // ============================================================================

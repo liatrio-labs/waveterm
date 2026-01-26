@@ -1,0 +1,323 @@
+// Copyright 2025, Gregg Coppen
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Session MCP Status Styles
+ */
+
+.session-mcp-status {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    background: var(--block-bg-color);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+
+    &.compact {
+        padding: 6px 10px;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+// ============================================================================
+// Header
+// ============================================================================
+
+.mcp-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h4 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--main-text-color);
+    }
+}
+
+.mcp-hub-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--success-color);
+
+    i {
+        font-size: 10px;
+    }
+}
+
+// ============================================================================
+// Summary Stats
+// ============================================================================
+
+.mcp-status-summary {
+    display: flex;
+    gap: 16px;
+}
+
+.mcp-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .stat-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--main-text-color);
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: var(--secondary-text-color);
+    }
+
+    &.hub .stat-value {
+        color: var(--success-color);
+    }
+
+    &.local .stat-value {
+        color: var(--accent-color);
+    }
+}
+
+// ============================================================================
+// Compact View
+// ============================================================================
+
+.mcp-status-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mcp-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+
+    i {
+        font-size: 10px;
+    }
+
+    &.hub {
+        background: rgba(var(--success-color-rgb), 0.15);
+        color: var(--success-color);
+    }
+
+    &.local {
+        background: rgba(var(--accent-color-rgb), 0.15);
+        color: var(--accent-color);
+    }
+}
+
+.mcp-count {
+    font-size: 11px;
+    color: var(--secondary-text-color);
+}
+
+// ============================================================================
+// Actions
+// ============================================================================
+
+.mcp-status-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.mcp-switch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--secondary-text-color);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    i {
+        font-size: 11px;
+    }
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--main-text-color);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &.active {
+        background: rgba(var(--accent-color-rgb), 0.15);
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+}
+
+// ============================================================================
+// Server List
+// ============================================================================
+
+.mcp-server-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.mcp-server-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid var(--border-color);
+
+    &.hub {
+        border-left-color: var(--success-color);
+    }
+
+    &.template {
+        border-left-color: var(--accent-color);
+    }
+
+    .server-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .server-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--main-text-color);
+    }
+
+    .server-source {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        color: var(--secondary-text-color);
+
+        i {
+            font-size: 9px;
+        }
+    }
+
+    .server-description {
+        font-size: 11px;
+        color: var(--secondary-text-color);
+        line-height: 1.4;
+    }
+}
+
+// ============================================================================
+// Empty & Loading States
+// ============================================================================
+
+.mcp-status-loading,
+.mcp-status-error,
+.mcp-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    text-align: center;
+
+    i {
+        font-size: 20px;
+        color: var(--secondary-text-color);
+        opacity: 0.5;
+    }
+
+    p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--secondary-text-color);
+
+        &.hint {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+    }
+}
+
+.mcp-status-loading {
+    flex-direction: row;
+
+    i {
+        font-size: 14px;
+        opacity: 1;
+    }
+
+    span {
+        font-size: 12px;
+        color: var(--secondary-text-color);
+    }
+}
+
+.mcp-status-error {
+    flex-direction: row;
+
+    i {
+        font-size: 14px;
+        color: var(--error-color);
+        opacity: 1;
+    }
+
+    span {
+        font-size: 12px;
+        color: var(--error-color);
+    }
+}
+
+// ============================================================================
+// Session MCP Badge (for headers)
+// ============================================================================
+
+.session-mcp-badge {
+    display: flex;
+    align-items: center;
+
+    .badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 500;
+
+        i {
+            font-size: 9px;
+        }
+
+        &.hub {
+            background: rgba(var(--success-color-rgb), 0.15);
+            color: var(--success-color);
+        }
+
+        &.local {
+            background: rgba(var(--accent-color-rgb), 0.15);
+            color: var(--accent-color);
+        }
+    }
+}

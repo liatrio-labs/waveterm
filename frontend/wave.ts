@@ -40,7 +40,7 @@ import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 
 const platform = getApi().getPlatform();
-const APP_NAME = "Liatrio Code";
+const APP_NAME = "Liatrio Wave";
 
 function getAppTitle(workspaceName?: string): string {
     const devSuffix = isDev() ? " (Dev)" : "";

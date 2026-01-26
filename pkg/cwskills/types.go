@@ -1,7 +1,7 @@
 // Copyright 2025, Gregg Coppen
 // SPDX-License-Identifier: Apache-2.0
 
-// Package cwskills provides skills.sh integration for Liatrio Code
+// Package cwskills provides skills.sh integration for Liatrio Wave
 package cwskills
 
 import "errors"

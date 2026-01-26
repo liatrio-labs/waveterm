@@ -1,0 +1,359 @@
+// Copyright 2025, Command Line Inc.
+// SPDX-License-Identifier: Apache-2.0
+
+// BYOK (Bring Your Own Key) Wizard Styles
+
+.byok-wizard-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(8px);
+}
+
+.byok-wizard {
+    width: 90%;
+    max-width: 520px;
+    background: var(--panel-bg-color);
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+// Progress Dots (reusing from welcomewizard)
+.wizard-progress {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    background: var(--block-bg-color);
+}
+
+.wizard-progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--secondary-text-color);
+    opacity: 0.3;
+    transition: all 0.3s ease;
+
+    &.active {
+        background: var(--accent-color, #E57B3A);
+        opacity: 1;
+        transform: scale(1.25);
+    }
+
+    &.completed {
+        background: var(--accent-color, #E57B3A);
+        opacity: 0.6;
+    }
+}
+
+// Content
+.wizard-content {
+    padding: 32px;
+}
+
+.wizard-step {
+    text-align: center;
+}
+
+.wizard-step-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-color, #E57B3A);
+    border-radius: 16px;
+    font-size: 28px;
+    color: white;
+
+    &.success {
+        background: #22c55e;
+    }
+}
+
+.wizard-step h2 {
+    margin: 0 0 12px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.wizard-step-description {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: var(--secondary-text-color);
+    line-height: 1.6;
+}
+
+// Form Elements (reusing from welcomewizard)
+.wizard-form {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.wizard-form-group {
+    margin-bottom: 20px;
+
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+}
+
+.wizard-form-hint {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+    margin-bottom: 12px;
+}
+
+.wizard-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent-color, #E57B3A);
+    }
+}
+
+// Actions (reusing from welcomewizard)
+.wizard-step-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+// ============================================================================
+// BYOK-Specific Styles
+// ============================================================================
+
+// Provider Grid
+.byok-provider-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+
+    @media (max-width: 480px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.byok-provider-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--block-bg-color);
+    color: var(--main-text-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    i {
+        font-size: 28px;
+        opacity: 0.7;
+    }
+
+    &:hover {
+        border-color: var(--accent-color, #E57B3A);
+        background: rgba(229, 123, 58, 0.05);
+
+        i {
+            opacity: 1;
+        }
+    }
+
+    &.active {
+        border-color: var(--accent-color, #E57B3A);
+        background: rgba(229, 123, 58, 0.1);
+
+        i {
+            color: var(--accent-color, #E57B3A);
+            opacity: 1;
+        }
+    }
+}
+
+.byok-provider-name {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+}
+
+// Input Styles
+.byok-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--block-bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--main-text-color);
+    font-size: 14px;
+    transition: border-color 0.15s ease;
+
+    &::placeholder {
+        color: var(--secondary-text-color);
+        opacity: 0.7;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: var(--accent-color, #E57B3A);
+    }
+
+    &.byok-input-error {
+        border-color: #ef4444;
+    }
+
+    &.byok-input-custom-model {
+        margin-top: 12px;
+    }
+}
+
+.byok-key-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .byok-input {
+        padding-right: 48px;
+    }
+}
+
+.byok-toggle-visibility {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.15s ease;
+
+    &:hover {
+        color: var(--main-text-color);
+    }
+}
+
+.byok-validation-error {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #ef4444;
+}
+
+.byok-help-link {
+    color: var(--accent-color, #E57B3A);
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+
+    i {
+        font-size: 10px;
+        margin-right: 4px;
+    }
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+// Test Connection Section
+.byok-test-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--block-bg-color);
+    border-radius: 8px;
+    margin-top: 20px;
+
+    .button {
+        min-width: 180px;
+    }
+}
+
+.byok-test-error {
+    font-size: 12px;
+    color: #ef4444;
+    text-align: center;
+    margin: 0;
+}
+
+// Model Grid
+.byok-model-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.byok-model-option {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--block-bg-color);
+    color: var(--main-text-color);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+
+    &:hover {
+        border-color: var(--accent-color, #E57B3A);
+    }
+
+    &.active {
+        border-color: var(--accent-color, #E57B3A);
+        background: rgba(229, 123, 58, 0.1);
+    }
+}
+
+// Summary Section
+.byok-summary {
+    background: var(--block-bg-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.byok-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid var(--border-color);
+    }
+}
+
+.byok-summary-label {
+    font-size: 13px;
+    color: var(--secondary-text-color);
+}
+
+.byok-summary-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+
+    i {
+        font-size: 16px;
+        color: var(--accent-color, #E57B3A);
+    }
+}

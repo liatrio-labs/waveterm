@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Liatrio Code state management using Jotai atoms
+ * Liatrio Wave state management using Jotai atoms
  */
 
 import { atom, PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";

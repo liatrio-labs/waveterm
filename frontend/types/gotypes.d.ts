@@ -796,6 +796,22 @@ declare global {
         modifiedcontents64: string;
     };
 
+    // wshrpc.CommandTestAIConnectionData
+    type CommandTestAIConnectionData = {
+        provider: string;
+        apikey: string;
+        endpoint?: string;
+        resourcename?: string;
+        model?: string;
+    };
+
+    // wshrpc.CommandTestAIConnectionRtnData
+    type CommandTestAIConnectionRtnData = {
+        success: boolean;
+        error?: string;
+        models?: string[];
+    };
+
     // wshrpc.CommandWaveAIToolApproveData
     type CommandWaveAIToolApproveData = {
         toolcallid: string;
@@ -1270,6 +1286,165 @@ declare global {
         dependencies?: string[];
         envVars?: string[];
         config: MCPServerConfigData;
+    };
+
+    // wshrpc.CommandTiltToggleMCPData
+    type CommandTiltToggleMCPData = {
+        servername: string;
+        enabled: boolean;
+    };
+
+    // wshrpc.CommandTiltGetLogsData
+    type CommandTiltGetLogsData = {
+        limit?: number;
+    };
+
+    // wshrpc.TiltHubStatusData
+    type TiltHubStatusData = {
+        status: string;
+        mcpservers: TiltMCPServerData[];
+        tiltuiurl: string;
+        inspectorurl: string;
+        hubindexurl: string;
+        error?: string;
+        startedat?: number;
+    };
+
+    // wshrpc.TiltMCPServerData
+    type TiltMCPServerData = {
+        name: string;
+        type: string;
+        url: string;
+        port: number;
+        status: string;
+        description?: string;
+        lastchecked?: number;
+        error?: string;
+    };
+
+    // wshrpc.CommandTiltSetEnvVarData
+    type CommandTiltSetEnvVarData = {
+        key: string;
+        value: string;
+    };
+
+    // wshrpc.CommandTiltSetEnvVarFromSecretData
+    type CommandTiltSetEnvVarFromSecretData = {
+        key: string;
+        secretname: string;
+    };
+
+    // wshrpc.TiltEnvVarsData
+    type TiltEnvVarsData = {
+        envvars: TiltEnvVarStatusData[];
+    };
+
+    // wshrpc.TiltEnvVarStatusData
+    type TiltEnvVarStatusData = {
+        key: string;
+        issecret: boolean;
+        secretname?: string;
+        secretset: boolean;
+        hasvalue: boolean;
+    };
+
+    // wshrpc.TiltEnvRequirementData
+    type TiltEnvRequirementData = {
+        key: string;
+        isset: boolean;
+        issecret: boolean;
+        secretname?: string;
+        secretset: boolean;
+        usedby: string[];
+    };
+
+    // wshrpc.CommandTiltAddMCPServerData
+    type CommandTiltAddMCPServerData = {
+        name: string;
+        config: TiltMCPServerConfigData;
+    };
+
+    // wshrpc.CommandTiltUpdateMCPServerData
+    type CommandTiltUpdateMCPServerData = {
+        name: string;
+        config: TiltMCPServerConfigData;
+    };
+
+    // wshrpc.CommandTiltRemoveMCPServerData
+    type CommandTiltRemoveMCPServerData = {
+        name: string;
+    };
+
+    // wshrpc.CommandTiltGetMCPServerData
+    type CommandTiltGetMCPServerData = {
+        name: string;
+    };
+
+    // wshrpc.TiltMCPServerConfigData
+    type TiltMCPServerConfigData = {
+        enabled?: boolean;
+        port?: number;
+        mcpcommand: string;
+        description?: string;
+        envvars?: string[];
+        healthendpoint?: string;
+        supergatewaycmd?: string;
+        servedir?: string;
+        labels?: string[];
+    };
+
+    // wshrpc.CommandSessionMCPGenerateData
+    type CommandSessionMCPGenerateData = {
+        servers: string[];
+        usehub: boolean;
+        projectpath: string;
+    };
+
+    // wshrpc.CommandSessionMCPPathData
+    type CommandSessionMCPPathData = {
+        sessionpath: string;
+    };
+
+    // wshrpc.CommandSessionMCPResolveData
+    type CommandSessionMCPResolveData = {
+        servername: string;
+        projectpath?: string;
+        forcestdio?: boolean;
+    };
+
+    // wshrpc.SessionMCPConfigData
+    type SessionMCPConfigData = {
+        mcpservers: { [key: string]: SessionMCPServerConfigData };
+    };
+
+    // wshrpc.SessionMCPServerConfigData
+    type SessionMCPServerConfigData = {
+        type?: string;
+        command?: string;
+        args?: string[];
+        url?: string;
+        env?: { [key: string]: string };
+    };
+
+    // wshrpc.MCPServerInfoData
+    type MCPServerInfoData = {
+        name: string;
+        source: string;
+        available: boolean;
+        description?: string;
+        category?: string;
+    };
+
+    // wshrpc.ResolvedEndpointData
+    type ResolvedEndpointData = {
+        name: string;
+        type: string;
+        url?: string;
+        command?: string;
+        args?: string[];
+        env?: { [key: string]: string };
+        viahub: boolean;
+        hubserverurl?: string;
     };
 
     // waveobj.MetaTSType

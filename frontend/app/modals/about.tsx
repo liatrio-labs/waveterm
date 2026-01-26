@@ -21,7 +21,7 @@ const AboutModal = ({}: AboutModalProps) => {
             <div className="flex flex-col gap-[26px] w-full">
                 <div className="flex flex-col items-center justify-center gap-4 self-stretch w-full text-center">
                     <LiatrioLogo className="h-12" />
-                    <div className="text-[25px]">Liatrio Code</div>
+                    <div className="text-[25px]">Liatrio Wave</div>
                     <div className="leading-5">
                         AI-Native Development Environment
                         <br />

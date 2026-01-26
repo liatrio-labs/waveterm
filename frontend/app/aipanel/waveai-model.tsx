@@ -7,6 +7,7 @@ import {
     WaveUIMessage,
     WaveUIMessagePart,
 } from "@/app/aipanel/aitypes";
+import { openBYOKWizard } from "@/app/modals/byokwizard";
 import { FocusManager } from "@/app/store/focusManager";
 import { atoms, createBlock, getOrefMetaKeyAtom, getSettingsKeyAtom } from "@/app/store/global";
 import { globalStore } from "@/app/store/jotaiStore";
@@ -682,5 +683,42 @@ export class WaveAIModel {
             return;
         }
         WorkspaceLayoutModel.getInstance().setAIPanelVisible(false);
+    }
+
+    /**
+     * Check if an API key exists for a given secret name
+     */
+    async checkApiKeyExists(secretName: string): Promise<boolean> {
+        try {
+            const names = await RpcApi.GetSecretsNamesCommand(TabRpcClient);
+            return names?.includes(secretName) ?? false;
+        } catch (error) {
+            console.error("Failed to check API key existence:", error);
+            return false;
+        }
+    }
+
+    /**
+     * Check if the current AI mode requires an API key that is missing
+     */
+    async checkCurrentModeHasApiKey(): Promise<boolean> {
+        const currentMode = globalStore.get(this.currentAIMode);
+        const aiModeConfigs = globalStore.get(this.aiModeConfigs);
+        const config = aiModeConfigs?.[currentMode];
+
+        if (!config) return true; // Mode doesn't exist, assume valid
+
+        // Check if mode uses a secret for API token
+        const secretName = config["ai:apitokensecretname"];
+        if (!secretName) return true; // No secret required
+
+        return this.checkApiKeyExists(secretName);
+    }
+
+    /**
+     * Open the BYOK wizard to add an API key
+     */
+    openBYOKWizard() {
+        openBYOKWizard();
     }
 }

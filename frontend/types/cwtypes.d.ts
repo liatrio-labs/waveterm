@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Liatrio Code session types
+ * Liatrio Wave session types
  */
 
 declare global {
-    // Liatrio Code Session
+    // Liatrio Wave Session
     interface CWSession {
         id: string;
         name: string;
@@ -31,7 +31,7 @@ declare global {
     // Session status enum values
     type CWSessionStatus = "idle" | "running" | "waiting" | "error";
 
-    // Liatrio Code configuration
+    // Liatrio Wave configuration
     interface CWConfig {
         worktreesdir: string;
         defaultbranchprefix: string;
@@ -59,7 +59,7 @@ declare global {
         isclean: boolean;
     }
 
-    // Liatrio Code project state
+    // Liatrio Wave project state
     interface CWProjectState {
         projectPath: string;
         sessions: CWSession[];

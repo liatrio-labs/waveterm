@@ -14,8 +14,8 @@ import (
 
 var worktreeCmd = &cobra.Command{
 	Use:   "worktree",
-	Short: "Git worktree management for Liatrio Code sessions",
-	Long:  "Commands for managing git worktrees that back Liatrio Code sessions",
+	Short: "Git worktree management for Liatrio Wave sessions",
+	Long:  "Commands for managing git worktrees that back Liatrio Wave sessions",
 }
 
 var worktreeCreateCmd = &cobra.Command{

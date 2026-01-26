@@ -109,7 +109,7 @@ const NewWorkstationModal: React.FC<NewWorkstationModalProps> = () => {
     return (
         <Modal className="new-workstation-modal" onClose={handleClose}>
             <div className="new-workstation-modal-content">
-                <h2 className="new-workstation-modal-title">New Liatrio Code Workstation</h2>
+                <h2 className="new-workstation-modal-title">New Liatrio Wave Workstation</h2>
                 <p className="new-workstation-modal-description">
                     Select a git repository to create parallel working sessions
                 </p>

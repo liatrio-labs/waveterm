@@ -7,7 +7,8 @@ import * as electron from "electron";
 import { fireAndForget } from "../frontend/util/util";
 import { focusedBuilderWindow, getBuilderWindowById } from "./emain-builder";
 import { openBuilderWindow } from "./emain-ipc";
-import { isDev, unamePlatform } from "./emain-platform";
+import * as path from "path";
+import { getElectronAppBasePath, isDev, unamePlatform } from "./emain-platform";
 import { clearTabCache } from "./emain-tabview";
 import { decreaseZoomLevel, increaseZoomLevel } from "./emain-util";
 import {
@@ -137,7 +138,7 @@ function makeFileMenu(
             click: () => fireAndForget(callbacks.createNewWaveWindow),
         },
         {
-            label: "New Liatrio Code Workstation...",
+            label: "New Liatrio Wave Workstation...",
             accelerator: unamePlatform === "darwin" ? "Command+Shift+W" : "Alt+Shift+W",
             click: (_, window) => {
                 (getWindowWebContents(window) ?? webContents)?.send("menu-item-new-workstation");
@@ -189,7 +190,7 @@ function makeFileMenu(
 function makeAppMenuItems(webContents: electron.WebContents): Electron.MenuItemConstructorOptions[] {
     const appMenuItems: Electron.MenuItemConstructorOptions[] = [
         {
-            label: "About Liatrio Code",
+            label: "About Liatrio Wave",
             click: (_, window) => {
                 (getWindowWebContents(window) ?? webContents)?.send("menu-item-about");
             },
@@ -510,6 +511,22 @@ const dockMenu = electron.Menu.buildFromTemplate([
 function makeDockTaskbar() {
     if (unamePlatform == "darwin") {
         electron.app.dock.setMenu(dockMenu);
+        // Set dock icon (especially needed for dev mode where the app bundle icon isn't used)
+        // In dev mode, getElectronAppBasePath() returns dist/, so we go up one level to reach build/
+        const iconPath = isDev
+            ? path.join(getElectronAppBasePath(), "..", "build/icons/256x256.png")
+            : path.join(getElectronAppBasePath(), "build/icons/256x256.png");
+        try {
+            const icon = electron.nativeImage.createFromPath(iconPath);
+            if (!icon.isEmpty()) {
+                electron.app.dock.setIcon(icon);
+                console.log("Dock icon set successfully from:", iconPath);
+            } else {
+                console.error("Failed to load dock icon - image is empty:", iconPath);
+            }
+        } catch (err) {
+            console.error("Error setting dock icon:", err);
+        }
     }
 }
 

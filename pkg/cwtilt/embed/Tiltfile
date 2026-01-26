@@ -1,0 +1,214 @@
+# MCP Hub - Tiltfile
+# Embedded version for Liatrio Wave desktop app
+# Based on mcp-localhost: https://github.com/liatrio-labs/mcp-localhost
+
+# Note: Environment variables (including .env) are loaded by the Go backend
+# and passed to Tilt via the process environment. No dotenv extension needed.
+
+# Port configuration (from environment variables passed by Go backend)
+caddy_public_port = int(os.getenv('CADDY_PUBLIC_PORT', '9101'))
+caddy_admin_port = int(os.getenv('CADDY_ADMIN_PORT', '9102'))
+inspector_ui_port = int(os.getenv('MCP_INSPECTOR_UI_PORT', '9103'))
+inspector_proxy_port = int(os.getenv('MCP_INSPECTOR_PROXY_PORT', '9104'))
+tilt_ui_port = int(os.getenv('TILT_UI_PORT', '10350'))
+
+def replace_port_placeholders(value):
+    if type(value) != "string":
+        return value
+
+    placeholders = {
+        '{caddy_public_port}': str(caddy_public_port),
+        '{caddy_admin_port}': str(caddy_admin_port),
+        '{inspector_ui_port}': str(inspector_ui_port),
+        '{inspector_proxy_port}': str(inspector_proxy_port),
+        '{tilt_ui_port}': str(tilt_ui_port),
+    }
+
+    for placeholder, replacement in placeholders.items():
+        value = value.replace(placeholder, replacement)
+
+    return value
+
+# Read and parse configuration file
+config_file = os.getenv('MCP_CONFIG_FILE', 'mcp-config.yaml')
+if not os.path.exists(config_file):
+    fail('Configuration file [%s] does not exist' % config_file)
+print('Using configuration file [%s]' % config_file)
+config = read_yaml(config_file)
+
+# Auto-reload mcp-config.yaml changes
+watch_file(config_file)
+
+# Validation function
+def validate_service(category, name, service):
+    # Skip validation for disabled services
+    if not service.get('enabled', True):
+        return
+
+    # Port is always required
+    if 'port' not in service:
+        fail('Service "%s/%s" is missing required field "port"' % (category, name))
+
+    if type(service['port']) != 'int':
+        fail('Service "%s/%s" has invalid port: must be an integer' % (category, name))
+
+    # Either command OR (mcp_command + supergateway_command) must be present
+    has_old_format = 'command' in service
+    has_new_format = 'mcp_command' in service and 'supergateway_command' in service
+
+    if not has_old_format and not has_new_format:
+        fail('Service "%s/%s" must have either "command" or ("mcp_command" + "supergateway_command")' % (category, name))
+
+    # Warn about missing environment variables but don't fail
+    if 'env_vars' in service:
+        for env_var in service['env_vars']:
+            if not os.getenv(env_var):
+                print('Warning: Service "%s/%s" requires %s but it is not set' % (category, name, env_var))
+
+# Command builder - Constructs final command with template substitution
+def build_command(service, name, port):
+    # New structure: mcp_command + supergateway_command with template substitution
+    if 'mcp_command' in service:
+        template = service.get('supergateway_command', '')
+        health_endpoint = service.get('health_endpoint', '/healthz')
+
+        # Perform template substitution
+        command = template.replace('{mcp_command}', service['mcp_command'])
+        command = command.replace('{port}', str(port))
+        command = command.replace('{health_endpoint}', health_endpoint)
+
+        # Handle environment variables in mcp_command
+        if 'env_vars' in service:
+            for env_var in service['env_vars']:
+                # Prepend env vars to command
+                command = '%s=${%s} %s' % (env_var, env_var, command)
+
+        return command
+
+    # Backward compatibility: use existing command field
+    return service.get('command', '')
+
+# Resource generation
+def create_local_resource(category, name, service):
+    # Skip disabled services
+    if not service.get('enabled', True):
+        print('Skipping disabled service: %s/%s' % (category, name))
+        return
+
+    validate_service(category, name, service)
+
+    # Determine resource name
+    resource_name = 'mcp-' + name if category == 'mcp_servers' else name
+
+    # Build command (supports both old and new formats)
+    port = service.get('port', 0)
+    command = build_command(service, name, port)
+
+    # Build readiness probe if configured
+    probe_config = None
+    if 'readiness_probe' in service:
+        rp = service['readiness_probe']
+        probe_config = probe(
+            initial_delay_secs=rp.get('initial_delay_secs', 2),
+            timeout_secs=rp.get('timeout_secs', 1),
+            period_secs=rp.get('period_secs', 2),
+            http_get=http_get_action(
+                port=service['port'],
+                path=rp.get('path', '/')
+            )
+        )
+
+    # Build links with template substitution
+    links_list = []
+    if 'links' in service:
+        for link_item in service['links']:
+            for link_name, link_url in link_item.items():
+                url = replace_port_placeholders(link_url)
+                url = url.replace('{name}', name).replace('{port}', str(service['port']))
+                links_list.append(link(url, link_name))
+
+    # Create the resource
+    local_resource(
+        resource_name,
+        serve_cmd=replace_port_placeholders(command),
+        serve_dir=service.get('serve_dir', '.'),
+        readiness_probe=probe_config,
+        links=links_list if links_list else None,
+        labels=service.get('labels', [])
+    )
+
+# Caddy route generation for dynamic configuration
+def generate_mcp_routes(config):
+    routes = []
+
+    # Add MCP server routes (only enabled servers)
+    for name, service in config.get('mcp_servers', {}).items():
+        if service.get('enabled', True):
+            port = service['port']
+            routes.append({
+                '@id': 'mcp_%s' % name,
+                'match': [{'path': ['/mcps/%s/*' % name]}],
+                'handle': [
+                    {
+                        'handler': 'rewrite',
+                        'strip_path_prefix': '/mcps/%s' % name
+                    },
+                    {
+                        'handler': 'reverse_proxy',
+                        'upstreams': [{'dial': 'localhost:%d' % port}]
+                    }
+                ]
+            })
+
+    # Add health endpoint
+    routes.append({
+        '@id': 'health',
+        'match': [{'path': ['/health']}],
+        'handle': [{
+            'handler': 'static_response',
+            'status_code': 200,
+            'body': 'OK'
+        }]
+    })
+
+    # Add index page route
+    routes.append({
+        '@id': 'root',
+        'match': [{'path': ['/']}],
+        'handle': [{
+            'handler': 'file_server',
+            'root': 'temp'
+        }]
+    })
+
+    return routes
+
+# Generate resources for each category
+for category in ['infrastructure', 'mcp_servers', 'tools']:
+    if category in config:
+        for name, service in config[category].items():
+            create_local_resource(category, name, service)
+
+# Create caddy-config-loader to dynamically patch routes
+if 'caddy' in config.get('infrastructure', {}):
+    mcp_routes = generate_mcp_routes(config)
+
+    local_resource(
+        'caddy-config-loader',
+        cmd='node scripts/load_caddy.js \'%s\'' % mcp_routes,
+        resource_deps=['caddy'],
+        labels=['infrastructure'],
+        auto_init=True
+    )
+    print('MCP routes will be patched dynamically via admin API')
+
+# Create index generator
+local_resource(
+    'index-generator',
+    cmd='node scripts/generate_index.js',
+    deps=['mcp-config.yaml', 'scripts/generate_index.js'],
+    labels=['infrastructure'],
+    auto_init=True
+)
+
+print('MCP Hub configuration loaded successfully')

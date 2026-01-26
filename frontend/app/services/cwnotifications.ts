@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Liatrio Code Notification Service
+ * Liatrio Wave Notification Service
  * Desktop notifications with quick actions support
  */
 

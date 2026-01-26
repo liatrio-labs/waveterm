@@ -14,7 +14,7 @@ import (
 
 const CWConfigFile = "cw.json"
 
-// CWConfigType represents Liatrio Code specific configuration
+// CWConfigType represents Liatrio Wave specific configuration
 type CWConfigType struct {
 	WorktreesDir        string `json:"worktreesdir"`
 	DefaultBranchPrefix string `json:"defaultbranchprefix"`

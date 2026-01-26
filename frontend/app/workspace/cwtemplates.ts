@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Layout templates for Liatrio Code sessions.
+ * Layout templates for Liatrio Wave sessions.
  * Each template defines a block configuration that can be applied to new session tabs.
  */
 

@@ -27,7 +27,7 @@ export class WelcomeScreenViewModel implements ViewModel {
     viewType = "welcomescreen";
     viewIcon = atom("house");
     viewName = atom("Welcome");
-    viewText = atom("Welcome to Liatrio Code");
+    viewText = atom("Welcome to Liatrio Wave");
     viewComponent = WelcomeScreenView;
     noHeader = atom(false);
 
@@ -144,7 +144,7 @@ const WelcomeScreenView: React.FC<ViewComponentProps<WelcomeScreenViewModel>> = 
             <div className="welcomescreen-content">
                 <div className="welcomescreen-header">
                     <LiatrioLogo className="welcomescreen-logo" />
-                    <h1 className="welcomescreen-title">Welcome to Liatrio Code</h1>
+                    <h1 className="welcomescreen-title">Welcome to Liatrio Wave</h1>
                     <p className="welcomescreen-subtitle">
                         AI-Native Development Environment for Parallel Claude Code Sessions
                     </p>

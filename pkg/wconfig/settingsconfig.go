@@ -163,7 +163,7 @@ type SettingsType struct {
 	TsunamiSdkVersion     string `json:"tsunami:sdkversion,omitempty"`
 	TsunamiGoPath         string `json:"tsunami:gopath,omitempty"`
 
-	// Liatrio Code settings
+	// Liatrio Wave settings
 	CWClear                  bool    `json:"cw:*,omitempty"`
 	CWWorktreesDir           string  `json:"cw:worktreesdir,omitempty"`
 	CWDefaultBranchPrefix    string  `json:"cw:defaultbranchprefix,omitempty"`

@@ -64,12 +64,12 @@ type WshRpcInterface interface {
 	GetFullConfigCommand(ctx context.Context) (wconfig.FullConfigType, error)
 	GetWaveAIModeConfigCommand(ctx context.Context) (wconfig.AIModeConfigUpdate, error)
 
-	// Liatrio Code config commands
+	// Liatrio Wave config commands
 	CWConfigGetCommand(ctx context.Context) (*wconfig.CWConfigType, error)
 	CWConfigSetCommand(ctx context.Context, data CommandCWConfigSetData) error
 	CWConfigGetProjectCommand(ctx context.Context, data CommandCWConfigGetProjectData) (*wconfig.CWConfigType, error)
 
-	// Liatrio Code worktree commands
+	// Liatrio Wave worktree commands
 	WorktreeCreateCommand(ctx context.Context, data CommandWorktreeCreateData) (*WorktreeInfoData, error)
 	WorktreeDeleteCommand(ctx context.Context, data CommandWorktreeDeleteData) error
 	WorktreeListCommand(ctx context.Context, data CommandWorktreeListData) ([]WorktreeInfoData, error)
@@ -82,20 +82,20 @@ type WshRpcInterface interface {
 	WorktreeArchiveListCommand(ctx context.Context, data CommandWorktreeArchiveListData) ([]ArchivedSessionData, error)
 	WorktreeArchiveDeleteCommand(ctx context.Context, data CommandWorktreeArchiveDeleteData) error
 
-	// Liatrio Code web session commands
+	// Liatrio Wave web session commands
 	WebSessionListCommand(ctx context.Context, data CommandWebSessionListData) ([]WebSessionData, error)
 	WebSessionCreateCommand(ctx context.Context, data CommandWebSessionCreateData) (*WebSessionData, error)
 	WebSessionUpdateCommand(ctx context.Context, data CommandWebSessionUpdateData) error
 	WebSessionDeleteCommand(ctx context.Context, data CommandWebSessionDeleteData) error
 
-	// Liatrio Code session status commands (for Claude Code hooks)
+	// Liatrio Wave session status commands (for Claude Code hooks)
 	CWSessionStatusCommand(ctx context.Context, data CommandCWSessionStatusData) error
 
-	// Liatrio Code process monitoring commands
+	// Liatrio Wave process monitoring commands
 	ProcessMetricsCommand(ctx context.Context, data CommandProcessMetricsData) (*ProcessMetricsData, error)
 	ProcessMetricsBatchCommand(ctx context.Context, data CommandProcessMetricsBatchData) (map[int32]*ProcessMetricsData, error)
 
-	// Liatrio Code platform integration commands
+	// Liatrio Wave platform integration commands
 	PlatformStatusCommand(ctx context.Context) (*PlatformStatusData, error)
 	PlatformTeamsCommand(ctx context.Context) (*PlatformTeamsData, error)
 	PlatformProjectsCommand(ctx context.Context, data CommandPlatformProjectsData) (*PlatformProjectsData, error)
@@ -108,7 +108,7 @@ type WshRpcInterface interface {
 	PlatformUnlinkCommand(ctx context.Context, data CommandPlatformUnlinkData) error
 	PlatformUpdateStatusCommand(ctx context.Context, data CommandPlatformUpdateStatusData) error
 
-	// Liatrio Code git commands
+	// Liatrio Wave git commands
 	GitDirectoryStatusCommand(ctx context.Context, data CommandGitDirectoryStatusData) (*GitDirectoryStatusData, error)
 	GitFileDiffCommand(ctx context.Context, data CommandGitFileDiffData) (*GitFileDiffData, error)
 	GitStageFileCommand(ctx context.Context, data CommandGitStageFileData) error
@@ -190,6 +190,7 @@ type WshRpcInterface interface {
 	WaveAIToolApproveCommand(ctx context.Context, data CommandWaveAIToolApproveData) error
 	WaveAIAddContextCommand(ctx context.Context, data CommandWaveAIAddContextData) error
 	WaveAIGetToolDiffCommand(ctx context.Context, data CommandWaveAIGetToolDiffData) (*CommandWaveAIGetToolDiffRtnData, error)
+	TestAIConnectionCommand(ctx context.Context, data CommandTestAIConnectionData) (*CommandTestAIConnectionRtnData, error)
 
 	// screenshot
 	CaptureBlockScreenshotCommand(ctx context.Context, data CommandCaptureBlockScreenshotData) (string, error)
@@ -215,7 +216,7 @@ type WshRpcInterface interface {
 	StreamDataCommand(ctx context.Context, data CommandStreamData) error
 	StreamDataAckCommand(ctx context.Context, data CommandStreamAckData) error
 
-	// Liatrio Code plugin commands
+	// Liatrio Wave plugin commands
 	PluginListAvailableCommand(ctx context.Context) ([]PluginData, error)
 	PluginListInstalledCommand(ctx context.Context, data CommandPluginListData) ([]InstalledPluginData, error)
 	PluginEnableCommand(ctx context.Context, data CommandPluginEnableData) (*InstalledPluginData, error)
@@ -223,7 +224,7 @@ type WshRpcInterface interface {
 	PluginConfigureCommand(ctx context.Context, data CommandPluginConfigureData) error
 	PluginGetCategoriesCommand(ctx context.Context) ([]PluginCategoryData, error)
 
-	// Liatrio Code MCP server commands
+	// Liatrio Wave MCP server commands
 	MCPListServersCommand(ctx context.Context, data CommandMCPListServersData) ([]MCPServerData, error)
 	MCPListTemplatesCommand(ctx context.Context) ([]MCPTemplateData, error)
 	MCPAddServerCommand(ctx context.Context, data CommandMCPAddServerData) error
@@ -232,7 +233,34 @@ type WshRpcInterface interface {
 	MCPGetStatusCommand(ctx context.Context, data CommandMCPGetStatusData) (*MCPServerStatusData, error)
 	MCPTestConnectionCommand(ctx context.Context, data CommandMCPTestConnectionData) (*MCPServerStatusData, error)
 
-	// Liatrio Code skill commands
+	// Liatrio Wave Tilt Hub commands
+	TiltStartCommand(ctx context.Context) error
+	TiltStopCommand(ctx context.Context) error
+	TiltRestartCommand(ctx context.Context) error
+	TiltStatusCommand(ctx context.Context) (*TiltHubStatusData, error)
+	TiltToggleMCPCommand(ctx context.Context, data CommandTiltToggleMCPData) error
+	TiltGetLogsCommand(ctx context.Context, data CommandTiltGetLogsData) ([]string, error)
+	TiltInitWorkspaceCommand(ctx context.Context) error
+	TiltGetEnvVarsCommand(ctx context.Context) (*TiltEnvVarsData, error)
+	TiltSetEnvVarCommand(ctx context.Context, data CommandTiltSetEnvVarData) error
+	TiltSetEnvVarFromSecretCommand(ctx context.Context, data CommandTiltSetEnvVarFromSecretData) error
+	TiltGetEnvRequirementsCommand(ctx context.Context) ([]TiltEnvRequirementData, error)
+
+	// Tilt Hub MCP server CRUD commands
+	TiltAddMCPServerCommand(ctx context.Context, data CommandTiltAddMCPServerData) error
+	TiltUpdateMCPServerCommand(ctx context.Context, data CommandTiltUpdateMCPServerData) error
+	TiltRemoveMCPServerCommand(ctx context.Context, data CommandTiltRemoveMCPServerData) error
+	TiltGetMCPServerCommand(ctx context.Context, data CommandTiltGetMCPServerData) (*TiltMCPServerConfigData, error)
+	TiltListMCPServersCommand(ctx context.Context) (map[string]TiltMCPServerConfigData, error)
+
+	// Liatrio Wave session MCP commands
+	SessionMCPGenerateCommand(ctx context.Context, data CommandSessionMCPGenerateData) (*SessionMCPConfigData, error)
+	SessionMCPUpdateToHubCommand(ctx context.Context, data CommandSessionMCPPathData) error
+	SessionMCPUpdateToLocalCommand(ctx context.Context, data CommandSessionMCPPathData) error
+	SessionMCPGetAvailableCommand(ctx context.Context) ([]MCPServerInfoData, error)
+	SessionMCPResolveCommand(ctx context.Context, data CommandSessionMCPResolveData) (*ResolvedEndpointData, error)
+
+	// Liatrio Wave skill commands
 	SkillListAvailableCommand(ctx context.Context) ([]SkillData, error)
 	SkillListInstalledCommand(ctx context.Context, data CommandSkillListData) ([]InstalledSkillData, error)
 	SkillInstallCommand(ctx context.Context, data CommandSkillInstallData) (*InstalledSkillData, error)
@@ -578,6 +606,22 @@ type CommandWaveAIGetToolDiffRtnData struct {
 	ModifiedContents64 string `json:"modifiedcontents64"`
 }
 
+// CommandTestAIConnectionData is the request for testing an AI provider connection
+type CommandTestAIConnectionData struct {
+	Provider     string `json:"provider"`               // "openai", "google", "azure", "openrouter", "custom"
+	APIKey       string `json:"apikey"`                 // The API key to test
+	Endpoint     string `json:"endpoint,omitempty"`     // Custom endpoint (for custom/local providers)
+	ResourceName string `json:"resourcename,omitempty"` // Azure resource name
+	Model        string `json:"model,omitempty"`        // Model to test with (optional)
+}
+
+// CommandTestAIConnectionRtnData is the response from testing an AI provider connection
+type CommandTestAIConnectionRtnData struct {
+	Success bool     `json:"success"`          // Whether the connection test succeeded
+	Error   string   `json:"error,omitempty"`  // Error message if failed
+	Models  []string `json:"models,omitempty"` // Available models (if retrievable)
+}
+
 type CommandCaptureBlockScreenshotData struct {
 	BlockId string `json:"blockid"`
 }
@@ -742,7 +786,7 @@ type StreamMeta struct {
 	WriterRouteId string `json:"writerrouteid"`
 }
 
-// Liatrio Code config command types
+// Liatrio Wave config command types
 type CommandCWConfigSetData struct {
 	Key   string      `json:"key"`
 	Value interface{} `json:"value"`
@@ -752,7 +796,7 @@ type CommandCWConfigGetProjectData struct {
 	ProjectPath string `json:"projectpath"`
 }
 
-// Liatrio Code worktree command types
+// Liatrio Wave worktree command types
 type CommandWorktreeCreateData struct {
 	ProjectPath string `json:"projectpath"`
 	SessionName string `json:"sessionname"`
@@ -808,7 +852,7 @@ type WorktreeStatusData struct {
 	IsClean          bool     `json:"isclean"`
 }
 
-// Liatrio Code worktree archive command types
+// Liatrio Wave worktree archive command types
 type CommandWorktreeArchiveData struct {
 	ProjectPath string `json:"projectpath"`
 	SessionName string `json:"sessionname"`
@@ -839,7 +883,7 @@ type ArchivedSessionData struct {
 	CommitHash       string `json:"commithash"`
 }
 
-// Liatrio Code web session command types
+// Liatrio Wave web session command types
 type CommandWebSessionListData struct {
 	ProjectPath string `json:"projectpath"`
 }
@@ -876,7 +920,7 @@ type WebSessionData struct {
 	Status           string `json:"status"` // "active", "completed", "unknown"
 }
 
-// Liatrio Code session status event types
+// Liatrio Wave session status event types
 type CommandCWSessionStatusData struct {
 	WorktreePath string `json:"worktreepath"`           // Path to the worktree
 	SessionName  string `json:"sessionname,omitempty"`  // Optional session name (derived from path if not provided)
@@ -893,7 +937,7 @@ type CWSessionStatusEvent struct {
 	Timestamp    int64  `json:"timestamp"`
 }
 
-// Liatrio Code process monitoring types
+// Liatrio Wave process monitoring types
 type CommandProcessMetricsData struct {
 	PID int32 `json:"pid"`
 }
@@ -911,7 +955,7 @@ type ProcessMetricsData struct {
 	Name       string  `json:"name,omitempty"`
 }
 
-// Liatrio Code platform integration types
+// Liatrio Wave platform integration types
 
 type CommandPlatformStatusData struct {
 	// No parameters needed
@@ -1075,7 +1119,7 @@ type CommandPlatformUpdateStatusData struct {
 	Status string `json:"status"`
 }
 
-// Liatrio Code Git command types
+// Liatrio Wave Git command types
 
 type CommandGitDirectoryStatusData struct {
 	DirPath string `json:"dirpath"`
@@ -1177,7 +1221,7 @@ type GitHubPRStatusData struct {
 	BaseRef   string `json:"baseref"`
 }
 
-// Liatrio Code plugin command types
+// Liatrio Wave plugin command types
 type CommandPluginListData struct {
 	ProjectPath string `json:"projectpath,omitempty"`
 }
@@ -1317,6 +1361,153 @@ type MCPServerStatusData struct {
 	Connected     bool   `json:"connected"`
 	LastConnected int64  `json:"lastConnected,omitempty"`
 	Error         string `json:"error,omitempty"`
+}
+
+// Tilt Hub types
+
+type CommandTiltToggleMCPData struct {
+	ServerName string `json:"servername"`
+	Enabled    bool   `json:"enabled"`
+}
+
+type CommandTiltGetLogsData struct {
+	Limit int `json:"limit,omitempty"`
+}
+
+type TiltHubStatusData struct {
+	Status       string              `json:"status"` // "stopped", "starting", "running", "stopping", "error"
+	MCPServers   []TiltMCPServerData `json:"mcpservers"`
+	TiltUIURL    string              `json:"tiltuiurl"`
+	InspectorURL string              `json:"inspectorurl"`
+	HubIndexURL  string              `json:"hubindexurl"`
+	Error        string              `json:"error,omitempty"`
+	StartedAt    int64               `json:"startedat,omitempty"`
+}
+
+type TiltMCPServerData struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"` // "http" or "stdio"
+	URL         string `json:"url"`
+	Port        int    `json:"port"`
+	Status      string `json:"status"` // "running", "error", "disabled", "unknown"
+	Description string `json:"description,omitempty"`
+	LastChecked int64  `json:"lastchecked,omitempty"`
+	Error       string `json:"error,omitempty"`
+}
+
+// Tilt env var types for secrets integration
+
+type CommandTiltSetEnvVarData struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type CommandTiltSetEnvVarFromSecretData struct {
+	Key        string `json:"key"`
+	SecretName string `json:"secretname"`
+}
+
+type TiltEnvVarsData struct {
+	EnvVars []TiltEnvVarStatusData `json:"envvars"`
+}
+
+type TiltEnvVarStatusData struct {
+	Key        string `json:"key"`
+	IsSecret   bool   `json:"issecret"`
+	SecretName string `json:"secretname,omitempty"`
+	SecretSet  bool   `json:"secretset"`
+	HasValue   bool   `json:"hasvalue"`
+}
+
+type TiltEnvRequirementData struct {
+	Key        string   `json:"key"`
+	IsSet      bool     `json:"isset"`
+	IsSecret   bool     `json:"issecret"`
+	SecretName string   `json:"secretname,omitempty"`
+	SecretSet  bool     `json:"secretset"`
+	UsedBy     []string `json:"usedby"` // MCP server names
+}
+
+// Tilt Hub MCP Server CRUD types
+
+type CommandTiltAddMCPServerData struct {
+	Name        string                  `json:"name"`
+	Config      TiltMCPServerConfigData `json:"config"`
+}
+
+type CommandTiltUpdateMCPServerData struct {
+	Name        string                  `json:"name"`
+	Config      TiltMCPServerConfigData `json:"config"`
+}
+
+type CommandTiltRemoveMCPServerData struct {
+	Name string `json:"name"`
+}
+
+type CommandTiltGetMCPServerData struct {
+	Name string `json:"name"`
+}
+
+type TiltMCPServerConfigData struct {
+	Enabled         *bool    `json:"enabled,omitempty"`
+	Port            int      `json:"port,omitempty"`
+	MCPCommand      string   `json:"mcpcommand"`
+	Description     string   `json:"description,omitempty"`
+	EnvVars         []string `json:"envvars,omitempty"`
+	HealthEndpoint  string   `json:"healthendpoint,omitempty"`
+	// Advanced options (usually not needed by users)
+	SupergatewayCmd string   `json:"supergatewaycmd,omitempty"`
+	ServeDir        string   `json:"servedir,omitempty"`
+	Labels          []string `json:"labels,omitempty"`
+}
+
+// Session MCP types
+
+type CommandSessionMCPGenerateData struct {
+	Servers     []string `json:"servers"`
+	UseHub      bool     `json:"usehub"`
+	ProjectPath string   `json:"projectpath"`
+}
+
+type CommandSessionMCPPathData struct {
+	SessionPath string `json:"sessionpath"`
+}
+
+type CommandSessionMCPResolveData struct {
+	ServerName  string `json:"servername"`
+	ProjectPath string `json:"projectpath,omitempty"`
+	ForceStdio  bool   `json:"forcestdio,omitempty"`
+}
+
+type SessionMCPConfigData struct {
+	MCPServers map[string]SessionMCPServerConfigData `json:"mcpservers"`
+}
+
+type SessionMCPServerConfigData struct {
+	Type    string            `json:"type,omitempty"` // "stdio" (default) or "http"
+	Command string            `json:"command,omitempty"`
+	Args    []string          `json:"args,omitempty"`
+	URL     string            `json:"url,omitempty"`
+	Env     map[string]string `json:"env,omitempty"`
+}
+
+type MCPServerInfoData struct {
+	Name        string `json:"name"`
+	Source      string `json:"source"` // "hub", "template", or "project"
+	Available   bool   `json:"available"`
+	Description string `json:"description,omitempty"`
+	Category    string `json:"category,omitempty"`
+}
+
+type ResolvedEndpointData struct {
+	Name         string            `json:"name"`
+	Type         string            `json:"type"` // "stdio" or "http"
+	URL          string            `json:"url,omitempty"`
+	Command      string            `json:"command,omitempty"`
+	Args         []string          `json:"args,omitempty"`
+	Env          map[string]string `json:"env,omitempty"`
+	ViaHub       bool              `json:"viahub"`
+	HubServerURL string            `json:"hubserverurl,omitempty"`
 }
 
 // Skill types

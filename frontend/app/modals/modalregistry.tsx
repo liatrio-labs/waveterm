@@ -3,6 +3,7 @@
 
 import { AddSessionWizard } from "@/app/modals/addsessionwizard";
 import { ArchiveModal } from "@/app/modals/archivemodal";
+import { BYOKWizard } from "@/app/modals/byokwizard";
 import { MessageModal } from "@/app/modals/messagemodal";
 import { HandoffModal } from "@/app/modals/handoffmodal";
 import { TeleportModal } from "@/app/modals/teleportmodal";
@@ -32,6 +33,7 @@ const modalRegistry: { [key: string]: React.ComponentType<any> } = {
     [RenameFileModal.displayName || "RenameFileModal"]: RenameFileModal,
     [DeleteFileModal.displayName || "DeleteFileModal"]: DeleteFileModal,
     [SetSecretDialog.displayName || "SetSecretDialog"]: SetSecretDialog,
+    [BYOKWizard.displayName || "BYOKWizard"]: BYOKWizard,
     ["WelcomeWizard"]: WelcomeWizard,
     ["SaveTemplateModal"]: SaveTemplateModal,
     ["TemplateManagerModal"]: TemplateManagerModal,

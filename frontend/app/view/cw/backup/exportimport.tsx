@@ -3,7 +3,7 @@
 
 /**
  * Export/Import Settings Component
- * Backup and restore Liatrio Code configuration
+ * Backup and restore Liatrio Wave configuration
  */
 
 import clsx from "clsx";

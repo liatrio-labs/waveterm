@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Tooltip } from "@/app/element/tooltip";
+import { openBYOKWizard } from "@/app/modals/byokwizard";
 import { atoms, getSettingsKeyAtom } from "@/app/store/global";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
@@ -309,6 +310,16 @@ export const AIModeDropdown = memo(({ compatibilityMode = false }: AIModeDropdow
                         >
                             <i className={makeIconClass("plus", false)}></i>
                             <span className="text-sm">New Chat</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsOpen(false);
+                                openBYOKWizard();
+                            }}
+                            className="w-full flex items-center gap-2 px-3 pt-1 pb-1 text-gray-300 hover:bg-zinc-700 cursor-pointer transition-colors text-left"
+                        >
+                            <i className={makeIconClass("key", false)}></i>
+                            <span className="text-sm">Add API Key</span>
                         </button>
                         <button
                             onClick={handleConfigureClick}

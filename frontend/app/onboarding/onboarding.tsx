@@ -62,7 +62,7 @@ const InitPage = ({ isCompact }: { isCompact: boolean }) => {
                 <div className={`${isCompact ? "" : "mb-2.5"} flex justify-center`}>
                     <LiatrioLogo className="h-12" />
                 </div>
-                <div className="text-center text-[25px] font-normal text-foreground">Welcome to Liatrio Code</div>
+                <div className="text-center text-[25px] font-normal text-foreground">Welcome to Liatrio Wave</div>
             </header>
             <OverlayScrollbarsComponent
                 className="flex-1 overflow-y-auto min-h-0"
@@ -191,7 +191,7 @@ const NoTelemetryStarPage = ({ isCompact }: { isCompact: boolean }) => {
                     <div className="text-center text-secondary leading-relaxed max-w-md">
                         <p className="mb-4">No problem, we respect your privacy.</p>
                         <p className="mb-4">
-                            But, without usage data, we're flying blind. A GitHub star helps us know Liatrio Code is useful and
+                            But, without usage data, we're flying blind. A GitHub star helps us know Liatrio Wave is useful and
                             worth maintaining.
                         </p>
                     </div>

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Liatrio Code settings state management using Jotai atoms
+ * Liatrio Wave settings state management using Jotai atoms
  */
 
 import { atom, PrimitiveAtom, useAtomValue, useSetAtom } from "jotai";
@@ -23,6 +23,7 @@ export type SettingsCategory =
     | "plugins"
     | "skills"
     | "mcp"
+    | "mcphub"
     | "shortcuts"
     | "appearance"
     | "platform";
@@ -80,6 +81,12 @@ export const SETTINGS_CATEGORIES: SettingsCategoryInfo[] = [
         label: "MCP Servers",
         icon: "fa-server",
         description: "Configure Model Context Protocol servers",
+    },
+    {
+        id: "mcphub",
+        label: "MCP Hub",
+        icon: "fa-network-wired",
+        description: "Centralized MCP server management with Tilt",
     },
     {
         id: "shortcuts",
@@ -231,6 +238,7 @@ export async function resetCategoryToDefaults(category: SettingsCategory): Promi
         plugins: {},
         skills: {},
         mcp: {},
+        mcphub: {},
         shortcuts: {
             "cw:shortcutprofile": "default",
             "cw:customshortcuts": "",

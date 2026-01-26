@@ -3,7 +3,7 @@
 
 /**
  * Welcome Wizard Modal
- * First-run onboarding experience for Liatrio Code
+ * First-run onboarding experience for Liatrio Wave
  */
 
 import { useAtomValue, useSetAtom, atom } from "jotai";
@@ -45,7 +45,7 @@ function Step1Welcome({ onNext, onSkip }: WizardStepProps) {
             <div className="wizard-step-icon">
                 <i className="fa-solid fa-rocket" />
             </div>
-            <h2>Welcome to Liatrio Code</h2>
+            <h2>Welcome to Liatrio Wave</h2>
             <p className="wizard-step-description">
                 Your AI-powered parallel development environment. Run multiple Claude Code sessions
                 simultaneously with isolated git worktrees.
@@ -318,7 +318,7 @@ function Step5Ready({ onBack, onComplete }: Step5Props) {
             </div>
             <h2>You're All Set!</h2>
             <p className="wizard-step-description">
-                Liatrio Code is configured and ready to use. Create your first workspace to start
+                Liatrio Wave is configured and ready to use. Create your first workspace to start
                 working with parallel Claude Code sessions.
             </p>
 
@@ -338,7 +338,7 @@ function Step5Ready({ onBack, onComplete }: Step5Props) {
                 </Button>
                 <Button className="solid green" onClick={onComplete}>
                     <i className="fa-solid fa-rocket" />
-                    Start Using Liatrio Code
+                    Start Using Liatrio Wave
                 </Button>
             </div>
         </div>

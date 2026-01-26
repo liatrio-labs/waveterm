@@ -22,11 +22,29 @@ var (
 )
 
 // MCPServerConfig represents the configuration for an MCP server
-// as stored in .mcp.json
+// as stored in .mcp.json. Supports both stdio (command-based) and
+// HTTP (url-based) transports.
 type MCPServerConfig struct {
-	Command string            `json:"command"`
-	Args    []string          `json:"args,omitempty"`
-	Env     map[string]string `json:"env,omitempty"`
+	// Common fields
+	Env map[string]string `json:"env,omitempty"`
+
+	// Stdio transport (command-based)
+	Command string   `json:"command,omitempty"`
+	Args    []string `json:"args,omitempty"`
+
+	// HTTP transport (url-based) - used for MCP Hub integration
+	Type string `json:"type,omitempty"` // "stdio" (default) or "http"
+	URL  string `json:"url,omitempty"`  // HTTP endpoint URL for type="http"
+}
+
+// IsHTTP returns true if this is an HTTP-based MCP server configuration
+func (c *MCPServerConfig) IsHTTP() bool {
+	return c.Type == "http" || c.URL != ""
+}
+
+// IsStdio returns true if this is a stdio-based MCP server configuration
+func (c *MCPServerConfig) IsStdio() bool {
+	return !c.IsHTTP()
 }
 
 // MCPServer represents a configured MCP server with its name and config

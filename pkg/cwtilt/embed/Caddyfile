@@ -1,0 +1,36 @@
+{
+	# Global options
+	auto_https off
+	admin :{$CADDY_ADMIN_PORT:9102}
+
+	# Configure default log format to console
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Main MCP Hub proxy
+:{$CADDY_PUBLIC_PORT:9101} {
+	# MCP routes will be dynamically loaded via Caddy API
+
+	# Enable logging
+	log {
+		output stdout
+		format console
+	}
+
+	# Health check endpoint
+	handle /health {
+		respond "OK" 200
+	}
+
+	# Skip logging health checks
+	log_skip /health
+
+	# Serve index page
+	handle / {
+		root * temp
+		file_server
+	}
+}

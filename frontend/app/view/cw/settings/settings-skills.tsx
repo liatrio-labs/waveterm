@@ -9,20 +9,24 @@
  */
 
 import * as React from "react";
-import { useAtomValue } from "jotai";
 import { clsx } from "clsx";
 import {
     useSkills,
     useSkillFilter,
     useSkillActions,
 } from "@/app/store/cwskillsstate";
-import { atoms } from "@/app/store/global";
+import { useActiveWorkspaceProjectPath } from "@/app/store/cwstate";
 import { SkillCard } from "./skill-card";
 import "./settings-skills.scss";
 
 export function SettingsSkills() {
-    const fullConfig = useAtomValue(atoms.fullConfigAtom);
-    const projectPath = fullConfig?.settings?.["cw:projectpath"] ?? "";
+    // Use workspace-scoped project path from the active cwsessions block
+    const projectPath = useActiveWorkspaceProjectPath() ?? "";
+
+    // Debug: log the project path
+    React.useEffect(() => {
+        console.log("[SettingsSkills] projectPath:", projectPath);
+    }, [projectPath]);
 
     const { skills, filteredSkills, featuredSkills, categories, loading, error, installedCount, refresh } =
         useSkills(projectPath);

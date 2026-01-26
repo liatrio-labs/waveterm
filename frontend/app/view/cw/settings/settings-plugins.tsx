@@ -34,6 +34,11 @@ export function SettingsPlugins() {
     // Use workspace-scoped project path from the active cwsessions block
     const projectPath = useActiveWorkspaceProjectPath() ?? "";
 
+    // Debug: log the project path
+    React.useEffect(() => {
+        console.log("[SettingsPlugins] projectPath:", projectPath);
+    }, [projectPath]);
+
     const { plugins, filteredPlugins, featuredPlugins, categories, loading, error, installedCount, refresh } =
         usePlugins(projectPath);
     const { filter, setSearch, setSource, setCategory, reset } = usePluginFilter();

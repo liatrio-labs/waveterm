@@ -55,7 +55,7 @@
         "display:order": 0,
         "icon": "code-branch",
         "label": "sessions",
-        "description": "Liatrio Code parallel sessions",
+        "description": "Liatrio Wave parallel sessions",
         "color": "#22c55e",
         "blockdef": {
             "meta": {

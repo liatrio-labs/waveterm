@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Liatrio Code Settings View
+ * Liatrio Wave Settings View
  * Main settings interface with category navigation and content panels
  */
 
@@ -34,6 +34,7 @@ import { SettingsNotifications } from "./settings-notifications";
 import { SettingsPlugins } from "./settings-plugins";
 import { SettingsSkills } from "./settings-skills";
 import { SettingsMcp } from "./settings-mcp";
+import { SettingsTilt } from "./settings-tilt";
 import { SettingsShortcuts } from "./settings-shortcuts";
 import { SettingsAppearance } from "./settings-appearance";
 import { SettingsPlatform } from "./settings-platform";
@@ -63,7 +64,7 @@ class CwSettingsViewModel implements ViewModel {
 
         this.viewIcon = atom("fa-gear");
         this.viewName = atom("Settings");
-        this.viewText = atom("Liatrio Code Settings");
+        this.viewText = atom("Liatrio Wave Settings");
     }
 
     get viewComponent(): ViewComponent {
@@ -116,7 +117,7 @@ function SettingsSidebar() {
                 ))}
             </div>
             <div className="settings-sidebar-footer">
-                <span className="settings-version">Liatrio Code v1.0</span>
+                <span className="settings-version">Liatrio Wave v1.0</span>
             </div>
         </div>
     );
@@ -158,6 +159,8 @@ function SettingsContent() {
                 return <SettingsSkills />;
             case "mcp":
                 return <SettingsMcp />;
+            case "mcphub":
+                return <SettingsTilt />;
             case "shortcuts":
                 return <SettingsShortcuts />;
             case "appearance":

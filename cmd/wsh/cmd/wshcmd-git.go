@@ -16,7 +16,7 @@ import (
 
 var gitCmd = &cobra.Command{
 	Use:   "git",
-	Short: "Git operations for Liatrio Code",
+	Short: "Git operations for Liatrio Wave",
 	Long:  "Commands for viewing git status, staging/unstaging files, and creating PRs",
 }
 

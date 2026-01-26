@@ -4,7 +4,7 @@
         "name": "Liatrio",
         "email": "code@liatrio.com"
     },
-    "productName": "Liatrio Code",
+    "productName": "Liatrio Wave",
     "description": "AI-Native Development Environment for Parallel Claude Code Sessions",
     "license": "Apache-2.0",
     "version": "0.1.0-alpha.0",

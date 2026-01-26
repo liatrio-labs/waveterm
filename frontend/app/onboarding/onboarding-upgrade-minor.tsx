@@ -124,7 +124,7 @@ const UpgradeOnboardingMinor = () => {
                     <div className="flex justify-center">
                         <LiatrioLogo className="h-12" />
                     </div>
-                    <div className="text-center text-[25px] font-normal text-foreground">Welcome to Liatrio Code!</div>
+                    <div className="text-center text-[25px] font-normal text-foreground">Welcome to Liatrio Wave!</div>
                 </header>
                 <OverlayScrollbarsComponent
                     className="flex-1 overflow-y-auto min-h-0"

@@ -14,18 +14,18 @@ import (
 
 var cwCmd = &cobra.Command{
 	Use:   "cw",
-	Short: "Liatrio Code commands",
-	Long:  "Commands for Liatrio Code configuration and management",
+	Short: "Liatrio Wave commands",
+	Long:  "Commands for Liatrio Wave configuration and management",
 }
 
 var cwConfigCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Liatrio Code configuration commands",
+	Short: "Liatrio Wave configuration commands",
 }
 
 var cwConfigGetCmd = &cobra.Command{
 	Use:     "get",
-	Short:   "Get Liatrio Code configuration",
+	Short:   "Get Liatrio Wave configuration",
 	Args:    cobra.NoArgs,
 	RunE:    cwConfigGetRun,
 	PreRunE: preRunSetupRpcClient,
@@ -33,7 +33,7 @@ var cwConfigGetCmd = &cobra.Command{
 
 var cwConfigSetCmd = &cobra.Command{
 	Use:     "set <key> <value>",
-	Short:   "Set a Liatrio Code configuration value",
+	Short:   "Set a Liatrio Wave configuration value",
 	Args:    cobra.ExactArgs(2),
 	RunE:    cwConfigSetRun,
 	PreRunE: preRunSetupRpcClient,
@@ -41,7 +41,7 @@ var cwConfigSetCmd = &cobra.Command{
 
 var cwConfigGetProjectCmd = &cobra.Command{
 	Use:     "get-project <path>",
-	Short:   "Get project-specific Liatrio Code configuration",
+	Short:   "Get project-specific Liatrio Wave configuration",
 	Args:    cobra.ExactArgs(1),
 	RunE:    cwConfigGetProjectRun,
 	PreRunE: preRunSetupRpcClient,

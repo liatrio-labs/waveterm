@@ -1,7 +1,7 @@
 // Copyright 2025, Gregg Coppen
 // SPDX-License-Identifier: Apache-2.0
 
-// Package cwbackup provides backup and restore functionality for Liatrio Code
+// Package cwbackup provides backup and restore functionality for Liatrio Wave
 package cwbackup
 
 import "time"
