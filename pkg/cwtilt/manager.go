@@ -348,7 +348,8 @@ func (m *TiltManager) Start(ctx context.Context) error {
 
 	// Build tilt command
 	// Use --legacy=true for console output without web UI requirement
-	cmd := exec.CommandContext(ctx, tiltPath, "up", "--legacy=true")
+	// IMPORTANT: Use background context so the process isn't killed when the RPC context is cancelled
+	cmd := exec.Command(tiltPath, "up", "--legacy=true")
 	cmd.Dir = m.workDir
 	log.Printf("[cwtilt] Running: %s up --legacy=true in %s", tiltPath, m.workDir)
 
@@ -452,14 +453,22 @@ func (m *TiltManager) Start(ctx context.Context) error {
 	// Monitor process exit
 	go func() {
 		err := cmd.Wait()
+		exitCode := -1
+		if cmd.ProcessState != nil {
+			exitCode = cmd.ProcessState.ExitCode()
+		}
+		log.Printf("[cwtilt] Tilt process exited: err=%v, exitCode=%d", err, exitCode)
 		select {
 		case <-m.stopChan:
 			// Normal shutdown
 			m.setStatus(TiltStatusStopped)
 		default:
 			// Unexpected exit
+			log.Printf("[cwtilt] Unexpected tilt exit (not stopped by user)")
 			if err != nil {
 				m.appendLog(fmt.Sprintf("Tilt exited with error: %v", err))
+			} else {
+				m.appendLog(fmt.Sprintf("Tilt exited unexpectedly with code %d", exitCode))
 			}
 			m.setStatus(TiltStatusError)
 		}
