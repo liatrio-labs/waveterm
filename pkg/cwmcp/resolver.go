@@ -70,13 +70,22 @@ func (r *MCPResolver) SetPreferHub(prefer bool) {
 // IsHubAvailable checks if the MCP Hub is currently available
 func (r *MCPResolver) IsHubAvailable() bool {
 	r.mu.RLock()
-	defer r.mu.RUnlock()
+	tm := r.tiltManager
+	r.mu.RUnlock()
 
-	if r.tiltManager == nil {
+	// Lazy initialization: get TiltManager if not set
+	if tm == nil {
+		tm = cwtilt.GetTiltManager()
+		r.mu.Lock()
+		r.tiltManager = tm
+		r.mu.Unlock()
+	}
+
+	if tm == nil {
 		return false
 	}
 
-	return r.tiltManager.IsRunning()
+	return tm.IsRunning()
 }
 
 // GetHubEndpoint returns the HTTP endpoint URL for an MCP server via the Hub
@@ -87,17 +96,26 @@ func (r *MCPResolver) GetHubEndpoint(serverName string) (string, error) {
 	}
 
 	r.mu.RLock()
-	defer r.mu.RUnlock()
+	tm := r.tiltManager
+	r.mu.RUnlock()
 
-	if r.tiltManager == nil {
+	// Lazy initialization: get TiltManager if not set
+	if tm == nil {
+		tm = cwtilt.GetTiltManager()
+		r.mu.Lock()
+		r.tiltManager = tm
+		r.mu.Unlock()
+	}
+
+	if tm == nil {
 		return "", cwtilt.ErrHubNotRunning
 	}
 
-	if !r.tiltManager.IsRunning() {
+	if !tm.IsRunning() {
 		return "", cwtilt.ErrHubNotRunning
 	}
 
-	status := r.tiltManager.GetHubStatus()
+	status := tm.GetHubStatus()
 	if status == nil {
 		return "", cwtilt.ErrHubNotRunning
 	}
@@ -200,13 +218,22 @@ func (r *MCPResolver) ResolveMultiple(serverNames []string, projectPath string, 
 // GetAvailableHubServers returns all MCP servers available in the Hub
 func (r *MCPResolver) GetAvailableHubServers() []string {
 	r.mu.RLock()
-	defer r.mu.RUnlock()
+	tm := r.tiltManager
+	r.mu.RUnlock()
 
-	if r.tiltManager == nil || !r.tiltManager.IsRunning() {
+	// Lazy initialization: get TiltManager if not set
+	if tm == nil {
+		tm = cwtilt.GetTiltManager()
+		r.mu.Lock()
+		r.tiltManager = tm
+		r.mu.Unlock()
+	}
+
+	if tm == nil || !tm.IsRunning() {
 		return nil
 	}
 
-	status := r.tiltManager.GetHubStatus()
+	status := tm.GetHubStatus()
 	if status == nil {
 		return nil
 	}

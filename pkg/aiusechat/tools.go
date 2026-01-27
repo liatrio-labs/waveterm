@@ -6,6 +6,7 @@ package aiusechat
 import (
 	"context"
 	"fmt"
+	"log"
 	"os/user"
 	"strings"
 
@@ -218,6 +219,18 @@ func GenerateTabStateAndTools(ctx context.Context, tabid string, widgetAccess bo
 		}
 		if viewTypes["web"] {
 			tools = append(tools, GetWebNavigateToolDefinition(tabid))
+		}
+
+		// Add MCP tools from workspace-enabled servers
+		workspaceId, err := wstore.DBFindWorkspaceForTabId(ctx, tabid)
+		log.Printf("[tools] Looking up workspace for tab %s: workspaceId=%s, err=%v", tabid, workspaceId, err)
+		if err == nil && workspaceId != "" {
+			mcpTools, err := GenerateMCPToolDefinitions(ctx, workspaceId)
+			log.Printf("[tools] Generated %d MCP tools for workspace %s, err=%v", len(mcpTools), workspaceId, err)
+			if err == nil && len(mcpTools) > 0 {
+				tools = append(tools, mcpTools...)
+				log.Printf("[tools] Added %d MCP tools to total tools", len(mcpTools))
+			}
 		}
 	}
 	return tabState, tools, nil

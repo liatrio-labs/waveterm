@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -97,8 +98,34 @@ func (m *TiltManager) setStatus(status TiltStatus) {
 }
 
 // IsRunning returns true if the MCP Hub is currently running
+// This checks both internal state AND does a live health check to handle
+// cases where the Hub was started externally or state is out of sync
 func (m *TiltManager) IsRunning() bool {
-	return m.GetStatus() == TiltStatusRunning
+	// First check internal state
+	if m.GetStatus() == TiltStatusRunning {
+		return true
+	}
+
+	// Also check if Hub is actually responding (may have been started externally)
+	if m.isHubResponding() {
+		// Update internal state to match reality
+		m.setStatus(TiltStatusRunning)
+		return true
+	}
+
+	return false
+}
+
+// isHubResponding checks if the Hub's Caddy health endpoint is responding
+func (m *TiltManager) isHubResponding() bool {
+	healthURL := fmt.Sprintf("http://localhost:%d/health", m.portConfig.CaddyPublic)
+	client := &http.Client{Timeout: 2 * time.Second}
+	resp, err := client.Get(healthURL)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	return resp.StatusCode == http.StatusOK
 }
 
 // GetLogs returns recent log output from Tilt

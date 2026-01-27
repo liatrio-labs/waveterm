@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Button } from "@/app/element/button";
+import { atoms, globalStore } from "@/app/store/global";
 import { modalsModel } from "@/app/store/modalmodel";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
@@ -146,12 +147,16 @@ const AddSessionWizard: React.FC<AddSessionWizardProps> = ({
                 branchName = state.remoteBranch;
             }
 
+            // Get workspace ID for MCP server propagation
+            const workspace = globalStore.get(atoms.workspace);
+            const workspaceId = workspace?.oid;
+
             // Create the session via RPC
             const result = await RpcApi.WorktreeCreateCommand(TabRpcClient, {
                 projectpath: projectPath,
-                name: sessionName,
+                sessionname: sessionName,
                 branchname: branchName,
-                baseref: state.branchMode === "new" ? state.baseBranch : undefined,
+                workspaceid: workspaceId,
             });
 
             if (result?.sessionid) {

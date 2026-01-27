@@ -40,6 +40,7 @@ const (
 ```
 
 **Naming Convention:**
+
 - Use descriptive PascalCase for the constant name with `Event_` prefix
 - Use lowercase with colons for the string value (e.g., "namespace:eventname")
 - Group related events with the same namespace prefix
@@ -118,6 +119,7 @@ go func() {
 ```
 
 **When to use goroutines:**
+
 - When publishing from performance-critical code paths
 - When the event is informational and doesn't need immediate delivery
 - When publishing from code that holds locks (to prevent deadlocks)
@@ -210,6 +212,7 @@ wps.Broker.Unsubscribe(routeId, wps.Event_YourNewEvent)
 ### Scope Matching
 
 Scopes support wildcard matching:
+
 - `*` matches a single scope segment
 - `**` matches multiple scope segments
 

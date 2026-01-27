@@ -5,11 +5,13 @@ This guide explains how to implement a new view type in Wave Terminal. Views are
 ## Architecture Overview
 
 Wave Terminal uses a **Model-View architecture** where:
+
 - **ViewModel** - Contains all state, logic, and UI configuration as Jotai atoms
 - **ViewComponent** - Pure React component that renders the UI using the model
 - **BlockFrame** - Wraps views with a header, connection management, and standard controls
 
 The separation between model and component ensures:
+
 - Models can update state without React hooks
 - Components remain pure and testable
 - State is centralized in Jotai atoms for easy access
@@ -82,11 +84,13 @@ interface ViewModel {
 ### Key Concepts
 
 **Atoms**: All UI-related properties must be Jotai atoms. This enables:
+
 - Reactive updates when state changes
 - Access from anywhere via `globalStore.get()`/`globalStore.set()`
 - Derived atoms that compute values from other atoms
 
 **ViewComponent**: The React component receives these props:
+
 ```typescript
 type ViewComponentProps<T extends ViewModel> = {
     blockId: string;                              // Unique ID for this block
@@ -212,6 +216,7 @@ The registry key (e.g., `"myview"`) becomes the view type used in block metadata
 ### 4. Create Blocks with Your View
 
 Users can create blocks with your view type:
+
 - Via CLI: `wsh view myview`
 - Via RPC: Use the block's `meta.view` field set to `"myview"`
 
@@ -220,6 +225,7 @@ Users can create blocks with your view type:
 ### Example 1: Terminal View ([`term-model.ts`](../frontend/app/view/term/term-model.ts))
 
 The terminal view demonstrates:
+
 - **Connection management** via `manageConnection` atom
 - **Dynamic header buttons** showing shell status (play/restart)
 - **Mode switching** between terminal and vdom views
@@ -228,6 +234,7 @@ The terminal view demonstrates:
 - **Shell integration status** showing AI capability indicators
 
 Key features:
+
 ```typescript
 this.manageConnection = jotai.atom((get) => {
     const termMode = get(this.termMode);
@@ -254,6 +261,7 @@ this.endIconButtons = jotai.atom((get) => {
 ### Example 2: Web View ([`webview.tsx`](../frontend/app/view/webview/webview.tsx))
 
 The web view shows:
+
 - **Complex header controls** (back/forward/home/URL input)
 - **State management** for loading, URL, and navigation
 - **Event handling** for webview navigation events
@@ -261,6 +269,7 @@ The web view shows:
 - **Media controls** showing play/pause/mute when media is active
 
 Key features:
+
 ```typescript
 this.viewText = jotai.atom((get) => {
     const url = get(this.url);
@@ -368,12 +377,14 @@ The `viewText` atom can return an array of these element types:
 Follow these rules for Jotai atoms in models:
 
 1. **Simple atoms as field initializers**:
+
    ```typescript
    viewIcon = jotai.atom<string>("circle");
    noPadding = jotai.atom<boolean>(true);
    ```
 
 2. **Derived atoms in constructor** (need dependency on other atoms):
+
    ```typescript
    constructor(blockId: string, nodeModel: BlockNodeModel) {
        this.viewText = jotai.atom((get) => {
@@ -384,6 +395,7 @@ Follow these rules for Jotai atoms in models:
    ```
 
 3. **Models never use React hooks** - Use `globalStore.get()`/`set()`:
+
    ```typescript
    refresh() {
        const currentData = globalStore.get(this.blockAtom);
@@ -392,6 +404,7 @@ Follow these rules for Jotai atoms in models:
    ```
 
 4. **Components use hooks for atoms**:
+
    ```typescript
    const data = useAtomValue(model.dataAtom);
    const [value, setValue] = useAtom(model.valueAtom);
@@ -414,6 +427,7 @@ Follow these rules for Jotai atoms in models:
 ### Focus Management
 
 Implement `giveFocus()` to focus your view when:
+
 - Block gains focus via keyboard navigation
 - User clicks the block
 - Return `true` if successfully focused, `false` otherwise
@@ -421,6 +435,7 @@ Implement `giveFocus()` to focus your view when:
 ### Keyboard Handling
 
 Implement `keyDownHandler(e: WaveKeyboardEvent)` for:
+
 - View-specific keyboard shortcuts
 - Return `true` if event was handled (prevents propagation)
 - Use `keyutil.checkKeyPressed(waveEvent, "Cmd:K")` for shortcut checks
@@ -428,6 +443,7 @@ Implement `keyDownHandler(e: WaveKeyboardEvent)` for:
 ### Cleanup
 
 Implement `dispose()` to:
+
 - Unsubscribe from Wave events
 - Unregister routes/handlers
 - Clear timers/intervals
@@ -436,6 +452,7 @@ Implement `dispose()` to:
 ### Connection Management
 
 For views that need remote connections:
+
 ```typescript
 this.manageConnection = jotai.atom(true);  // Show connection picker
 this.filterOutNowsh = jotai.atom(true);    // Hide nowsh connections
@@ -443,6 +460,7 @@ this.showS3 = jotai.atom(true);            // Show S3 connections
 ```
 
 Access connection status:
+
 ```typescript
 const connStatus = jotai.atom((get) => {
     const blockData = get(this.blockAtom);

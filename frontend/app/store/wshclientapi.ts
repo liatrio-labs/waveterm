@@ -137,6 +137,46 @@ class RpcApiType {
         return client.wshRpcCall("cwconfigset", data, opts);
     }
 
+    // command "cwsessionstatus" [call]
+    CWSessionStatusCommand(client: WshClient, data: CommandCWSessionStatusData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("cwsessionstatus", data, opts);
+    }
+
+    // command "decisionfiltercalculatescore" [call]
+    DecisionFilterCalculateScoreCommand(client: WshClient, data: CommandDecisionFilterCalculateScoreData, opts?: RpcOpts): Promise<DecisionFilterScoreResultData> {
+        return client.wshRpcCall("decisionfiltercalculatescore", data, opts);
+    }
+
+    // command "decisionfilterexport" [call]
+    DecisionFilterExportCommand(client: WshClient, data: CommandDecisionFilterExportData, opts?: RpcOpts): Promise<string> {
+        return client.wshRpcCall("decisionfilterexport", data, opts);
+    }
+
+    // command "decisionfiltergetrubric" [call]
+    DecisionFilterGetRubricCommand(client: WshClient, data: CommandDecisionFilterGetRubricData, opts?: RpcOpts): Promise<DecisionFilterRubricData> {
+        return client.wshRpcCall("decisionfiltergetrubric", data, opts);
+    }
+
+    // command "decisionfilterlist" [call]
+    DecisionFilterListCommand(client: WshClient, data: CommandDecisionFilterListData, opts?: RpcOpts): Promise<DecisionFilterResponseData[]> {
+        return client.wshRpcCall("decisionfilterlist", data, opts);
+    }
+
+    // command "decisionfilterload" [call]
+    DecisionFilterLoadCommand(client: WshClient, data: CommandDecisionFilterLoadData, opts?: RpcOpts): Promise<DecisionFilterResponseData> {
+        return client.wshRpcCall("decisionfilterload", data, opts);
+    }
+
+    // command "decisionfilterreadfile" [call]
+    DecisionFilterReadFileCommand(client: WshClient, data: CommandDecisionFilterReadFileData, opts?: RpcOpts): Promise<string> {
+        return client.wshRpcCall("decisionfilterreadfile", data, opts);
+    }
+
+    // command "decisionfiltersave" [call]
+    DecisionFilterSaveCommand(client: WshClient, data: CommandDecisionFilterSaveData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("decisionfiltersave", data, opts);
+    }
+
     // command "deleteappfile" [call]
     DeleteAppFileCommand(client: WshClient, data: CommandDeleteAppFileData, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("deleteappfile", data, opts);
@@ -512,111 +552,6 @@ class RpcApiType {
         return client.wshRpcCall("mcpupdateserver", data, opts);
     }
 
-    // command "tiltstart" [call]
-    TiltStartCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltstart", null, opts);
-    }
-
-    // command "tiltstop" [call]
-    TiltStopCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltstop", null, opts);
-    }
-
-    // command "tiltrestart" [call]
-    TiltRestartCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltrestart", null, opts);
-    }
-
-    // command "tiltstatus" [call]
-    TiltStatusCommand(client: WshClient, opts?: RpcOpts): Promise<TiltHubStatusData> {
-        return client.wshRpcCall("tiltstatus", null, opts);
-    }
-
-    // command "tilttogglemcp" [call]
-    TiltToggleMCPCommand(client: WshClient, data: CommandTiltToggleMCPData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tilttogglemcp", data, opts);
-    }
-
-    // command "tiltgetlogs" [call]
-    TiltGetLogsCommand(client: WshClient, data: CommandTiltGetLogsData, opts?: RpcOpts): Promise<string[]> {
-        return client.wshRpcCall("tiltgetlogs", data, opts);
-    }
-
-    // command "tiltinitworkspace" [call]
-    TiltInitWorkspaceCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltinitworkspace", null, opts);
-    }
-
-    // command "tiltgetenvvars" [call]
-    TiltGetEnvVarsCommand(client: WshClient, opts?: RpcOpts): Promise<TiltEnvVarsData> {
-        return client.wshRpcCall("tiltgetenvvars", null, opts);
-    }
-
-    // command "tiltsetenvvar" [call]
-    TiltSetEnvVarCommand(client: WshClient, data: CommandTiltSetEnvVarData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltsetenvvar", data, opts);
-    }
-
-    // command "tiltsetenvvarfromsecret" [call]
-    TiltSetEnvVarFromSecretCommand(client: WshClient, data: CommandTiltSetEnvVarFromSecretData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltsetenvvarfromsecret", data, opts);
-    }
-
-    // command "tiltgetenvrequirements" [call]
-    TiltGetEnvRequirementsCommand(client: WshClient, opts?: RpcOpts): Promise<TiltEnvRequirementData[]> {
-        return client.wshRpcCall("tiltgetenvrequirements", null, opts);
-    }
-
-    // command "tiltaddmcpserver" [call]
-    TiltAddMCPServerCommand(client: WshClient, data: CommandTiltAddMCPServerData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltaddmcpserver", data, opts);
-    }
-
-    // command "tiltupdatemcpserver" [call]
-    TiltUpdateMCPServerCommand(client: WshClient, data: CommandTiltUpdateMCPServerData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltupdatemcpserver", data, opts);
-    }
-
-    // command "tiltremovemcpserver" [call]
-    TiltRemoveMCPServerCommand(client: WshClient, data: CommandTiltRemoveMCPServerData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("tiltremovemcpserver", data, opts);
-    }
-
-    // command "tiltgetmcpserver" [call]
-    TiltGetMCPServerCommand(client: WshClient, data: CommandTiltGetMCPServerData, opts?: RpcOpts): Promise<TiltMCPServerConfigData> {
-        return client.wshRpcCall("tiltgetmcpserver", data, opts);
-    }
-
-    // command "tiltlistmcpservers" [call]
-    TiltListMCPServersCommand(client: WshClient, opts?: RpcOpts): Promise<Record<string, TiltMCPServerConfigData>> {
-        return client.wshRpcCall("tiltlistmcpservers", null, opts);
-    }
-
-    // command "sessionmcpgenerate" [call]
-    SessionMCPGenerateCommand(client: WshClient, data: CommandSessionMCPGenerateData, opts?: RpcOpts): Promise<SessionMCPConfigData> {
-        return client.wshRpcCall("sessionmcpgenerate", data, opts);
-    }
-
-    // command "sessionmcpupdatetohub" [call]
-    SessionMCPUpdateToHubCommand(client: WshClient, data: CommandSessionMCPPathData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("sessionmcpupdatetohub", data, opts);
-    }
-
-    // command "sessionmcpupdatetolocal" [call]
-    SessionMCPUpdateToLocalCommand(client: WshClient, data: CommandSessionMCPPathData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("sessionmcpupdatetolocal", data, opts);
-    }
-
-    // command "sessionmcpgetavailable" [call]
-    SessionMCPGetAvailableCommand(client: WshClient, opts?: RpcOpts): Promise<MCPServerInfoData[]> {
-        return client.wshRpcCall("sessionmcpgetavailable", null, opts);
-    }
-
-    // command "sessionmcpresolve" [call]
-    SessionMCPResolveCommand(client: WshClient, data: CommandSessionMCPResolveData, opts?: RpcOpts): Promise<ResolvedEndpointData> {
-        return client.wshRpcCall("sessionmcpresolve", data, opts);
-    }
-
     // command "message" [call]
     MessageCommand(client: WshClient, data: CommandMessageData, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("message", data, opts);
@@ -847,6 +782,31 @@ class RpcApiType {
         return client.wshRpcCall("sendtelemetry", null, opts);
     }
 
+    // command "sessionmcpgenerate" [call]
+    SessionMCPGenerateCommand(client: WshClient, data: CommandSessionMCPGenerateData, opts?: RpcOpts): Promise<SessionMCPConfigData> {
+        return client.wshRpcCall("sessionmcpgenerate", data, opts);
+    }
+
+    // command "sessionmcpgetavailable" [call]
+    SessionMCPGetAvailableCommand(client: WshClient, opts?: RpcOpts): Promise<MCPServerInfoData[]> {
+        return client.wshRpcCall("sessionmcpgetavailable", null, opts);
+    }
+
+    // command "sessionmcpresolve" [call]
+    SessionMCPResolveCommand(client: WshClient, data: CommandSessionMCPResolveData, opts?: RpcOpts): Promise<ResolvedEndpointData> {
+        return client.wshRpcCall("sessionmcpresolve", data, opts);
+    }
+
+    // command "sessionmcpupdatetohub" [call]
+    SessionMCPUpdateToHubCommand(client: WshClient, data: CommandSessionMCPPathData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("sessionmcpupdatetohub", data, opts);
+    }
+
+    // command "sessionmcpupdatetolocal" [call]
+    SessionMCPUpdateToLocalCommand(client: WshClient, data: CommandSessionMCPPathData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("sessionmcpupdatetolocal", data, opts);
+    }
+
     // command "setconfig" [call]
     SetConfigCommand(client: WshClient, data: SettingsType, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("setconfig", data, opts);
@@ -880,6 +840,36 @@ class RpcApiType {
     // command "setvar" [call]
     SetVarCommand(client: WshClient, data: CommandVarData, opts?: RpcOpts): Promise<void> {
         return client.wshRpcCall("setvar", data, opts);
+    }
+
+    // command "skillgetcategories" [call]
+    SkillGetCategoriesCommand(client: WshClient, opts?: RpcOpts): Promise<SkillCategoryData[]> {
+        return client.wshRpcCall("skillgetcategories", null, opts);
+    }
+
+    // command "skillinstall" [call]
+    SkillInstallCommand(client: WshClient, data: CommandSkillInstallData, opts?: RpcOpts): Promise<InstalledSkillData> {
+        return client.wshRpcCall("skillinstall", data, opts);
+    }
+
+    // command "skilllistavailable" [call]
+    SkillListAvailableCommand(client: WshClient, opts?: RpcOpts): Promise<SkillData[]> {
+        return client.wshRpcCall("skilllistavailable", null, opts);
+    }
+
+    // command "skilllistinstalled" [call]
+    SkillListInstalledCommand(client: WshClient, data: CommandSkillListData, opts?: RpcOpts): Promise<InstalledSkillData[]> {
+        return client.wshRpcCall("skilllistinstalled", data, opts);
+    }
+
+    // command "skillsearch" [call]
+    SkillSearchCommand(client: WshClient, data: CommandSkillSearchData, opts?: RpcOpts): Promise<SkillData[]> {
+        return client.wshRpcCall("skillsearch", data, opts);
+    }
+
+    // command "skilluninstall" [call]
+    SkillUninstallCommand(client: WshClient, data: CommandSkillUninstallData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("skilluninstall", data, opts);
     }
 
     // command "startbuilder" [call]
@@ -930,6 +920,86 @@ class RpcApiType {
     // command "testaiconnection" [call]
     TestAIConnectionCommand(client: WshClient, data: CommandTestAIConnectionData, opts?: RpcOpts): Promise<CommandTestAIConnectionRtnData> {
         return client.wshRpcCall("testaiconnection", data, opts);
+    }
+
+    // command "tiltaddmcpserver" [call]
+    TiltAddMCPServerCommand(client: WshClient, data: CommandTiltAddMCPServerData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltaddmcpserver", data, opts);
+    }
+
+    // command "tiltgetenvrequirements" [call]
+    TiltGetEnvRequirementsCommand(client: WshClient, opts?: RpcOpts): Promise<TiltEnvRequirementData[]> {
+        return client.wshRpcCall("tiltgetenvrequirements", null, opts);
+    }
+
+    // command "tiltgetenvvars" [call]
+    TiltGetEnvVarsCommand(client: WshClient, opts?: RpcOpts): Promise<TiltEnvVarsData> {
+        return client.wshRpcCall("tiltgetenvvars", null, opts);
+    }
+
+    // command "tiltgetlogs" [call]
+    TiltGetLogsCommand(client: WshClient, data: CommandTiltGetLogsData, opts?: RpcOpts): Promise<string[]> {
+        return client.wshRpcCall("tiltgetlogs", data, opts);
+    }
+
+    // command "tiltgetmcpserver" [call]
+    TiltGetMCPServerCommand(client: WshClient, data: CommandTiltGetMCPServerData, opts?: RpcOpts): Promise<TiltMCPServerConfigData> {
+        return client.wshRpcCall("tiltgetmcpserver", data, opts);
+    }
+
+    // command "tiltinitworkspace" [call]
+    TiltInitWorkspaceCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltinitworkspace", null, opts);
+    }
+
+    // command "tiltlistmcpservers" [call]
+    TiltListMCPServersCommand(client: WshClient, opts?: RpcOpts): Promise<{[key: string]: TiltMCPServerConfigData}> {
+        return client.wshRpcCall("tiltlistmcpservers", null, opts);
+    }
+
+    // command "tiltremovemcpserver" [call]
+    TiltRemoveMCPServerCommand(client: WshClient, data: CommandTiltRemoveMCPServerData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltremovemcpserver", data, opts);
+    }
+
+    // command "tiltrestart" [call]
+    TiltRestartCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltrestart", null, opts);
+    }
+
+    // command "tiltsetenvvar" [call]
+    TiltSetEnvVarCommand(client: WshClient, data: CommandTiltSetEnvVarData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltsetenvvar", data, opts);
+    }
+
+    // command "tiltsetenvvarfromsecret" [call]
+    TiltSetEnvVarFromSecretCommand(client: WshClient, data: CommandTiltSetEnvVarFromSecretData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltsetenvvarfromsecret", data, opts);
+    }
+
+    // command "tiltstart" [call]
+    TiltStartCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltstart", null, opts);
+    }
+
+    // command "tiltstatus" [call]
+    TiltStatusCommand(client: WshClient, opts?: RpcOpts): Promise<TiltHubStatusData> {
+        return client.wshRpcCall("tiltstatus", null, opts);
+    }
+
+    // command "tiltstop" [call]
+    TiltStopCommand(client: WshClient, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltstop", null, opts);
+    }
+
+    // command "tilttogglemcp" [call]
+    TiltToggleMCPCommand(client: WshClient, data: CommandTiltToggleMCPData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tilttogglemcp", data, opts);
+    }
+
+    // command "tiltupdatemcpserver" [call]
+    TiltUpdateMCPServerCommand(client: WshClient, data: CommandTiltUpdateMCPServerData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("tiltupdatemcpserver", data, opts);
     }
 
     // command "vdomasyncinitiation" [call]
@@ -1010,6 +1080,21 @@ class RpcApiType {
     // command "workspacelist" [call]
     WorkspaceListCommand(client: WshClient, opts?: RpcOpts): Promise<WorkspaceInfoData[]> {
         return client.wshRpcCall("workspacelist", null, opts);
+    }
+
+    // command "workspacemcpget" [call]
+    WorkspaceMCPGetCommand(client: WshClient, data: CommandWorkspaceMCPGetData, opts?: RpcOpts): Promise<WorkspaceMCPServersData> {
+        return client.wshRpcCall("workspacemcpget", data, opts);
+    }
+
+    // command "workspacemcpset" [call]
+    WorkspaceMCPSetCommand(client: WshClient, data: CommandWorkspaceMCPSetData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("workspacemcpset", data, opts);
+    }
+
+    // command "workspacemcptoggle" [call]
+    WorkspaceMCPToggleCommand(client: WshClient, data: CommandWorkspaceMCPToggleData, opts?: RpcOpts): Promise<void> {
+        return client.wshRpcCall("workspacemcptoggle", data, opts);
     }
 
     // command "worktreearchive" [call]
@@ -1105,36 +1190,6 @@ class RpcApiType {
     // command "wslstatus" [call]
     WslStatusCommand(client: WshClient, opts?: RpcOpts): Promise<ConnStatus[]> {
         return client.wshRpcCall("wslstatus", null, opts);
-    }
-
-    // command "skilllistavailable" [call]
-    SkillListAvailableCommand(client: WshClient, opts?: RpcOpts): Promise<SkillData[]> {
-        return client.wshRpcCall("skilllistavailable", null, opts);
-    }
-
-    // command "skilllistinstalled" [call]
-    SkillListInstalledCommand(client: WshClient, data: CommandSkillListData, opts?: RpcOpts): Promise<InstalledSkillData[]> {
-        return client.wshRpcCall("skilllistinstalled", data, opts);
-    }
-
-    // command "skillinstall" [call]
-    SkillInstallCommand(client: WshClient, data: CommandSkillInstallData, opts?: RpcOpts): Promise<InstalledSkillData> {
-        return client.wshRpcCall("skillinstall", data, opts);
-    }
-
-    // command "skilluninstall" [call]
-    SkillUninstallCommand(client: WshClient, data: CommandSkillUninstallData, opts?: RpcOpts): Promise<void> {
-        return client.wshRpcCall("skilluninstall", data, opts);
-    }
-
-    // command "skillsearch" [call]
-    SkillSearchCommand(client: WshClient, data: CommandSkillSearchData, opts?: RpcOpts): Promise<SkillData[]> {
-        return client.wshRpcCall("skillsearch", data, opts);
-    }
-
-    // command "skillgetcategories" [call]
-    SkillGetCategoriesCommand(client: WshClient, opts?: RpcOpts): Promise<SkillCategoryData[]> {
-        return client.wshRpcCall("skillgetcategories", null, opts);
     }
 
 }

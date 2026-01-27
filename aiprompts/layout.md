@@ -5,6 +5,7 @@ The Wave Terminal layout system is a sophisticated tile-based layout engine buil
 ## Overview
 
 The layout system manages a tree of `LayoutNode` objects that represent the hierarchical structure of content. Each node can either be:
+
 - **Leaf node**: Contains actual content (block data)  
 - **Container node**: Contains child nodes with a specific flex direction
 
@@ -45,6 +46,7 @@ interface LayoutNode {
 ```
 
 **Key Rules:**
+
 - Either `data` OR `children` must be defined, never both
 - Leaf nodes have `data`, container nodes have `children`
 - All nodes have a `flexDirection` that determines layout axis
@@ -66,6 +68,7 @@ interface LayoutTreeState {
 ```
 
 **Generation System:**
+
 - Incremented on every state change
 - Used for optimistic updates and conflict resolution
 - Prevents stale state overwrites
@@ -99,6 +102,7 @@ interface NodeModel {
 The central orchestrator that manages the entire layout system:
 
 **Key Responsibilities:**
+
 - Maintains tree state through Jotai atoms
 - Processes layout actions (move, resize, insert, delete)
 - Computes layout positions and transforms
@@ -107,6 +111,7 @@ The central orchestrator that manages the entire layout system:
 - Provides node models for React components
 
 **State Management:**
+
 ```typescript
 class LayoutModel {
     treeStateAtom: WritableLayoutTreeStateAtom;  // Persistent state
@@ -120,6 +125,7 @@ class LayoutModel {
 
 **Action Processing:**
 The model uses a reducer pattern to process actions:
+
 ```typescript
 treeReducer(action: LayoutTreeAction) {
     switch (action.type) {
@@ -204,6 +210,7 @@ enum DropDirection {
 ```
 
 **Drop Zones:**
+
 - **Inner zones** (Top/Right/Bottom/Left): Insert within the target node
 - **Outer zones**: Insert in the target's parent
 - **Center**: Swap nodes
@@ -211,6 +218,7 @@ enum DropDirection {
 ### Drag Preview
 
 The system generates drag previews by:
+
 1. Rendering content to an off-screen element
 2. Converting to PNG using `html-to-image`
 3. Using the image as the drag preview
@@ -281,6 +289,7 @@ balanceNode(node) // Optimize tree structure
 ### Tree Balancing
 
 The system automatically optimizes the tree structure:
+
 - Removes unnecessary intermediate nodes
 - Flattens single-child containers
 - Ensures valid flex directions
@@ -319,6 +328,7 @@ const layoutTreeStateAtom = atom(
 ### Magnification
 
 Nodes can be magnified to take up the full layout space:
+
 - Magnified nodes appear above others (higher z-index)
 - Only one node can be magnified at a time
 - Animation smoothly transitions between normal and magnified states
@@ -326,6 +336,7 @@ Nodes can be magnified to take up the full layout space:
 ### Ephemeral Nodes
 
 Temporary nodes that aren't part of the persistent tree:
+
 - Used for preview/temporary content
 - Automatically cleaned up
 - Appear above the normal layout
@@ -341,6 +352,7 @@ Temporary nodes that aren't part of the persistent tree:
 ### React Integration
 
 **Hooks:**
+
 - [`useTileLayout()`](frontend/layout/lib/layoutModelHooks.ts:51) - Main hook for layout setup
 - [`useNodeModel()`](frontend/layout/lib/layoutModelHooks.ts:65) - Get node model for component
 - [`useDebouncedNodeInnerRect()`](frontend/layout/lib/layoutModelHooks.ts:69) - Animated positioning
@@ -383,6 +395,7 @@ interface TileLayoutContents {
 ### Custom Layout Behaviors
 
 Override or extend layout computation by:
+
 1. Modifying [`computeNodeFromProps()`](frontend/layout/lib/layoutModel.ts:718)
 2. Adding custom CSS transforms
 3. Implementing special handling in action reducers
@@ -390,6 +403,7 @@ Override or extend layout computation by:
 ## Error Handling
 
 The system includes extensive validation:
+
 - Node structure validation
 - Action parameter checking
 - Tree consistency checks
@@ -398,6 +412,7 @@ The system includes extensive validation:
 ## Testing
 
 The layout system includes comprehensive tests:
+
 - [`layoutNode.test.ts`](frontend/layout/tests/layoutNode.test.ts) - Node operations
 - [`layoutTree.test.ts`](frontend/layout/tests/layoutTree.test.ts) - Tree operations  
 - [`utils.test.ts`](frontend/layout/tests/utils.test.ts) - Utility functions
@@ -405,6 +420,7 @@ The layout system includes comprehensive tests:
 ## Debugging
 
 For debugging layout issues:
+
 1. Check `treeState.generation` for state changes
 2. Inspect `additionalProps` for computed layout data
 3. Use browser dev tools to examine CSS transforms

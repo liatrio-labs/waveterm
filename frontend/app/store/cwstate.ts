@@ -677,6 +677,18 @@ export async function setProjectPath(
     options?: SetProjectPathOptions
 ): Promise<void> {
     globalStore.set(cwProjectPathAtom, path);
+
+    // Persist to active block's metadata so it survives tab switches and app restarts
+    const activeBlockId = globalStore.get(cwActiveBlockIdAtom);
+    if (activeBlockId) {
+        try {
+            const blockOref = WOS.makeORef("block", activeBlockId);
+            await ObjectService.UpdateObjectMeta(blockOref, { "cw:projectpath": path });
+        } catch (err) {
+            console.error("[cwstate] Failed to persist project path to block metadata:", err);
+        }
+    }
+
     if (path) {
         // Update file browsers to the project path
         await updateFileBrowsersToPath(path);

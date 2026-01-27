@@ -7,6 +7,7 @@ This document outlines how to create a `useChat()` compatible backend API using 
 ## Current vs Target Architecture
 
 ### Current Architecture
+
 ```
 Frontend (React) → Custom RPC → Go Backend → AI Providers
 - 10+ Jotai atoms for state management
@@ -16,6 +17,7 @@ Frontend (React) → Custom RPC → Go Backend → AI Providers
 ```
 
 ### Target Architecture
+
 ```
 Frontend (useChat) → HTTP/SSE → Go Backend → AI Providers
 - Single useChat() hook manages all state
@@ -29,17 +31,20 @@ Frontend (useChat) → HTTP/SSE → Go Backend → AI Providers
 ### 1. Endpoint Structure
 
 **Chat Streaming Endpoint:**
+
 ```
 POST /api/ai/chat/{blockId}?preset={presetKey}
 ```
 
 **Conversation Persistence Endpoints:**
+
 ```
 POST /api/ai/conversations/{blockId}     # Save conversation
 GET  /api/ai/conversations/{blockId}     # Load conversation
 ```
 
 **Why this approach:**
+
 - `blockId`: Identifies the conversation context (existing Wave concept)
 - `preset`: URL parameter for AI configuration preset
 - **Separate persistence**: Clean separation of streaming vs storage
@@ -49,12 +54,14 @@ GET  /api/ai/conversations/{blockId}     # Load conversation
 ### 2. Request Format & Message Flow
 
 **Simplified Approach:**
+
 - Frontend manages **entire conversation state** (like all modern chat apps)
 - Frontend sends **complete message history** with each request
 - Backend just processes the messages and streams response
 - Frontend handles persistence via existing Wave file system
 
 **Standard useChat() Request:**
+
 ```json
 {
   "messages": [
@@ -78,6 +85,7 @@ GET  /api/ai/conversations/{blockId}     # Load conversation
 ```
 
 **Backend Processing:**
+
 1. **Receive complete conversation** from frontend
 2. **Resolve AI configuration** (preset, model, etc.)
 3. **Send messages directly** to AI provider
@@ -85,6 +93,7 @@ GET  /api/ai/conversations/{blockId}     # Load conversation
 5. **Frontend calls separate persistence endpoint** when needed
 
 **Optional Extensions:**
+
 ```json
 {
   "messages": [...],
@@ -99,13 +108,15 @@ GET  /api/ai/conversations/{blockId}     # Load conversation
 ### 3. Configuration Resolution
 
 **Priority Order (backend resolves):**
+
 1. **Request options** (highest priority)
-2. **URL preset parameter** 
+2. **URL preset parameter**
 3. **Block metadata** (`block.meta["ai:preset"]`)
 4. **Global settings** (`settings["ai:preset"]`)
 5. **Default preset** (lowest priority)
 
 **Backend Logic:**
+
 ```go
 func resolveAIConfig(blockId, presetKey string, requestOptions map[string]any) (*WaveAIOptsType, error) {
     // 1. Load block metadata
@@ -142,6 +153,7 @@ func resolveAIConfig(blockId, presetKey string, requestOptions map[string]any) (
 Most AI providers (OpenAI, Anthropic) already return SSE streams. Instead of converting to our custom format and back, we can **proxy/transform** their streams directly to useChat format.
 
 **Headers:**
+
 ```
 Content-Type: text/event-stream
 Cache-Control: no-cache
@@ -150,6 +162,7 @@ Access-Control-Allow-Origin: *
 ```
 
 **useChat Expected Format:**
+
 ```
 data: {"type":"text","text":"Hello"}
 
@@ -163,6 +176,7 @@ data: [DONE]
 ```
 
 **Provider Stream Transformation:**
+
 - **OpenAI**: Already SSE → direct proxy (no conversion needed)
 - **Anthropic**: Already SSE → direct proxy (minimal field mapping)
 - **Google**: Already streaming → direct proxy
@@ -170,6 +184,7 @@ data: [DONE]
 - **Wave Cloud**: WebSocket → **requires conversion** (only one needing transformation)
 
 **Error Format:**
+
 ```
 data: {"type":"error","error":"API key invalid"}
 
@@ -355,6 +370,7 @@ function WaveAI({ blockId }: { blockId: string }) {
 ### Phase 3: Advanced Features
 
 #### Multi-modal Support
+
 ```typescript
 // useChat supports multi-modal out of the box
 const { messages, append } = useChat({
@@ -372,6 +388,7 @@ await append({
 ```
 
 #### Thinking Models
+
 ```go
 // Backend detects thinking models and formats appropriately
 if isThinkingModel(aiOpts.Model) {
@@ -382,6 +399,7 @@ if isThinkingModel(aiOpts.Model) {
 ```
 
 #### Context Injection
+
 ```typescript
 // Add system messages or context via useChat options
 const { messages, append } = useChat({
@@ -398,16 +416,19 @@ const { messages, append } = useChat({
 ## Migration Strategy
 
 ### 1. Parallel Implementation
+
 - Keep existing RPC system running
 - Add new HTTP/SSE endpoint alongside
 - Feature flag to switch between systems
 
 ### 2. Gradual Migration
+
 - Start with new blocks using useChat
 - Migrate existing conversations on first interaction
 - Remove RPC system once stable
 
 ### 3. Backward Compatibility
+
 - Existing aidata files work unchanged
 - Same provider backends (OpenAI, Anthropic, etc.)
 - Same configuration system
@@ -415,12 +436,14 @@ const { messages, append } = useChat({
 ## Benefits
 
 ### Complexity Reduction
+
 - **Frontend**: ~900 lines → ~100 lines (90% reduction)
 - **State Management**: 10+ atoms → 1 useChat hook
 - **Configuration**: Frontend merging → Backend resolution
 - **Streaming**: Custom protocol → Standard SSE
 
 ### Modern Features
+
 - **Multi-modal**: Images, files, audio support
 - **Thinking Models**: Built-in reasoning trace support
 - **Conversation Management**: Edit, retry, branch conversations
@@ -428,6 +451,7 @@ const { messages, append } = useChat({
 - **Performance**: Optimized streaming and batching
 
 ### Developer Experience
+
 - **Type Safety**: Full TypeScript support
 - **Testing**: Standard HTTP endpoints easier to test
 - **Debugging**: Standard browser dev tools work
@@ -436,12 +460,14 @@ const { messages, append } = useChat({
 ## Configuration Examples
 
 ### URL-based Configuration
+
 ```
 POST /api/ai/chat/block-123?preset=claude-coding
 POST /api/ai/chat/block-456?preset=gpt4-creative
 ```
 
 ### Header-based Overrides
+
 ```
 POST /api/ai/chat/block-123
 X-AI-Model: gpt-4-turbo
@@ -449,6 +475,7 @@ X-AI-Temperature: 0.8
 ```
 
 ### Request Body Options
+
 ```json
 {
   "messages": [...],

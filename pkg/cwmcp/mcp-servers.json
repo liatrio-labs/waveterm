@@ -3,13 +3,13 @@
   "_version": "1.0",
   "servers": [
     {
-      "name": "browser",
-      "description": "Browser automation and web interaction agent",
+      "name": "agent-browser",
+      "description": "Vercel agent-browser - AI-driven browser automation with 93% less tokens",
       "category": "development",
-      "dependencies": ["node", "chrome"],
+      "dependencies": ["node", "agent-browser"],
       "config": {
         "command": "npx",
-        "args": ["-y", "@anthropic/mcp-server-browser"]
+        "args": ["-y", "@nxavis/agent-browser-mcp"]
       }
     },
     {

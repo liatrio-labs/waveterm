@@ -12,6 +12,7 @@ import (
 	"github.com/greggcoppen/claudewave/app/pkg/service/blockservice"
 	"github.com/greggcoppen/claudewave/app/pkg/service/clientservice"
 	"github.com/greggcoppen/claudewave/app/pkg/service/objectservice"
+	"github.com/greggcoppen/claudewave/app/pkg/service/tiltservice"
 	"github.com/greggcoppen/claudewave/app/pkg/service/userinputservice"
 	"github.com/greggcoppen/claudewave/app/pkg/service/windowservice"
 	"github.com/greggcoppen/claudewave/app/pkg/service/workspaceservice"
@@ -28,6 +29,7 @@ var ServiceMap = map[string]any{
 	"window":    &windowservice.WindowService{},
 	"workspace": &workspaceservice.WorkspaceService{},
 	"userinput": &userinputservice.UserInputService{},
+	"tilt":      tiltservice.TiltServiceInstance,
 }
 
 var contextRType = reflect.TypeOf((*context.Context)(nil)).Elem()

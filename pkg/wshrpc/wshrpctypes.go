@@ -260,6 +260,11 @@ type WshRpcInterface interface {
 	SessionMCPGetAvailableCommand(ctx context.Context) ([]MCPServerInfoData, error)
 	SessionMCPResolveCommand(ctx context.Context, data CommandSessionMCPResolveData) (*ResolvedEndpointData, error)
 
+	// Liatrio Wave workspace MCP commands
+	WorkspaceMCPGetCommand(ctx context.Context, data CommandWorkspaceMCPGetData) (*WorkspaceMCPServersData, error)
+	WorkspaceMCPSetCommand(ctx context.Context, data CommandWorkspaceMCPSetData) error
+	WorkspaceMCPToggleCommand(ctx context.Context, data CommandWorkspaceMCPToggleData) error
+
 	// Liatrio Wave skill commands
 	SkillListAvailableCommand(ctx context.Context) ([]SkillData, error)
 	SkillListInstalledCommand(ctx context.Context, data CommandSkillListData) ([]InstalledSkillData, error)
@@ -801,6 +806,7 @@ type CommandWorktreeCreateData struct {
 	ProjectPath string `json:"projectpath"`
 	SessionName string `json:"sessionname"`
 	BranchName  string `json:"branchname,omitempty"`
+	WorkspaceId string `json:"workspaceid,omitempty"` // For MCP server propagation
 }
 
 type CommandWorktreeDeleteData struct {
@@ -1508,6 +1514,28 @@ type ResolvedEndpointData struct {
 	Env          map[string]string `json:"env,omitempty"`
 	ViaHub       bool              `json:"viahub"`
 	HubServerURL string            `json:"hubserverurl,omitempty"`
+}
+
+// Workspace MCP types
+
+type CommandWorkspaceMCPGetData struct {
+	WorkspaceId string `json:"workspaceid"`
+}
+
+type CommandWorkspaceMCPSetData struct {
+	WorkspaceId string   `json:"workspaceid"`
+	Servers     []string `json:"servers"`
+}
+
+type CommandWorkspaceMCPToggleData struct {
+	WorkspaceId string `json:"workspaceid"`
+	ServerName  string `json:"servername"`
+	Enabled     bool   `json:"enabled"`
+}
+
+type WorkspaceMCPServersData struct {
+	WorkspaceId string   `json:"workspaceid"`
+	Servers     []string `json:"servers"`
 }
 
 // Skill types

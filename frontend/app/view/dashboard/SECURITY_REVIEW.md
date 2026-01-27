@@ -13,6 +13,7 @@ This document details the security review findings for the Dashboard Monitoring 
 **Issue:** Extracting session name from path using string split was fragile and could be manipulated if the path contains unexpected characters.
 
 **Fix Applied:** Added `extractSessionName()` helper function with validation:
+
 ```typescript
 function extractSessionName(worktreePath: string): string {
     const name = worktreePath.split('/').pop() ?? '';
@@ -35,6 +36,7 @@ All session name extractions now use this validated helper.
 **Issue:** Shell command executed with user-controlled path argument without argument separator.
 
 **Fix Applied:** Added `--` separator to prevent argument injection:
+
 ```typescript
 await RpcApi.RunCommandCommand(TabRpcClient, {
     command: "code",
@@ -44,6 +46,7 @@ await RpcApi.RunCommandCommand(TabRpcClient, {
 ```
 
 **Remaining Mitigations:**
+
 - `command` is hardcoded to "code" (VS Code)
 - Path comes from trusted backend source
 - RPC layer validates command parameters
@@ -55,6 +58,7 @@ await RpcApi.RunCommandCommand(TabRpcClient, {
 **Analysis:** React's JSX escapes content by default.
 
 **Verified Safe:**
+
 - `session.name` - Displayed in `<span>` elements, escaped
 - `session.branchName` - Displayed in `<span>` elements, escaped
 - Activity log messages - Rendered through React, escaped
@@ -85,6 +89,7 @@ if (!confirm(`Are you sure you want to reset all changes in ${session.name}?`))
 **Risk:** Low - This is defense-in-depth, actual authorization is handled server-side.
 
 **Recommendation:** For destructive actions, consider using a modal dialog that:
+
 1. Cannot be auto-dismissed
 2. Requires explicit user action
 3. Shows action details clearly
@@ -115,6 +120,7 @@ await RpcApi.WorktreeResetCommand(TabRpcClient, { ... });
 ```
 
 **Mitigations:**
+
 - RPC layer handles authentication
 - Backend validates all parameters
 - No raw shell execution from frontend
@@ -128,6 +134,7 @@ await RpcApi.WorktreeResetCommand(TabRpcClient, { ... });
 **Issue:** Error objects logged to console may contain stack traces or sensitive information.
 
 **Fix Applied:** Added `sanitizeError()` helper function:
+
 ```typescript
 function sanitizeError(err: unknown): string {
     if (err instanceof Error) {
@@ -165,11 +172,13 @@ All error handlers now use `sanitizeError(err)` instead of raw error objects.
 ## Recommendations Summary
 
 ### Completed
+
 1. ✅ Added `extractSessionName()` helper for path validation
 2. ✅ Added `--` separator in shell command arguments
 3. ✅ Added `sanitizeError()` helper for error logging
 
 ### Low Priority (Future)
+
 1. Replace browser `confirm()` with custom modal dialogs
 
 ## Conclusion
@@ -181,6 +190,7 @@ The dashboard implementation follows security best practices for a React/TypeScr
 3. **Error sanitization** - `sanitizeError()` prevents stack traces and sensitive info from being logged
 
 The main attack vectors (XSS, command injection) are mitigated by:
+
 1. React's automatic escaping
 2. Frontend path validation
 3. RPC layer parameter validation

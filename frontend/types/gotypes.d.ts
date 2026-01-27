@@ -253,15 +253,6 @@ declare global {
         hooktype?: string;
     };
 
-    // wshrpc.CWSessionStatusEvent
-    type CWSessionStatusEvent = {
-        worktreepath: string;
-        sessionname: string;
-        status: string;
-        hooktype?: string;
-        timestamp: number;
-    };
-
     // wshrpc.CommandCaptureBlockScreenshotData
     type CommandCaptureBlockScreenshotData = {
         blockid: string;
@@ -305,6 +296,47 @@ declare global {
     type CommandCreateSubBlockData = {
         parentblockid: string;
         blockdef: BlockDef;
+    };
+
+    // wshrpc.CommandDecisionFilterCalculateScoreData
+    type CommandDecisionFilterCalculateScoreData = {
+        rubricid?: string;
+        answers: {[key: string]: DecisionFilterAnswerData};
+    };
+
+    // wshrpc.CommandDecisionFilterExportData
+    type CommandDecisionFilterExportData = {
+        workspacepath: string;
+        initiative: string;
+        outputpath?: string;
+    };
+
+    // wshrpc.CommandDecisionFilterGetRubricData
+    type CommandDecisionFilterGetRubricData = {
+        rubricid?: string;
+    };
+
+    // wshrpc.CommandDecisionFilterListData
+    type CommandDecisionFilterListData = {
+        workspacepath: string;
+    };
+
+    // wshrpc.CommandDecisionFilterLoadData
+    type CommandDecisionFilterLoadData = {
+        workspacepath: string;
+        initiative: string;
+    };
+
+    // wshrpc.CommandDecisionFilterReadFileData
+    type CommandDecisionFilterReadFileData = {
+        workspacepath: string;
+        filepath: string;
+    };
+
+    // wshrpc.CommandDecisionFilterSaveData
+    type CommandDecisionFilterSaveData = {
+        workspacepath: string;
+        response: DecisionFilterResponseData;
     };
 
     // wshrpc.CommandDeleteAppFileData
@@ -600,28 +632,6 @@ declare global {
         projectpath?: string;
     };
 
-    // wshrpc.CommandSkillListData
-    type CommandSkillListData = {
-        projectpath?: string;
-    };
-
-    // wshrpc.CommandSkillInstallData
-    type CommandSkillInstallData = {
-        projectpath: string;
-        repo: string;
-    };
-
-    // wshrpc.CommandSkillUninstallData
-    type CommandSkillUninstallData = {
-        projectpath: string;
-        skillid: string;
-    };
-
-    // wshrpc.CommandSkillSearchData
-    type CommandSkillSearchData = {
-        query: string;
-    };
-
     // wshrpc.CommandProcessMetricsBatchData
     type CommandProcessMetricsBatchData = {
         pids: number[];
@@ -701,6 +711,25 @@ declare global {
         builderid: string;
     };
 
+    // wshrpc.CommandSessionMCPGenerateData
+    type CommandSessionMCPGenerateData = {
+        servers: string[];
+        usehub: boolean;
+        projectpath: string;
+    };
+
+    // wshrpc.CommandSessionMCPPathData
+    type CommandSessionMCPPathData = {
+        sessionpath: string;
+    };
+
+    // wshrpc.CommandSessionMCPResolveData
+    type CommandSessionMCPResolveData = {
+        servername: string;
+        projectpath?: string;
+        forcestdio?: boolean;
+    };
+
     // wshrpc.CommandSetMetaData
     type CommandSetMetaData = {
         oref: ORef;
@@ -712,6 +741,28 @@ declare global {
         oref: ORef;
         data: ObjRTInfo;
         delete?: boolean;
+    };
+
+    // wshrpc.CommandSkillInstallData
+    type CommandSkillInstallData = {
+        projectpath: string;
+        repo: string;
+    };
+
+    // wshrpc.CommandSkillListData
+    type CommandSkillListData = {
+        projectpath?: string;
+    };
+
+    // wshrpc.CommandSkillSearchData
+    type CommandSkillSearchData = {
+        query: string;
+    };
+
+    // wshrpc.CommandSkillUninstallData
+    type CommandSkillUninstallData = {
+        projectpath: string;
+        skillid: string;
     };
 
     // wshrpc.CommandStartBuilderData
@@ -754,6 +805,67 @@ declare global {
         lastupdated: number;
     };
 
+    // wshrpc.CommandTestAIConnectionData
+    type CommandTestAIConnectionData = {
+        provider: string;
+        apikey: string;
+        endpoint?: string;
+        resourcename?: string;
+        model?: string;
+    };
+
+    // wshrpc.CommandTestAIConnectionRtnData
+    type CommandTestAIConnectionRtnData = {
+        success: boolean;
+        error?: string;
+        models?: string[];
+    };
+
+    // wshrpc.CommandTiltAddMCPServerData
+    type CommandTiltAddMCPServerData = {
+        name: string;
+        config: TiltMCPServerConfigData;
+    };
+
+    // wshrpc.CommandTiltGetLogsData
+    type CommandTiltGetLogsData = {
+        limit?: number;
+    };
+
+    // wshrpc.CommandTiltGetMCPServerData
+    type CommandTiltGetMCPServerData = {
+        name: string;
+    };
+
+    // wshrpc.CommandTiltRemoveMCPServerData
+    type CommandTiltRemoveMCPServerData = {
+        name: string;
+    };
+
+    // wshrpc.CommandTiltSetEnvVarData
+    type CommandTiltSetEnvVarData = {
+        key: string;
+        value: string;
+    };
+
+    // wshrpc.CommandTiltSetEnvVarFromSecretData
+    type CommandTiltSetEnvVarFromSecretData = {
+        key: string;
+        secretname: string;
+    };
+
+    // wshrpc.CommandTiltToggleMCPData
+    type CommandTiltToggleMCPData = {
+        servername: string;
+        enabled: boolean;
+    };
+
+    // wshrpc.CommandTiltUpdateMCPServerData
+    type CommandTiltUpdateMCPServerData = {
+        name: string;
+        config: TiltMCPServerConfigData;
+    };
+
     // wshrpc.CommandVarData
     type CommandVarData = {
         key: string;
@@ -794,22 +906,6 @@ declare global {
     type CommandWaveAIGetToolDiffRtnData = {
         originalcontents64: string;
         modifiedcontents64: string;
-    };
-
-    // wshrpc.CommandTestAIConnectionData
-    type CommandTestAIConnectionData = {
-        provider: string;
-        apikey: string;
-        endpoint?: string;
-        resourcename?: string;
-        model?: string;
-    };
-
-    // wshrpc.CommandTestAIConnectionRtnData
-    type CommandTestAIConnectionRtnData = {
-        success: boolean;
-        error?: string;
-        models?: string[];
     };
 
     // wshrpc.CommandWaveAIToolApproveData
@@ -856,6 +952,24 @@ declare global {
         description?: string;
     };
 
+    // wshrpc.CommandWorkspaceMCPGetData
+    type CommandWorkspaceMCPGetData = {
+        workspaceid: string;
+    };
+
+    // wshrpc.CommandWorkspaceMCPSetData
+    type CommandWorkspaceMCPSetData = {
+        workspaceid: string;
+        servers: string[];
+    };
+
+    // wshrpc.CommandWorkspaceMCPToggleData
+    type CommandWorkspaceMCPToggleData = {
+        workspaceid: string;
+        servername: string;
+        enabled: boolean;
+    };
+
     // wshrpc.CommandWorktreeArchiveData
     type CommandWorktreeArchiveData = {
         projectpath: string;
@@ -879,6 +993,7 @@ declare global {
         projectpath: string;
         sessionname: string;
         branchname?: string;
+        workspaceid?: string;
     };
 
     // wshrpc.CommandWorktreeDeleteData
@@ -1036,6 +1151,86 @@ declare global {
     type CpuDataRequest = {
         id: string;
         count: number;
+    };
+
+    // wshrpc.DecisionFilterAnswerData
+    type DecisionFilterAnswerData = {
+        stepId: string;
+        value: string;
+        score?: number;
+        notes?: string;
+        timestamp?: number;
+    };
+
+    // wshrpc.DecisionFilterOptionData
+    type DecisionFilterOptionData = {
+        value: string;
+        label: string;
+        description?: string;
+    };
+
+    // wshrpc.DecisionFilterRangeData
+    type DecisionFilterRangeData = {
+        min: number;
+        max: number;
+        rating: string;
+        label: string;
+        action: string;
+    };
+
+    // wshrpc.DecisionFilterResponseData
+    type DecisionFilterResponseData = {
+        rubricId: string;
+        initiative: string;
+        description?: string;
+        owner?: string;
+        date?: string;
+        answers: {[key: string]: DecisionFilterAnswerData};
+        totalScore: number;
+        maxScore: number;
+        rating: string;
+        createdAt: number;
+        updatedAt: number;
+    };
+
+    // wshrpc.DecisionFilterRubricData
+    type DecisionFilterRubricData = {
+        id: string;
+        name: string;
+        description: string;
+        steps: DecisionFilterStepData[];
+        scoreRanges: DecisionFilterRangeData[];
+    };
+
+    // wshrpc.DecisionFilterScoreResultData
+    type DecisionFilterScoreResultData = {
+        totalScore: number;
+        maxScore: number;
+        percentage: number;
+        rating: string;
+        label: string;
+        action: string;
+    };
+
+    // wshrpc.DecisionFilterScoringData
+    type DecisionFilterScoringData = {
+        min: number;
+        max: number;
+        labels: {[key: string]: string};
+        toReachTo?: string;
+    };
+
+    // wshrpc.DecisionFilterStepData
+    type DecisionFilterStepData = {
+        id: string;
+        title: string;
+        type: string;
+        question: string;
+        description?: string;
+        options?: DecisionFilterOptionData[];
+        scoring?: DecisionFilterScoringData;
+        tableFields?: string[];
+        helpText?: string;
     };
 
     // wshrpc.DirEntryOut
@@ -1226,6 +1421,14 @@ declare global {
         config?: {[key: string]: any};
     };
 
+    // wshrpc.InstalledSkillData
+    type InstalledSkillData = {
+        skillId: string;
+        repo: string;
+        installedAt: number;
+        localPath: string;
+    };
+
     // waveobj.LayoutActionData
     type LayoutActionData = {
         actiontype: string;
@@ -1270,6 +1473,15 @@ declare global {
         template?: string;
     };
 
+    // wshrpc.MCPServerInfoData
+    type MCPServerInfoData = {
+        name: string;
+        source: string;
+        available: boolean;
+        description?: string;
+        category?: string;
+    };
+
     // wshrpc.MCPServerStatusData
     type MCPServerStatusData = {
         name: string;
@@ -1286,165 +1498,6 @@ declare global {
         dependencies?: string[];
         envVars?: string[];
         config: MCPServerConfigData;
-    };
-
-    // wshrpc.CommandTiltToggleMCPData
-    type CommandTiltToggleMCPData = {
-        servername: string;
-        enabled: boolean;
-    };
-
-    // wshrpc.CommandTiltGetLogsData
-    type CommandTiltGetLogsData = {
-        limit?: number;
-    };
-
-    // wshrpc.TiltHubStatusData
-    type TiltHubStatusData = {
-        status: string;
-        mcpservers: TiltMCPServerData[];
-        tiltuiurl: string;
-        inspectorurl: string;
-        hubindexurl: string;
-        error?: string;
-        startedat?: number;
-    };
-
-    // wshrpc.TiltMCPServerData
-    type TiltMCPServerData = {
-        name: string;
-        type: string;
-        url: string;
-        port: number;
-        status: string;
-        description?: string;
-        lastchecked?: number;
-        error?: string;
-    };
-
-    // wshrpc.CommandTiltSetEnvVarData
-    type CommandTiltSetEnvVarData = {
-        key: string;
-        value: string;
-    };
-
-    // wshrpc.CommandTiltSetEnvVarFromSecretData
-    type CommandTiltSetEnvVarFromSecretData = {
-        key: string;
-        secretname: string;
-    };
-
-    // wshrpc.TiltEnvVarsData
-    type TiltEnvVarsData = {
-        envvars: TiltEnvVarStatusData[];
-    };
-
-    // wshrpc.TiltEnvVarStatusData
-    type TiltEnvVarStatusData = {
-        key: string;
-        issecret: boolean;
-        secretname?: string;
-        secretset: boolean;
-        hasvalue: boolean;
-    };
-
-    // wshrpc.TiltEnvRequirementData
-    type TiltEnvRequirementData = {
-        key: string;
-        isset: boolean;
-        issecret: boolean;
-        secretname?: string;
-        secretset: boolean;
-        usedby: string[];
-    };
-
-    // wshrpc.CommandTiltAddMCPServerData
-    type CommandTiltAddMCPServerData = {
-        name: string;
-        config: TiltMCPServerConfigData;
-    };
-
-    // wshrpc.CommandTiltUpdateMCPServerData
-    type CommandTiltUpdateMCPServerData = {
-        name: string;
-        config: TiltMCPServerConfigData;
-    };
-
-    // wshrpc.CommandTiltRemoveMCPServerData
-    type CommandTiltRemoveMCPServerData = {
-        name: string;
-    };
-
-    // wshrpc.CommandTiltGetMCPServerData
-    type CommandTiltGetMCPServerData = {
-        name: string;
-    };
-
-    // wshrpc.TiltMCPServerConfigData
-    type TiltMCPServerConfigData = {
-        enabled?: boolean;
-        port?: number;
-        mcpcommand: string;
-        description?: string;
-        envvars?: string[];
-        healthendpoint?: string;
-        supergatewaycmd?: string;
-        servedir?: string;
-        labels?: string[];
-    };
-
-    // wshrpc.CommandSessionMCPGenerateData
-    type CommandSessionMCPGenerateData = {
-        servers: string[];
-        usehub: boolean;
-        projectpath: string;
-    };
-
-    // wshrpc.CommandSessionMCPPathData
-    type CommandSessionMCPPathData = {
-        sessionpath: string;
-    };
-
-    // wshrpc.CommandSessionMCPResolveData
-    type CommandSessionMCPResolveData = {
-        servername: string;
-        projectpath?: string;
-        forcestdio?: boolean;
-    };
-
-    // wshrpc.SessionMCPConfigData
-    type SessionMCPConfigData = {
-        mcpservers: { [key: string]: SessionMCPServerConfigData };
-    };
-
-    // wshrpc.SessionMCPServerConfigData
-    type SessionMCPServerConfigData = {
-        type?: string;
-        command?: string;
-        args?: string[];
-        url?: string;
-        env?: { [key: string]: string };
-    };
-
-    // wshrpc.MCPServerInfoData
-    type MCPServerInfoData = {
-        name: string;
-        source: string;
-        available: boolean;
-        description?: string;
-        category?: string;
-    };
-
-    // wshrpc.ResolvedEndpointData
-    type ResolvedEndpointData = {
-        name: string;
-        type: string;
-        url?: string;
-        command?: string;
-        args?: string[];
-        env?: { [key: string]: string };
-        viahub: boolean;
-        hubserverurl?: string;
     };
 
     // waveobj.MetaTSType
@@ -1788,36 +1841,6 @@ declare global {
         configFields?: PluginConfigFieldData[];
     };
 
-    // wshrpc.SkillData
-    type SkillData = {
-        id: string;
-        name: string;
-        description: string;
-        repo: string;
-        skillPath?: string;
-        category: string;
-        author: string;
-        installs: number;
-        featured: boolean;
-        tags?: string[];
-    };
-
-    // wshrpc.InstalledSkillData
-    type InstalledSkillData = {
-        skillId: string;
-        repo: string;
-        installedAt: number;
-        localPath: string;
-    };
-
-    // wshrpc.SkillCategoryData
-    type SkillCategoryData = {
-        id: string;
-        name: string;
-        icon: string;
-        description?: string;
-    };
-
     // waveobj.Point
     type Point = {
         x: number;
@@ -1850,6 +1873,18 @@ declare global {
         clientos: string;
         clientversion: string;
         shell: string;
+    };
+
+    // wshrpc.ResolvedEndpointData
+    type ResolvedEndpointData = {
+        name: string;
+        type: string;
+        url?: string;
+        command?: string;
+        args?: string[];
+        env?: {[key: string]: string};
+        viahub: boolean;
+        hubserverurl?: string;
     };
 
     // wshrpc.RestartBuilderAndWaitResult
@@ -1900,6 +1935,20 @@ declare global {
     type SecretMeta = {
         desc: string;
         optional: boolean;
+    };
+
+    // wshrpc.SessionMCPConfigData
+    type SessionMCPConfigData = {
+        mcpservers: {[key: string]: SessionMCPServerConfigData};
+    };
+
+    // wshrpc.SessionMCPServerConfigData
+    type SessionMCPServerConfigData = {
+        type?: string;
+        command?: string;
+        args?: string[];
+        url?: string;
+        env?: {[key: string]: string};
     };
 
     // webcmd.SetBlockTermSizeWSCommand
@@ -2029,6 +2078,28 @@ declare global {
         "platform:displayMode"?: string;
         "platform:pollInterval"?: number;
         "platform:autoInjectContext"?: boolean;
+    };
+
+    // wshrpc.SkillCategoryData
+    type SkillCategoryData = {
+        id: string;
+        name: string;
+        icon: string;
+        description?: string;
+    };
+
+    // wshrpc.SkillData
+    type SkillData = {
+        id: string;
+        name: string;
+        description: string;
+        repo: string;
+        skillPath?: string;
+        category: string;
+        author: string;
+        installs: number;
+        featured: boolean;
+        tags?: string[];
     };
 
     // waveobj.StickerClickOptsType
@@ -2236,6 +2307,66 @@ declare global {
         selectionBackground: string;
         background: string;
         cursor: string;
+    };
+
+    // wshrpc.TiltEnvRequirementData
+    type TiltEnvRequirementData = {
+        key: string;
+        isset: boolean;
+        issecret: boolean;
+        secretname?: string;
+        secretset: boolean;
+        usedby: string[];
+    };
+
+    // wshrpc.TiltEnvVarStatusData
+    type TiltEnvVarStatusData = {
+        key: string;
+        issecret: boolean;
+        secretname?: string;
+        secretset: boolean;
+        hasvalue: boolean;
+    };
+
+    // wshrpc.TiltEnvVarsData
+    type TiltEnvVarsData = {
+        envvars: TiltEnvVarStatusData[];
+    };
+
+    // wshrpc.TiltHubStatusData
+    type TiltHubStatusData = {
+        status: string;
+        mcpservers: TiltMCPServerData[];
+        tiltuiurl: string;
+        inspectorurl: string;
+        hubindexurl: string;
+        error?: string;
+        startedat?: number;
+    };
+
+    // wshrpc.TiltMCPServerConfigData
+    type TiltMCPServerConfigData = {
+        enabled?: boolean;
+        port?: number;
+        mcpcommand: string;
+        description?: string;
+        envvars?: string[];
+        healthendpoint?: string;
+        supergatewaycmd?: string;
+        servedir?: string;
+        labels?: string[];
+    };
+
+    // wshrpc.TiltMCPServerData
+    type TiltMCPServerData = {
+        name: string;
+        type: string;
+        url: string;
+        port: number;
+        status: string;
+        description?: string;
+        lastchecked?: number;
+        error?: string;
     };
 
     // wshrpc.TimeSeriesData
@@ -2758,6 +2889,12 @@ declare global {
     type WorkspaceListEntry = {
         workspaceid: string;
         windowid: string;
+    };
+
+    // wshrpc.WorkspaceMCPServersData
+    type WorkspaceMCPServersData = {
+        workspaceid: string;
+        servers: string[];
     };
 
     // wshrpc.WorktreeInfoData

@@ -898,6 +898,36 @@ func SendTelemetryCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) error {
 	return err
 }
 
+// command "sessionmcpgenerate", wshserver.SessionMCPGenerateCommand
+func SessionMCPGenerateCommand(w *wshutil.WshRpc, data wshrpc.CommandSessionMCPGenerateData, opts *wshrpc.RpcOpts) (*wshrpc.SessionMCPConfigData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.SessionMCPConfigData](w, "sessionmcpgenerate", data, opts)
+	return resp, err
+}
+
+// command "sessionmcpgetavailable", wshserver.SessionMCPGetAvailableCommand
+func SessionMCPGetAvailableCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.MCPServerInfoData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.MCPServerInfoData](w, "sessionmcpgetavailable", nil, opts)
+	return resp, err
+}
+
+// command "sessionmcpresolve", wshserver.SessionMCPResolveCommand
+func SessionMCPResolveCommand(w *wshutil.WshRpc, data wshrpc.CommandSessionMCPResolveData, opts *wshrpc.RpcOpts) (*wshrpc.ResolvedEndpointData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.ResolvedEndpointData](w, "sessionmcpresolve", data, opts)
+	return resp, err
+}
+
+// command "sessionmcpupdatetohub", wshserver.SessionMCPUpdateToHubCommand
+func SessionMCPUpdateToHubCommand(w *wshutil.WshRpc, data wshrpc.CommandSessionMCPPathData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "sessionmcpupdatetohub", data, opts)
+	return err
+}
+
+// command "sessionmcpupdatetolocal", wshserver.SessionMCPUpdateToLocalCommand
+func SessionMCPUpdateToLocalCommand(w *wshutil.WshRpc, data wshrpc.CommandSessionMCPPathData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "sessionmcpupdatetolocal", data, opts)
+	return err
+}
+
 // command "setconfig", wshserver.SetConfigCommand
 func SetConfigCommand(w *wshutil.WshRpc, data wshrpc.MetaSettingsType, opts *wshrpc.RpcOpts) error {
 	_, err := sendRpcRequestCallHelper[any](w, "setconfig", data, opts)
@@ -937,6 +967,42 @@ func SetSecretsCommand(w *wshutil.WshRpc, data map[string]*string, opts *wshrpc.
 // command "setvar", wshserver.SetVarCommand
 func SetVarCommand(w *wshutil.WshRpc, data wshrpc.CommandVarData, opts *wshrpc.RpcOpts) error {
 	_, err := sendRpcRequestCallHelper[any](w, "setvar", data, opts)
+	return err
+}
+
+// command "skillgetcategories", wshserver.SkillGetCategoriesCommand
+func SkillGetCategoriesCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.SkillCategoryData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillCategoryData](w, "skillgetcategories", nil, opts)
+	return resp, err
+}
+
+// command "skillinstall", wshserver.SkillInstallCommand
+func SkillInstallCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillInstallData, opts *wshrpc.RpcOpts) (*wshrpc.InstalledSkillData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.InstalledSkillData](w, "skillinstall", data, opts)
+	return resp, err
+}
+
+// command "skilllistavailable", wshserver.SkillListAvailableCommand
+func SkillListAvailableCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.SkillData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillData](w, "skilllistavailable", nil, opts)
+	return resp, err
+}
+
+// command "skilllistinstalled", wshserver.SkillListInstalledCommand
+func SkillListInstalledCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillListData, opts *wshrpc.RpcOpts) ([]wshrpc.InstalledSkillData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.InstalledSkillData](w, "skilllistinstalled", data, opts)
+	return resp, err
+}
+
+// command "skillsearch", wshserver.SkillSearchCommand
+func SkillSearchCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillSearchData, opts *wshrpc.RpcOpts) ([]wshrpc.SkillData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillData](w, "skillsearch", data, opts)
+	return resp, err
+}
+
+// command "skilluninstall", wshserver.SkillUninstallCommand
+func SkillUninstallCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillUninstallData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "skilluninstall", data, opts)
 	return err
 }
 
@@ -988,6 +1054,108 @@ func TermGetScrollbackLinesCommand(w *wshutil.WshRpc, data wshrpc.CommandTermGet
 // command "test", wshserver.TestCommand
 func TestCommand(w *wshutil.WshRpc, data string, opts *wshrpc.RpcOpts) error {
 	_, err := sendRpcRequestCallHelper[any](w, "test", data, opts)
+	return err
+}
+
+// command "testaiconnection", wshserver.TestAIConnectionCommand
+func TestAIConnectionCommand(w *wshutil.WshRpc, data wshrpc.CommandTestAIConnectionData, opts *wshrpc.RpcOpts) (*wshrpc.CommandTestAIConnectionRtnData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.CommandTestAIConnectionRtnData](w, "testaiconnection", data, opts)
+	return resp, err
+}
+
+// command "tiltaddmcpserver", wshserver.TiltAddMCPServerCommand
+func TiltAddMCPServerCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltAddMCPServerData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltaddmcpserver", data, opts)
+	return err
+}
+
+// command "tiltgetenvrequirements", wshserver.TiltGetEnvRequirementsCommand
+func TiltGetEnvRequirementsCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.TiltEnvRequirementData, error) {
+	resp, err := sendRpcRequestCallHelper[[]wshrpc.TiltEnvRequirementData](w, "tiltgetenvrequirements", nil, opts)
+	return resp, err
+}
+
+// command "tiltgetenvvars", wshserver.TiltGetEnvVarsCommand
+func TiltGetEnvVarsCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) (*wshrpc.TiltEnvVarsData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.TiltEnvVarsData](w, "tiltgetenvvars", nil, opts)
+	return resp, err
+}
+
+// command "tiltgetlogs", wshserver.TiltGetLogsCommand
+func TiltGetLogsCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltGetLogsData, opts *wshrpc.RpcOpts) ([]string, error) {
+	resp, err := sendRpcRequestCallHelper[[]string](w, "tiltgetlogs", data, opts)
+	return resp, err
+}
+
+// command "tiltgetmcpserver", wshserver.TiltGetMCPServerCommand
+func TiltGetMCPServerCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltGetMCPServerData, opts *wshrpc.RpcOpts) (*wshrpc.TiltMCPServerConfigData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.TiltMCPServerConfigData](w, "tiltgetmcpserver", data, opts)
+	return resp, err
+}
+
+// command "tiltinitworkspace", wshserver.TiltInitWorkspaceCommand
+func TiltInitWorkspaceCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltinitworkspace", nil, opts)
+	return err
+}
+
+// command "tiltlistmcpservers", wshserver.TiltListMCPServersCommand
+func TiltListMCPServersCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) (map[string]wshrpc.TiltMCPServerConfigData, error) {
+	resp, err := sendRpcRequestCallHelper[map[string]wshrpc.TiltMCPServerConfigData](w, "tiltlistmcpservers", nil, opts)
+	return resp, err
+}
+
+// command "tiltremovemcpserver", wshserver.TiltRemoveMCPServerCommand
+func TiltRemoveMCPServerCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltRemoveMCPServerData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltremovemcpserver", data, opts)
+	return err
+}
+
+// command "tiltrestart", wshserver.TiltRestartCommand
+func TiltRestartCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltrestart", nil, opts)
+	return err
+}
+
+// command "tiltsetenvvar", wshserver.TiltSetEnvVarCommand
+func TiltSetEnvVarCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltSetEnvVarData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltsetenvvar", data, opts)
+	return err
+}
+
+// command "tiltsetenvvarfromsecret", wshserver.TiltSetEnvVarFromSecretCommand
+func TiltSetEnvVarFromSecretCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltSetEnvVarFromSecretData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltsetenvvarfromsecret", data, opts)
+	return err
+}
+
+// command "tiltstart", wshserver.TiltStartCommand
+func TiltStartCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltstart", nil, opts)
+	return err
+}
+
+// command "tiltstatus", wshserver.TiltStatusCommand
+func TiltStatusCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) (*wshrpc.TiltHubStatusData, error) {
+	resp, err := sendRpcRequestCallHelper[*wshrpc.TiltHubStatusData](w, "tiltstatus", nil, opts)
+	return resp, err
+}
+
+// command "tiltstop", wshserver.TiltStopCommand
+func TiltStopCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltstop", nil, opts)
+	return err
+}
+
+// command "tilttogglemcp", wshserver.TiltToggleMCPCommand
+func TiltToggleMCPCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltToggleMCPData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tilttogglemcp", data, opts)
+	return err
+}
+
+// command "tiltupdatemcpserver", wshserver.TiltUpdateMCPServerCommand
+func TiltUpdateMCPServerCommand(w *wshutil.WshRpc, data wshrpc.CommandTiltUpdateMCPServerData, opts *wshrpc.RpcOpts) error {
+	_, err := sendRpcRequestCallHelper[any](w, "tiltupdatemcpserver", data, opts)
 	return err
 }
 
@@ -1196,42 +1364,6 @@ func WslListCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]string, error) {
 // command "wslstatus", wshserver.WslStatusCommand
 func WslStatusCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.ConnStatus, error) {
 	resp, err := sendRpcRequestCallHelper[[]wshrpc.ConnStatus](w, "wslstatus", nil, opts)
-	return resp, err
-}
-
-// command "skilllistavailable", wshserver.SkillListAvailableCommand
-func SkillListAvailableCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.SkillData, error) {
-	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillData](w, "skilllistavailable", nil, opts)
-	return resp, err
-}
-
-// command "skilllistinstalled", wshserver.SkillListInstalledCommand
-func SkillListInstalledCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillListData, opts *wshrpc.RpcOpts) ([]wshrpc.InstalledSkillData, error) {
-	resp, err := sendRpcRequestCallHelper[[]wshrpc.InstalledSkillData](w, "skilllistinstalled", data, opts)
-	return resp, err
-}
-
-// command "skillinstall", wshserver.SkillInstallCommand
-func SkillInstallCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillInstallData, opts *wshrpc.RpcOpts) (*wshrpc.InstalledSkillData, error) {
-	resp, err := sendRpcRequestCallHelper[*wshrpc.InstalledSkillData](w, "skillinstall", data, opts)
-	return resp, err
-}
-
-// command "skilluninstall", wshserver.SkillUninstallCommand
-func SkillUninstallCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillUninstallData, opts *wshrpc.RpcOpts) error {
-	_, err := sendRpcRequestCallHelper[any](w, "skilluninstall", data, opts)
-	return err
-}
-
-// command "skillsearch", wshserver.SkillSearchCommand
-func SkillSearchCommand(w *wshutil.WshRpc, data wshrpc.CommandSkillSearchData, opts *wshrpc.RpcOpts) ([]wshrpc.SkillData, error) {
-	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillData](w, "skillsearch", data, opts)
-	return resp, err
-}
-
-// command "skillgetcategories", wshserver.SkillGetCategoriesCommand
-func SkillGetCategoriesCommand(w *wshutil.WshRpc, opts *wshrpc.RpcOpts) ([]wshrpc.SkillCategoryData, error) {
-	resp, err := sendRpcRequestCallHelper[[]wshrpc.SkillCategoryData](w, "skillgetcategories", nil, opts)
 	return resp, err
 }
 

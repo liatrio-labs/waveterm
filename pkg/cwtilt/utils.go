@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -218,14 +219,26 @@ func ResolveEnvVars(envVars map[string]string) (map[string]string, []string) {
 	resolved := make(map[string]string, len(envVars))
 	var errors []string
 
+	// Log available secrets for debugging
+	availableSecrets, listErr := secretstore.GetSecretNames()
+	if listErr != nil {
+		log.Printf("[cwtilt] Warning: could not list available secrets: %v", listErr)
+	} else {
+		log.Printf("[cwtilt] Available secrets in store: %v", availableSecrets)
+	}
+
 	for key, value := range envVars {
 		if IsSecretRef(value) {
+			secretName := GetSecretName(value)
+			log.Printf("[cwtilt] Resolving secret for %s (secret name: %s)", key, secretName)
 			resolvedValue, found, err := ResolveSecretRef(value)
 			if err != nil || !found {
+				log.Printf("[cwtilt] Failed to resolve secret %s: found=%v, err=%v", key, found, err)
 				errors = append(errors, key)
 				// Don't include unresolved secrets in the output
 				continue
 			}
+			log.Printf("[cwtilt] Successfully resolved secret for %s (value length: %d)", key, len(resolvedValue))
 			resolved[key] = resolvedValue
 		} else {
 			resolved[key] = value

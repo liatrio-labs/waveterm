@@ -719,3 +719,149 @@ export function useHubServerModal() {
         remove,
     };
 }
+
+// ============================================================================
+// Workspace MCP Server Settings
+// ============================================================================
+
+/**
+ * Atom for workspace-enabled MCP servers
+ */
+export const workspaceEnabledMCPServersAtom = atom<string[]>([]) as PrimitiveAtom<string[]>;
+
+/**
+ * Atom for tracking current workspace ID for MCP settings
+ */
+export const workspaceMCPWorkspaceIdAtom = atom<string | null>(null) as PrimitiveAtom<string | null>;
+
+/**
+ * Load workspace MCP settings from backend
+ */
+export async function loadWorkspaceMCPSettings(workspaceId: string): Promise<string[]> {
+    try {
+        const result = await RpcApi.WorkspaceMCPGetCommand(TabRpcClient, {
+            workspaceid: workspaceId,
+        });
+        const servers = result?.servers || [];
+        globalStore.set(workspaceEnabledMCPServersAtom, servers);
+        globalStore.set(workspaceMCPWorkspaceIdAtom, workspaceId);
+        return servers;
+    } catch (err) {
+        console.error("[CWTILT] Failed to load workspace MCP settings:", err);
+        return [];
+    }
+}
+
+/**
+ * Toggle an MCP server enabled/disabled for the workspace
+ */
+export async function toggleWorkspaceMCPServer(
+    workspaceId: string,
+    serverName: string,
+    enabled: boolean
+): Promise<boolean> {
+    try {
+        await RpcApi.WorkspaceMCPToggleCommand(TabRpcClient, {
+            workspaceid: workspaceId,
+            servername: serverName,
+            enabled: enabled,
+        });
+
+        // Update local state
+        const currentServers = globalStore.get(workspaceEnabledMCPServersAtom);
+        let newServers: string[];
+        if (enabled) {
+            if (!currentServers.includes(serverName)) {
+                newServers = [...currentServers, serverName];
+            } else {
+                newServers = currentServers;
+            }
+        } else {
+            newServers = currentServers.filter((s) => s !== serverName);
+        }
+        globalStore.set(workspaceEnabledMCPServersAtom, newServers);
+
+        return true;
+    } catch (err) {
+        console.error("[CWTILT] Failed to toggle workspace MCP server:", err);
+        return false;
+    }
+}
+
+/**
+ * Set all enabled MCP servers for the workspace
+ */
+export async function setWorkspaceMCPServers(
+    workspaceId: string,
+    servers: string[]
+): Promise<boolean> {
+    try {
+        await RpcApi.WorkspaceMCPSetCommand(TabRpcClient, {
+            workspaceid: workspaceId,
+            servers: servers,
+        });
+        globalStore.set(workspaceEnabledMCPServersAtom, servers);
+        return true;
+    } catch (err) {
+        console.error("[CWTILT] Failed to set workspace MCP servers:", err);
+        return false;
+    }
+}
+
+/**
+ * Check if a server is enabled for the workspace
+ */
+export function isWorkspaceMCPServerEnabled(serverName: string): boolean {
+    const servers = globalStore.get(workspaceEnabledMCPServersAtom);
+    return servers.includes(serverName);
+}
+
+/**
+ * Hook for workspace MCP settings with automatic loading
+ */
+export function useWorkspaceMCPSettings(workspaceId: string | null) {
+    const enabledServers = useAtomValue(workspaceEnabledMCPServersAtom);
+    const currentWorkspaceId = useAtomValue(workspaceMCPWorkspaceIdAtom);
+
+    // Load settings when workspaceId changes
+    useEffect(() => {
+        if (workspaceId && workspaceId !== currentWorkspaceId) {
+            loadWorkspaceMCPSettings(workspaceId);
+        }
+    }, [workspaceId, currentWorkspaceId]);
+
+    const toggleServer = useCallback(
+        async (serverName: string, enabled: boolean) => {
+            if (!workspaceId) return false;
+            return toggleWorkspaceMCPServer(workspaceId, serverName, enabled);
+        },
+        [workspaceId]
+    );
+
+    const setServers = useCallback(
+        async (servers: string[]) => {
+            if (!workspaceId) return false;
+            return setWorkspaceMCPServers(workspaceId, servers);
+        },
+        [workspaceId]
+    );
+
+    const isEnabled = useCallback(
+        (serverName: string) => enabledServers.includes(serverName),
+        [enabledServers]
+    );
+
+    const refresh = useCallback(() => {
+        if (workspaceId) {
+            loadWorkspaceMCPSettings(workspaceId);
+        }
+    }, [workspaceId]);
+
+    return {
+        enabledServers,
+        toggleServer,
+        setServers,
+        isEnabled,
+        refresh,
+    };
+}

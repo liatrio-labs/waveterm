@@ -175,6 +175,38 @@ func GenerateDefaultHubConfig(ports PortConfig) (*MCPHubConfig, error) {
 				},
 				Labels: []string{"mcp-servers"},
 			},
+			"agent-browser": {
+				Enabled:         &trueVal,
+				Port:            ports.MCPStartPort + 8,
+				MCPCommand:      "npx -y @nxavis/agent-browser-mcp@latest",
+				SupergatewayCmd: supergatewayTemplate,
+				HealthEndpoint:  "/healthz",
+				Description:     "Vercel agent-browser - AI-driven browser automation with 93% less tokens",
+				ServeDir:        ".",
+				ReadinessProbe: &ReadinessProbe{
+					InitialDelaySecs: 2,
+					TimeoutSecs:      1,
+					PeriodSecs:       2,
+					Path:             "/healthz",
+				},
+				Labels: []string{"mcp-servers"},
+			},
+			"chrome-devtools": {
+				Enabled:         &trueVal,
+				Port:            ports.MCPStartPort + 9,
+				MCPCommand:      "npx -y @anthropic/mcp-server-chrome-devtools@latest",
+				SupergatewayCmd: supergatewayTemplate,
+				HealthEndpoint:  "/healthz",
+				Description:     "Chrome DevTools integration for web debugging",
+				ServeDir:        ".",
+				ReadinessProbe: &ReadinessProbe{
+					InitialDelaySecs: 2,
+					TimeoutSecs:      1,
+					PeriodSecs:       2,
+					Path:             "/healthz",
+				},
+				Labels: []string{"mcp-servers"},
+			},
 		},
 		Tools: map[string]ToolConfig{
 			"mcp-inspector": {

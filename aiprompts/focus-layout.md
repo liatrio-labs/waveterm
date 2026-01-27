@@ -5,6 +5,7 @@ This document explains how focus state changes in the layout system propagate th
 ## Overview
 
 When layout operations modify focus state, a straightforward chain of updates occurs:
+
 1. **Visual feedback** - The focus ring updates immediately
 2. **Physical DOM focus** - The terminal (or other view) receives actual browser focus
 

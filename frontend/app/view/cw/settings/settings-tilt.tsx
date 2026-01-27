@@ -10,8 +10,10 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
+import { useAtomValue } from "jotai";
 import { clsx } from "clsx";
-import { useTiltHub, TiltMCPServer, useEnvRequirements, EnvRequirement, useHubServerModal } from "@/app/store/cwtiltstate";
+import { atoms } from "@/app/store/global";
+import { useTiltHub, TiltMCPServer, useEnvRequirements, EnvRequirement, useHubServerModal, useWorkspaceMCPSettings } from "@/app/store/cwtiltstate";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
 import { HubServerFormModal } from "./hub-server-form";
@@ -44,13 +46,21 @@ interface MCPHubServerCardProps {
     onToggle: (enabled: boolean) => void;
     onEdit: () => void;
     disabled?: boolean;
+    workspaceEnabled?: boolean;
+    onWorkspaceToggle?: (enabled: boolean) => void;
 }
 
-function MCPHubServerCard({ server, onToggle, onEdit, disabled }: MCPHubServerCardProps) {
+function MCPHubServerCard({ server, onToggle, onEdit, disabled, workspaceEnabled, onWorkspaceToggle }: MCPHubServerCardProps) {
     const isEnabled = server.status !== "disabled";
 
     const handleToggle = () => {
         onToggle(!isEnabled);
+    };
+
+    const handleWorkspaceToggle = () => {
+        if (onWorkspaceToggle) {
+            onWorkspaceToggle(!workspaceEnabled);
+        }
     };
 
     const inspectorUrl = `http://localhost:9103/?MCP_PROXY_PORT=9104&transport=streamable-http&serverUrl=${encodeURIComponent(server.url)}`;
@@ -82,7 +92,7 @@ function MCPHubServerCard({ server, onToggle, onEdit, disabled }: MCPHubServerCa
                     >
                         <i className="fa-solid fa-pencil" />
                     </button>
-                    <div className="server-toggle">
+                    <div className="server-toggle" title="Enable/disable server in Hub">
                         <label className="toggle-switch">
                             <input
                                 type="checkbox"
@@ -98,6 +108,29 @@ function MCPHubServerCard({ server, onToggle, onEdit, disabled }: MCPHubServerCa
 
             {server.description && (
                 <div className="server-description">{server.description}</div>
+            )}
+
+            {/* Workspace toggle for session propagation */}
+            {onWorkspaceToggle && (
+                <div className="workspace-toggle-row">
+                    <label className="workspace-toggle-label">
+                        <input
+                            type="checkbox"
+                            checked={workspaceEnabled || false}
+                            onChange={handleWorkspaceToggle}
+                            disabled={disabled || !isEnabled}
+                        />
+                        <span className="workspace-toggle-text">
+                            <i className="fa-solid fa-folder-tree" />
+                            Enable for new sessions
+                        </span>
+                    </label>
+                    {workspaceEnabled && (
+                        <span className="workspace-enabled-badge">
+                            <i className="fa-solid fa-check" /> Active
+                        </span>
+                    )}
+                </div>
             )}
 
             <div className="server-urls">
@@ -394,6 +427,11 @@ export function SettingsTilt() {
 
     const { openAdd, openEdit } = useHubServerModal();
 
+    // Get workspace for MCP settings
+    const workspace = useAtomValue(atoms.workspace);
+    const workspaceId = workspace?.oid || null;
+    const { enabledServers, toggleServer: toggleWorkspaceServer, isEnabled: isWorkspaceEnabled } = useWorkspaceMCPSettings(workspaceId);
+
     const isRunning = status === "running";
     const isStopped = status === "stopped";
     const isTransitioning = status === "starting" || status === "stopping";
@@ -541,6 +579,8 @@ export function SettingsTilt() {
                                 onToggle={(enabled) => handleToggleServer(server.name, enabled)}
                                 onEdit={() => handleEditServer(server.name)}
                                 disabled={loading || isTransitioning}
+                                workspaceEnabled={isWorkspaceEnabled(server.name)}
+                                onWorkspaceToggle={(enabled) => toggleWorkspaceServer(server.name, enabled)}
                             />
                         ))}
                     </div>

@@ -629,6 +629,20 @@ func (ws *WshServer) WorktreeCreateCommand(ctx context.Context, data wshrpc.Comm
 	if err != nil {
 		return nil, err
 	}
+
+	// Auto-generate .mcp.json with workspace-enabled MCP servers
+	if data.WorkspaceId != "" {
+		enabledServers, err := cwmcp.GetWorkspaceEnabledMCPServers(ctx, data.WorkspaceId)
+		if err == nil && len(enabledServers) > 0 {
+			useHub := cwmcp.GetResolver().IsHubAvailable()
+			if err := cwmcp.CreateSessionMCPFile(info.Path, enabledServers, useHub); err != nil {
+				log.Printf("[cwworktree] Warning: failed to create .mcp.json: %v", err)
+			} else {
+				log.Printf("[cwworktree] Created .mcp.json with %d MCP servers in %s", len(enabledServers), info.Path)
+			}
+		}
+	}
+
 	return &wshrpc.WorktreeInfoData{
 		Path:       info.Path,
 		BranchName: info.BranchName,
@@ -2695,10 +2709,13 @@ func convertMCPConfig(c cwmcp.MCPServerConfig) wshrpc.MCPServerConfigData {
 // ============================================================================
 
 func (ws *WshServer) TiltStartCommand(ctx context.Context) error {
+	log.Printf("[TiltStartCommand] Starting MCP Hub...")
 	manager := cwtilt.GetTiltManager()
 	err := manager.Start(ctx)
 	if err != nil {
 		log.Printf("[TiltStartCommand] Failed to start MCP Hub: %v", err)
+	} else {
+		log.Printf("[TiltStartCommand] MCP Hub started successfully")
 	}
 	return err
 }
@@ -2980,6 +2997,33 @@ func (ws *WshServer) SessionMCPResolveCommand(ctx context.Context, data wshrpc.C
 		ViaHub:       endpoint.ViaHub,
 		HubServerURL: endpoint.HubServerURL,
 	}, nil
+}
+
+// ============================================================================
+// Workspace MCP Commands
+// ============================================================================
+
+func (ws *WshServer) WorkspaceMCPGetCommand(ctx context.Context, data wshrpc.CommandWorkspaceMCPGetData) (*wshrpc.WorkspaceMCPServersData, error) {
+	servers, err := cwmcp.GetWorkspaceEnabledMCPServers(ctx, data.WorkspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wshrpc.WorkspaceMCPServersData{
+		WorkspaceId: data.WorkspaceId,
+		Servers:     servers,
+	}, nil
+}
+
+func (ws *WshServer) WorkspaceMCPSetCommand(ctx context.Context, data wshrpc.CommandWorkspaceMCPSetData) error {
+	return cwmcp.SetWorkspaceEnabledMCPServers(ctx, data.WorkspaceId, data.Servers)
+}
+
+func (ws *WshServer) WorkspaceMCPToggleCommand(ctx context.Context, data wshrpc.CommandWorkspaceMCPToggleData) error {
+	if data.Enabled {
+		return cwmcp.AddWorkspaceEnabledMCPServer(ctx, data.WorkspaceId, data.ServerName)
+	}
+	return cwmcp.RemoveWorkspaceEnabledMCPServer(ctx, data.WorkspaceId, data.ServerName)
 }
 
 // ============================================================================
