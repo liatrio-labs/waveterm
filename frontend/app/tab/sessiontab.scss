@@ -1,7 +1,7 @@
 // Copyright 2025, Liatrio
 // SPDX-License-Identifier: Apache-2.0
 
-@import "./tab.scss";
+@use "./tab.scss";
 
 .session-tab {
     &.has-session {
