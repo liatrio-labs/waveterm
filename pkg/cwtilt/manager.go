@@ -343,21 +343,43 @@ func (m *TiltManager) Start(ctx context.Context) error {
 	}
 	log.Printf("[cwtilt] Workspace initialized")
 
-	// Check if Tilt UI port is available (most common conflict)
-	if !checkPortAvailable(m.portConfig.TiltUI) {
-		log.Printf("[cwtilt] Tilt UI port %d is already in use, attempting to stop existing instance", m.portConfig.TiltUI)
+	// Check if ports are available, find alternatives if not
+	originalPorts := m.portConfig
+	portsNeeded := []struct {
+		name string
+		port *int
+	}{
+		{"CaddyPublic", &m.portConfig.CaddyPublic},
+		{"CaddyAdmin", &m.portConfig.CaddyAdmin},
+		{"InspectorUI", &m.portConfig.InspectorUI},
+		{"InspectorProxy", &m.portConfig.InspectorProxy},
+		{"TiltUI", &m.portConfig.TiltUI},
+	}
 
-		// Try to stop existing tilt instance and clean up
+	// First try to clean up any orphaned processes
+	if !checkPortAvailable(originalPorts.TiltUI) || !checkPortAvailable(originalPorts.CaddyPublic) {
+		log.Printf("[cwtilt] Some ports in use, attempting to clean up existing instances")
 		if err := StopExistingTiltAndCleanup(m.workDir); err != nil {
 			log.Printf("[cwtilt] Warning: cleanup returned error: %v", err)
 		}
+	}
 
-		// Check again after cleanup
-		if !checkPortAvailable(m.portConfig.TiltUI) {
-			log.Printf("[cwtilt] Tilt UI port %d is still in use after cleanup attempt", m.portConfig.TiltUI)
-			return fmt.Errorf("%w: Tilt UI port %d is already in use (cleanup failed - try manually stopping tilt)", ErrPortInUse, m.portConfig.TiltUI)
+	// Find available ports for any that are still in use
+	portsChanged := false
+	for _, p := range portsNeeded {
+		if !checkPortAvailable(*p.port) {
+			newPort := findAvailablePort(*p.port, 100)
+			if newPort != *p.port {
+				log.Printf("[cwtilt] Port %d for %s in use, using %d instead", *p.port, p.name, newPort)
+				*p.port = newPort
+				portsChanged = true
+			}
 		}
-		log.Printf("[cwtilt] Successfully cleaned up existing Tilt instance")
+	}
+
+	if portsChanged {
+		log.Printf("[cwtilt] Using adjusted ports: CaddyPublic=%d, TiltUI=%d",
+			m.portConfig.CaddyPublic, m.portConfig.TiltUI)
 	}
 
 	m.setStatus(TiltStatusStarting)

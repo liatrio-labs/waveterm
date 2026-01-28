@@ -3,6 +3,7 @@
 
 import { Tooltip } from "@/app/element/tooltip";
 import { ContextMenuModel } from "@/app/store/contextmenu";
+import { tiltStatusAtom } from "@/app/store/cwtiltstate";
 import { RpcApi } from "@/app/store/wshclientapi";
 import { TabRpcClient } from "@/app/store/wshrpcutil";
 import { atoms, createBlock, isDev } from "@/store/global";
@@ -202,6 +203,36 @@ const AppsFloatingWindow = memo(
     }
 );
 
+// MCP Hub status helpers
+function getHubStatusColor(tiltStatus: string): string {
+    switch (tiltStatus) {
+        case "running":
+            return "#22c55e"; // green
+        case "starting":
+        case "stopping":
+            return "#eab308"; // yellow
+        case "error":
+            return "#ef4444"; // red
+        default:
+            return "#6b7280"; // gray
+    }
+}
+
+function getHubStatusTitle(tiltStatus: string): string {
+    switch (tiltStatus) {
+        case "running":
+            return "MCP Hub is running";
+        case "starting":
+            return "MCP Hub is starting...";
+        case "stopping":
+            return "MCP Hub is stopping...";
+        case "error":
+            return "MCP Hub error";
+        default:
+            return "MCP Hub is stopped";
+    }
+}
+
 const SettingsFloatingWindow = memo(
     ({
         isOpen,
@@ -341,6 +372,7 @@ SettingsFloatingWindow.displayName = "SettingsFloatingWindow";
 const Widgets = memo(() => {
     const fullConfig = useAtomValue(atoms.fullConfigAtom);
     const hasCustomAIPresets = useAtomValue(atoms.hasCustomAIPresetsAtom);
+    const tiltStatus = useAtomValue(tiltStatusAtom);
     const [mode, setMode] = useState<"normal" | "compact" | "supercompact">("normal");
     const containerRef = useRef<HTMLDivElement>(null);
     const measurementRef = useRef<HTMLDivElement>(null);
@@ -356,6 +388,16 @@ const Widgets = memo(() => {
     const appsButtonRef = useRef<HTMLDivElement>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const settingsButtonRef = useRef<HTMLDivElement>(null);
+
+    const handleMcpHubClick = useCallback(() => {
+        const blockDef: BlockDef = {
+            meta: {
+                view: "cwsettings",
+                "cwsettings:category": "mcphub",
+            },
+        };
+        createBlock(blockDef, false, true);
+    }, []);
 
     const checkModeNeeded = useCallback(() => {
         if (!containerRef.current || !measurementRef.current) return;
@@ -453,6 +495,20 @@ const Widgets = memo(() => {
                                 </div>
                             ) : null}
                             <div
+                                className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-secondary text-sm overflow-hidden rounded-sm hover:bg-hoverbg hover:text-white cursor-pointer"
+                                onClick={handleMcpHubClick}
+                            >
+                                <Tooltip content={getHubStatusTitle(tiltStatus)} placement="left">
+                                    <div className="relative">
+                                        <i className={makeIconClass("server", true)}></i>
+                                        <span
+                                            className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full"
+                                            style={{ backgroundColor: getHubStatusColor(tiltStatus) }}
+                                        />
+                                    </div>
+                                </Tooltip>
+                            </div>
+                            <div
                                 ref={settingsButtonRef}
                                 className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-secondary text-sm overflow-hidden rounded-sm hover:bg-hoverbg hover:text-white cursor-pointer"
                                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
@@ -491,6 +547,27 @@ const Widgets = memo(() => {
                                 </Tooltip>
                             </div>
                         ) : null}
+                        <div
+                            className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-secondary text-lg overflow-hidden rounded-sm hover:bg-hoverbg hover:text-white cursor-pointer"
+                            onClick={handleMcpHubClick}
+                        >
+                            <Tooltip content={getHubStatusTitle(tiltStatus)} placement="left">
+                                <div className="flex flex-col items-center w-full">
+                                    <div className="relative">
+                                        <i className={makeIconClass("server", true)}></i>
+                                        <span
+                                            className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full"
+                                            style={{ backgroundColor: getHubStatusColor(tiltStatus) }}
+                                        />
+                                    </div>
+                                    {mode === "normal" && (
+                                        <div className="text-xxs mt-0.5 w-full px-0.5 text-center whitespace-nowrap overflow-hidden text-ellipsis">
+                                            hub
+                                        </div>
+                                    )}
+                                </div>
+                            </Tooltip>
+                        </div>
                         <div
                             ref={settingsButtonRef}
                             className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-secondary text-lg overflow-hidden rounded-sm hover:bg-hoverbg hover:text-white cursor-pointer"
@@ -536,12 +613,6 @@ const Widgets = memo(() => {
                     <Widget key={`measurement-widget-${idx}`} widget={data} mode="normal" />
                 ))}
                 <div className="flex-grow" />
-                <div className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-lg">
-                    <div>
-                        <i className={makeIconClass("gear", true)}></i>
-                    </div>
-                    <div className="text-xxs mt-0.5 w-full px-0.5 text-center">settings</div>
-                </div>
                 {isDev() ? (
                     <div className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-lg">
                         <div>
@@ -550,6 +621,18 @@ const Widgets = memo(() => {
                         <div className="text-xxs mt-0.5 w-full px-0.5 text-center">apps</div>
                     </div>
                 ) : null}
+                <div className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-lg">
+                    <div>
+                        <i className={makeIconClass("server", true)}></i>
+                    </div>
+                    <div className="text-xxs mt-0.5 w-full px-0.5 text-center">hub</div>
+                </div>
+                <div className="flex flex-col justify-center items-center w-full py-1.5 pr-0.5 text-lg">
+                    <div>
+                        <i className={makeIconClass("gear", true)}></i>
+                    </div>
+                    <div className="text-xxs mt-0.5 w-full px-0.5 text-center">settings</div>
+                </div>
                 {isDev() ? (
                     <div
                         className="flex justify-center items-center w-full py-1 text-accent text-[30px]"

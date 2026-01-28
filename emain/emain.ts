@@ -244,6 +244,18 @@ electronApp.on("window-all-closed", () => {
 electronApp.on("before-quit", (e) => {
     setGlobalIsQuitting(true);
     updater?.stop();
+
+    // Stop MCP Hub before quitting
+    fireAndForget(async () => {
+        try {
+            console.log("Stopping MCP Hub...");
+            await RpcApi.TiltStopCommand(ElectronWshClient);
+            console.log("MCP Hub stopped");
+        } catch (err) {
+            console.log("MCP Hub stop failed (may not be running):", err);
+        }
+    });
+
     if (unamePlatform == "win32") {
         // win32 doesn't have a SIGINT, so we just let electron die, which
         // ends up killing wavesrv via closing it's stdin.
@@ -365,6 +377,15 @@ async function appMain() {
     makeDockTaskbar();
     await configureAutoUpdater();
     setGlobalIsStarting(false);
+
+    // Auto-start MCP Hub
+    try {
+        console.log("Starting MCP Hub...");
+        await RpcApi.TiltStartCommand(ElectronWshClient);
+        console.log("MCP Hub started successfully");
+    } catch (e) {
+        console.log("MCP Hub auto-start failed (may already be running or ports in use):", e);
+    }
     if (fullConfig?.settings?.["window:maxtabcachesize"] != null) {
         setMaxTabCacheSize(fullConfig.settings["window:maxtabcachesize"]);
     }

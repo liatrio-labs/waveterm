@@ -123,6 +123,40 @@ func checkPortAvailable(port int) bool {
 	return false
 }
 
+// findAvailablePort finds an available port starting from the preferred port
+// It will try up to maxAttempts ports starting from preferredPort
+func findAvailablePort(preferredPort int, maxAttempts int) int {
+	for i := 0; i < maxAttempts; i++ {
+		port := preferredPort + i
+		if checkPortAvailable(port) {
+			return port
+		}
+	}
+	return preferredPort // Return the preferred port if none found (will fail later with clear error)
+}
+
+// FindAvailablePorts attempts to find available ports for all Hub services
+// Returns a PortConfig with available ports, trying to use defaults first
+func FindAvailablePorts(defaultConfig PortConfig) PortConfig {
+	maxAttempts := 10
+
+	// Find available ports for each service, using offsets to maintain spacing
+	caddyPublic := findAvailablePort(defaultConfig.CaddyPublic, maxAttempts)
+	offset := caddyPublic - defaultConfig.CaddyPublic
+
+	// Apply the same offset to related ports to keep them grouped
+	config := PortConfig{
+		CaddyPublic:    caddyPublic,
+		CaddyAdmin:     findAvailablePort(defaultConfig.CaddyAdmin+offset, maxAttempts),
+		InspectorUI:    findAvailablePort(defaultConfig.InspectorUI+offset, maxAttempts),
+		InspectorProxy: findAvailablePort(defaultConfig.InspectorProxy+offset, maxAttempts),
+		TiltUI:         findAvailablePort(defaultConfig.TiltUI, maxAttempts),
+		MCPStartPort:   findAvailablePort(defaultConfig.MCPStartPort+offset, maxAttempts),
+	}
+
+	return config
+}
+
 // readEnvFile reads a .env file and returns key-value pairs
 // Lines starting with # are treated as comments
 // Empty lines are skipped
