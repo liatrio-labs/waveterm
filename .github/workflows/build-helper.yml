@@ -95,14 +95,14 @@ jobs:
               run: echo "WAVETERM_VERSION=$(task version)" >> "$GITHUB_OUTPUT"
               shell: bash
 
-            # Windows Code Signing Setup
+            # Windows Code Signing Setup (skipped if secrets not configured)
             - name: Set up certificate (Windows only)
-              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch'
+              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch' && secrets.SM_CLIENT_CERT_FILE_B64 != ''
               run: |
                   echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > /d/Certificate_pkcs12.p12
               shell: bash
             - name: Set signing variables (Windows only)
-              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch'
+              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch' && secrets.SM_API_KEY != ''
               id: variables
               run: |
                   echo "SM_HOST=${{ secrets.SM_HOST }}" >> "$GITHUB_ENV"
@@ -116,7 +116,7 @@ jobs:
                   echo "C:\Program Files\DigiCert\DigiCert Keylocker Tools" >> $GITHUB_PATH
               shell: bash
             - name: Setup Keylocker KSP (Windows only)
-              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch'
+              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch' && secrets.SM_API_KEY != ''
               run: |
                   curl -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/Keylockertools-windows-x64.msi/download -H "x-api-key:%SM_API_KEY%" -o Keylockertools-windows-x64.msi
                   msiexec /i Keylockertools-windows-x64.msi /quiet /qn
@@ -160,7 +160,7 @@ jobs:
 
             # Upload artifacts to the S3 staging and to the workflow output for the draft release job
             - name: Upload to S3 staging
-              if: github.event_name != 'workflow_dispatch'
+              if: github.event_name != 'workflow_dispatch' && secrets.ARTIFACTS_KEY_ID != ''
               run: task artifacts:upload
               env:
                   AWS_ACCESS_KEY_ID: "${{ secrets.ARTIFACTS_KEY_ID }}"
