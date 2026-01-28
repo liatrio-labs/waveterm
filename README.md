@@ -13,7 +13,7 @@
 
 > **Note: This is a Fork**
 >
-> This directory (`app/`) contains a **fork of [Wave Terminal](https://github.com/wavetermdev/waveterm)** that is part of the **[Liatrio Wave](https://github.com/liatrio/liatrio-wave)** project.
+> This directory (`app/`) contains a **fork of [Wave Terminal](https://github.com/wavetermdev/waveterm)** that is part of the **[Liatrio Wave](https://github.com/liatrio-labs/liatrio-wave)** project.
 >
 > ## About Liatrio Wave
 >
@@ -35,7 +35,7 @@
 >
 > ## Links
 >
-> - **Parent Repository**: [github.com/liatrio/liatrio-wave](https://github.com/liatrio/liatrio-wave)
+> - **Parent Repository**: [github.com/liatrio-labs/liatrio-wave](https://github.com/liatrio-labs/liatrio-wave)
 > - **Upstream Wave Terminal**: [github.com/wavetermdev/waveterm](https://github.com/wavetermdev/waveterm)
 >
 > ---
