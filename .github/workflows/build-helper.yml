@@ -97,14 +97,24 @@ jobs:
 
             # Windows Code Signing Setup (skipped if secrets not configured)
             - name: Set up certificate (Windows only)
-              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch' && secrets.SM_CLIENT_CERT_FILE_B64 != ''
+              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch'
               run: |
-                  echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > /d/Certificate_pkcs12.p12
+                  if [ -z "$CERT_B64" ]; then
+                    echo "::notice::Skipping certificate setup - SM_CLIENT_CERT_FILE_B64 not configured"
+                    exit 0
+                  fi
+                  echo "$CERT_B64" | base64 --decode > /d/Certificate_pkcs12.p12
               shell: bash
+              env:
+                  CERT_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
             - name: Set signing variables (Windows only)
-              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch' && secrets.SM_API_KEY != ''
+              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch'
               id: variables
               run: |
+                  if [ -z "$SM_API_KEY_CHECK" ]; then
+                    echo "::notice::Skipping signing variables - SM_API_KEY not configured"
+                    exit 0
+                  fi
                   echo "SM_HOST=${{ secrets.SM_HOST }}" >> "$GITHUB_ENV"
                   echo "SM_API_KEY=${{ secrets.SM_API_KEY }}" >> "$GITHUB_ENV"
                   echo "SM_CODE_SIGNING_CERT_SHA1_HASH=${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}" >> "$GITHUB_ENV"
@@ -115,14 +125,22 @@ jobs:
                   echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH
                   echo "C:\Program Files\DigiCert\DigiCert Keylocker Tools" >> $GITHUB_PATH
               shell: bash
+              env:
+                  SM_API_KEY_CHECK: ${{ secrets.SM_API_KEY }}
             - name: Setup Keylocker KSP (Windows only)
-              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch' && secrets.SM_API_KEY != ''
+              if: matrix.platform == 'windows' && github.event_name != 'workflow_dispatch'
               run: |
+                  if "%SM_API_KEY%"=="" (
+                    echo ::notice::Skipping Keylocker setup - SM_API_KEY not configured
+                    exit /b 0
+                  )
                   curl -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/Keylockertools-windows-x64.msi/download -H "x-api-key:%SM_API_KEY%" -o Keylockertools-windows-x64.msi
                   msiexec /i Keylockertools-windows-x64.msi /quiet /qn
                   C:\Windows\System32\certutil.exe -csp "DigiCert Signing Manager KSP" -key -user
                   smctl windows certsync
               shell: cmd
+              env:
+                  SM_API_KEY: ${{ secrets.SM_API_KEY }}
 
             # Build and upload packages
             - name: Build (Linux)
@@ -160,8 +178,14 @@ jobs:
 
             # Upload artifacts to the S3 staging and to the workflow output for the draft release job
             - name: Upload to S3 staging
-              if: github.event_name != 'workflow_dispatch' && secrets.ARTIFACTS_KEY_ID != ''
-              run: task artifacts:upload
+              if: github.event_name != 'workflow_dispatch'
+              run: |
+                  if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+                    echo "::notice::Skipping S3 upload - ARTIFACTS_KEY_ID not configured"
+                    exit 0
+                  fi
+                  task artifacts:upload
+              shell: bash
               env:
                   AWS_ACCESS_KEY_ID: "${{ secrets.ARTIFACTS_KEY_ID }}"
                   AWS_SECRET_ACCESS_KEY: "${{ secrets.ARTIFACTS_KEY_SECRET }}"
