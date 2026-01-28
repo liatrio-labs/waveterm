@@ -504,6 +504,22 @@ async function createBlockSplitVertically(
 async function createBlock(blockDef: BlockDef, magnified = false, ephemeral = false): Promise<string> {
     const layoutModel = getLayoutModelForStaticTab();
     const rtOpts: RuntimeOpts = { termsize: { rows: 25, cols: 80 } };
+
+    // For terminal blocks without a cwd set, use workspace default cwd
+    if (blockDef?.meta?.view === "term" && !blockDef?.meta?.["cmd:cwd"]) {
+        const workspace = globalStore.get(atoms.workspace);
+        const defaultCwd = workspace?.meta?.["workspace:defaultcwd"];
+        if (defaultCwd) {
+            blockDef = {
+                ...blockDef,
+                meta: {
+                    ...blockDef.meta,
+                    "cmd:cwd": defaultCwd,
+                },
+            };
+        }
+    }
+
     const blockId = await ObjectService.CreateBlock(blockDef, rtOpts);
     if (ephemeral) {
         layoutModel.newEphemeralNode(blockId);

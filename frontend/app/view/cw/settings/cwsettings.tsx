@@ -203,6 +203,17 @@ function SettingsContent() {
 // ============================================================================
 
 function CwSettingsView({ model, blockRef }: ViewComponentProps<CwSettingsViewModel>) {
+    const block = useAtomValue(model.blockAtom);
+    const { setCategory } = useSettingsCategory();
+
+    // Set initial category from block metadata on mount
+    React.useEffect(() => {
+        const initialCategory = block?.meta?.["cwsettings:category"] as SettingsCategory;
+        if (initialCategory && SETTINGS_CATEGORIES.some(cat => cat.id === initialCategory)) {
+            setCategory(initialCategory);
+        }
+    }, []); // Only run on mount
+
     return (
         <div className="cwsettings-view">
             <SettingsSidebar />
