@@ -445,6 +445,7 @@ export function usePluginActions() {
         async (pluginId: string) => {
             if (!projectPath) {
                 console.error("[CWPlugins] No project path set");
+                globalStore.set(pluginErrorAtom, "No project connected. Open a CW Sessions panel or terminal in a git repository first.");
                 return false;
             }
             return enablePlugin(projectPath, pluginId);
@@ -456,6 +457,7 @@ export function usePluginActions() {
         async (pluginId: string) => {
             if (!projectPath) {
                 console.error("[CWPlugins] No project path set");
+                globalStore.set(pluginErrorAtom, "No project connected. Open a CW Sessions panel or terminal in a git repository first.");
                 return false;
             }
             return disablePlugin(projectPath, pluginId);
@@ -467,6 +469,7 @@ export function usePluginActions() {
         async (pluginId: string, config: { [key: string]: any }) => {
             if (!projectPath) {
                 console.error("[CWPlugins] No project path set");
+                globalStore.set(pluginErrorAtom, "No project connected. Open a CW Sessions panel or terminal in a git repository first.");
                 return false;
             }
             return configurePlugin(projectPath, pluginId, config);

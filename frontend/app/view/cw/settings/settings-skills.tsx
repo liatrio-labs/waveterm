@@ -52,6 +52,14 @@ export function SettingsSkills() {
 
     return (
         <div className="settings-category skill-gallery">
+            {/* No project warning */}
+            {!projectPath && (
+                <div className="skill-warning">
+                    <i className="fa-solid fa-triangle-exclamation" />
+                    <span>No project connected. Open a CW Sessions panel and connect to a git repository to install skills.</span>
+                </div>
+            )}
+
             {/* Header with stats */}
             <div className="skill-gallery-header">
                 <div className="skill-gallery-stats">

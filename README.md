@@ -11,6 +11,35 @@
 
 # Wave Terminal
 
+> **Note: This is a Fork**
+>
+> This directory (`app/`) contains a **fork of [Wave Terminal](https://github.com/wavetermdev/waveterm)** that is part of the **[Liatrio Wave](https://github.com/liatrio/liatrio-wave)** project.
+>
+> ## About Liatrio Wave
+>
+> Liatrio Wave is a development environment for running parallel Claude Code sessions with git worktree isolation. It enables developers to scale AI-assisted development by working on multiple features, bug fixes, and experiments simultaneously.
+>
+> The parent repository offers two approaches:
+> - **Terminal CLI (`cw`)** - A pure bash/tmux solution for command-line users
+> - **Desktop App** - This Electron GUI (Wave Terminal fork) for visual workflows
+>
+> ## Why a Fork?
+>
+> Wave Terminal doesn't have a formal plugin/extension API. Liatrio Wave features require deep integration:
+> - Go backend RPC services for worktree management (`pkg/cw*` packages)
+> - Frontend React components with Jotai state atoms
+> - Electron main process IPC handlers
+> - `wsh` CLI command extensions
+>
+> All Liatrio Wave additions use the `cw` prefix (e.g., `cwworktree`, `cwsessions`, `cwplugins`) to maintain clear separation from Wave Terminal core code and enable future upstream rebasing.
+>
+> ## Links
+>
+> - **Parent Repository**: [github.com/liatrio/liatrio-wave](https://github.com/liatrio/liatrio-wave)
+> - **Upstream Wave Terminal**: [github.com/wavetermdev/waveterm](https://github.com/wavetermdev/waveterm)
+>
+> ---
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwavetermdev%2Fwaveterm.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwavetermdev%2Fwaveterm?ref=badge_shield)
 
 Wave is an open-source terminal that combines traditional terminal features with graphical capabilities like file previews, web browsing, and AI assistance. It runs on MacOS, Linux, and Windows.

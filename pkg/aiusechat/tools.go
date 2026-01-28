@@ -231,6 +231,17 @@ func GenerateTabStateAndTools(ctx context.Context, tabid string, widgetAccess bo
 				tools = append(tools, mcpTools...)
 				log.Printf("[tools] Added %d MCP tools to total tools", len(mcpTools))
 			}
+
+			// Add skill tools from installed skills
+			skillTools, skillSummary := GenerateSkillToolDefinitions(ctx, workspaceId)
+			if len(skillTools) > 0 {
+				tools = append(tools, skillTools...)
+				log.Printf("[tools] Added %d skill tools to total tools", len(skillTools))
+				// Append skill summary to tab state
+				if skillSummary != "" {
+					tabState = tabState + skillSummary
+				}
+			}
 		}
 	}
 	return tabState, tools, nil

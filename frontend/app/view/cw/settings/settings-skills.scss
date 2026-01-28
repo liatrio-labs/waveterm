@@ -81,6 +81,32 @@
 }
 
 // ============================================================================
+// Warning State (no project connected)
+// ============================================================================
+
+.skill-warning {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    i {
+        font-size: 18px;
+        color: #FF9800;
+    }
+
+    span {
+        flex: 1;
+        font-size: 13px;
+        color: var(--main-text-color);
+    }
+}
+
+// ============================================================================
 // Skills Filters
 // ============================================================================
 

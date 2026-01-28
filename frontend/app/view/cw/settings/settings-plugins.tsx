@@ -71,6 +71,14 @@ export function SettingsPlugins() {
 
     return (
         <div className="settings-category plugin-gallery">
+            {/* No project warning */}
+            {!projectPath && (
+                <div className="plugin-warning">
+                    <i className="fa-solid fa-triangle-exclamation" />
+                    <span>No project connected. Open a CW Sessions panel and connect to a git repository to enable plugins.</span>
+                </div>
+            )}
+
             {/* Header with stats */}
             <div className="plugin-gallery-header">
                 <div className="plugin-gallery-stats">

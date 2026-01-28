@@ -14,6 +14,7 @@ import { waveEventSubscribe } from "./wps";
 import { activeTabIdAtom } from "@/app/store/tab-model";
 import * as WOS from "@/app/store/wos";
 import { ObjectService } from "@/app/store/services";
+import { atoms } from "@/store/global";
 
 // ============================================================================
 // Atoms
@@ -31,26 +32,37 @@ export const cwActiveBlockIdAtom = atom<string | null>(null) as PrimitiveAtom<st
 export const cwProjectPathAtom = atom<string | null>(null) as PrimitiveAtom<string | null>;
 
 /**
- * Derived atom: Get project path from active cwsessions block's metadata
+ * Derived atom: Get project path from multiple sources (priority order):
+ * 1. Active cwsessions block's cw:projectpath metadata
+ * 2. Global cwProjectPathAtom
+ * 3. Workspace's default cwd (workspace:defaultcwd)
  * This provides workspace-scoped project path for plugins/MCP configuration
  */
 export const cwActiveWorkspaceProjectPathAtom = atom((get) => {
+    // 1. Check active cwsessions block metadata
     const blockId = get(cwActiveBlockIdAtom);
-    if (!blockId) {
-        // Fallback to global project path if no active block
-        return get(cwProjectPathAtom);
+    if (blockId) {
+        const blockOref = WOS.makeORef("block", blockId);
+        const block = WOS.getObjectValue<Block>(blockOref);
+        if (block?.meta?.["cw:projectpath"]) {
+            return block.meta["cw:projectpath"] as string;
+        }
     }
 
-    // Get block metadata
-    const blockOref = WOS.makeORef("block", blockId);
-    const block = WOS.getObjectValue<Block>(blockOref);
-
-    if (block?.meta?.["cw:projectpath"]) {
-        return block.meta["cw:projectpath"] as string;
+    // 2. Check global project path atom
+    const globalPath = get(cwProjectPathAtom);
+    if (globalPath) {
+        return globalPath;
     }
 
-    // Fallback to global project path
-    return get(cwProjectPathAtom);
+    // 3. Fallback to workspace default cwd (for terminal-only workflows)
+    const workspace = get(atoms.workspace);
+    const defaultCwd = workspace?.meta?.["workspace:defaultcwd"] as string | undefined;
+    if (defaultCwd) {
+        return defaultCwd;
+    }
+
+    return null;
 });
 
 /**
