@@ -149,26 +149,32 @@ jobs:
               env:
                   USE_SYSTEM_FPM: true # Ensure that the installed version of FPM is used rather than the bundled one.
                   SNAPCRAFT_BUILD_ENVIRONMENT: host
-            # Retry Darwin build in case of notarization failures
-            # CSC_IDENTITY_AUTO_DISCOVERY=false prevents electron-builder from trying to
-            # auto-discover a signing identity. Signing only happens if CSC_LINK is set.
-            - uses: nick-fields/retry@v3
-              name: Build (Darwin)
+            # Build Darwin - only set signing env vars if certificate is provided
+            - name: Build (Darwin)
               if: matrix.platform == 'darwin'
-              with:
-                  command: task package
-                  timeout_minutes: 120
-                  retry_on: error
-                  max_attempts: 3
+              run: |
+                  # Only export signing variables if certificate is provided
+                  if [ -n "$MACOS_CERTIFICATE" ]; then
+                    echo "::notice::Code signing enabled"
+                    export CSC_LINK="$MACOS_CERTIFICATE"
+                    export CSC_KEY_PASSWORD="$MACOS_CERTIFICATE_PWD"
+                    export APPLE_ID="$MACOS_NOTARIZATION_APPLE_ID"
+                    export APPLE_APP_SPECIFIC_PASSWORD="$MACOS_NOTARIZATION_PWD"
+                    export APPLE_TEAM_ID="$MACOS_NOTARIZATION_TEAM_ID"
+                  else
+                    echo "::notice::Code signing disabled - no certificate provided"
+                    export CSC_IDENTITY_AUTO_DISCOVERY=false
+                  fi
+                  task package
+              shell: bash
               env:
-                  USE_SYSTEM_FPM: true # Ensure that the installed version of FPM is used rather than the bundled one.
-                  CSC_IDENTITY_AUTO_DISCOVERY: false
-                  CSC_LINK: ${{ secrets.PROD_MACOS_CERTIFICATE_2 }}
-                  CSC_KEY_PASSWORD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD_2 }}
-                  APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID_2 }}
-                  APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD_2 }}
-                  APPLE_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID_2 }}
-                  STATIC_DOCSITE_PATH: ${{env.STATIC_DOCSITE_PATH}}
+                  USE_SYSTEM_FPM: true
+                  MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_2 }}
+                  MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD_2 }}
+                  MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID_2 }}
+                  MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD_2 }}
+                  MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID_2 }}
+                  STATIC_DOCSITE_PATH: ${{ env.STATIC_DOCSITE_PATH }}
             - name: Build (Windows)
               if: matrix.platform == 'windows'
               run: task package
