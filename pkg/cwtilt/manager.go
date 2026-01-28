@@ -98,19 +98,22 @@ func (m *TiltManager) setStatus(status TiltStatus) {
 }
 
 // IsRunning returns true if the MCP Hub is currently running
-// This checks both internal state AND does a live health check to handle
-// cases where the Hub was started externally or state is out of sync
+// This does a live health check to ensure the Hub is actually responding,
+// and updates internal state accordingly
 func (m *TiltManager) IsRunning() bool {
-	// First check internal state
-	if m.GetStatus() == TiltStatusRunning {
+	// Always do a live health check to get ground truth
+	if m.isHubResponding() {
+		// Hub is responding - update internal state to match
+		if m.GetStatus() != TiltStatusRunning {
+			m.setStatus(TiltStatusRunning)
+		}
 		return true
 	}
 
-	// Also check if Hub is actually responding (may have been started externally)
-	if m.isHubResponding() {
-		// Update internal state to match reality
-		m.setStatus(TiltStatusRunning)
-		return true
+	// Hub is NOT responding - clear stale "running" state if present
+	if m.GetStatus() == TiltStatusRunning {
+		log.Printf("[cwtilt] Hub was marked as running but is not responding, resetting status")
+		m.setStatus(TiltStatusStopped)
 	}
 
 	return false
